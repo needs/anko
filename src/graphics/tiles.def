@@ -1,0 +1,2 @@
+/* Définit les tuiles et les images associées */
+ADD_TILE(GRASS, "grass.png")
