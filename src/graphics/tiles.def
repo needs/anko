@@ -1,2 +1,6 @@
 /* Définit les tuiles et les images associées */
 ADD_TILE(GRASS, "grass.png")
+ADD_TILE(TREE, "tree.png")
+ADD_TILE(BURNED_TREE, "burned_tree.png")
+ADD_TILE(BURNING_TREE, "burning_tree.png")
+ADD_TILE(WATER, "water.png")
