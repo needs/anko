@@ -6,6 +6,7 @@ typedef enum state_t {
 	BURNABLE,
 	BURNING,
 	BURNED,
+	NB_STATE,
 } state_t;
 
 #endif /* _SIMULATOR_H_ */
