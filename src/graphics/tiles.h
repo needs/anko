@@ -3,11 +3,12 @@
 
 #include <SDL2/SDL.h>
 
-#define ADD_TILE(type, path) TILE_##type,
+/* TT for Tile Type */
+#define ADD_TILE(type, path) TT_##type,
 typedef enum tile_t {
-	TILE_NONE = -1,
+	TT_NONE = -1,
 #include "tiles.def"
-	TILE_COUNT,
+	TT_COUNT,
 } tile_t;
 #undef ADD_TILE
 
