@@ -17,7 +17,7 @@ void step(state_t** dest, state_t** src, int width, int height)
 				{
 				case ST_BURNABLE:
 					// Replace next line with should_burn with more parameters like humidity etc ?
-					if( ((float)random() / RAND_MAX ) > (float)nb/8)
+					if( ((float)random() / RAND_MAX ) < (float)nb/2.5)
 						dest[j][i] = ST_BURNING;
 					break;
 				case ST_BURNING:
