@@ -1,5 +1,5 @@
 CFLAGS = -Wall -Werror -Wextra -g
 CC = gcc
 
-anko: display.o main.o
+anko: display.o generator.o main.o
 	$(CC) $(CFLAGS) -o $@ $^
