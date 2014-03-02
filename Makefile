@@ -6,11 +6,11 @@ CC = gcc
 
 all: anko_text anko
 
-anko_text: src/text/display.o src/text/main.o src/generator.o src/simulator.o
+anko_text: src/text/display.o src/text/main.o src/board.o src/generator.o src/simulator.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-anko: src/graphics/main.o src/generator.o src/simulator.o
+anko: src/graphics/main.o src/generator.o src/simulator.o src/board.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f anko_text anko *.o src/*.o src/text/*.o src/graphics/*.o
+	rm -f anko_text anko `find . -name "*.o" | xargs`

@@ -3,8 +3,6 @@
 
 #include "simulator.h"
 
-state_t **alloc_board(int width, int height);
-
-state_t** generate(int width, int height, float tree_density);
+state_t** generate(int width, int height, float tree_density, float water_density);
 
 #endif /* _GENERATOR_H_ */

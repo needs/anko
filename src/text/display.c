@@ -9,7 +9,7 @@ static void reset_screen(void);
 void display(state_t **board, int width, int height)
 {
 	int i, j;
-	static char statemap[][12] = {"\x1B[00m ", "\x1B[32mT", "\x1B[31m#", "\x1B[00m."};
+	static char statemap[][12] = {"\x1B[00m ", "\x1B[34m~", "\x1B[37m+", "\x1B[32mT", "\x1B[31m#", "\x1B[00m."};
 
 	assert(board != NULL);
 	assert(height > 0);
