@@ -4,7 +4,7 @@
 #include "generator.h"
 #include "simulator.h"
 
-static state_t **alloc_board(int width, int height);
+
 
 state_t** generate(int width, int height)
 {
@@ -19,15 +19,17 @@ state_t** generate(int width, int height)
 
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
-			board[i][j] = random() % NB_STATE;
+			board[i][j] = BURNABLE;
 		}
 	}
 
+	board[0][0] = BURNING;
+	
 	return board;
 }
 
 
-static state_t **alloc_board(int width, int height)
+state_t **alloc_board(int width, int height)
 {
 	int i;
 
