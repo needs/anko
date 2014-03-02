@@ -13,9 +13,9 @@ static const int HEIGHT = 20;
 int main(void)
 {
 	state_t **board, **dest, **tmp;
-	
+
 	srandom(time(NULL));
-	
+
 	if ((board = generate(WIDTH, HEIGHT)) == NULL)
 		return EXIT_FAILURE;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
@@ -35,8 +35,9 @@ int main(void)
 		display(board, WIDTH, HEIGHT);
 		sleep(1);
 	}
-	
-	
+
+	free_board(board, WIDTH, HEIGHT);
+	free_board(dest , WIDTH, HEIGHT);
 
 	return EXIT_SUCCESS;
 }

@@ -57,3 +57,17 @@ err_width:
 err_height:
 	return NULL;
 }
+
+
+void free_board(state_t **board, int width, int height)
+{
+	int i;
+
+	assert(board != NULL);
+	assert(width > 0);
+	assert(height > 0);
+
+	for (i = 0; i < height; i++)
+		free(board[i]);
+	free(board);
+}
