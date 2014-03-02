@@ -56,7 +56,7 @@ int main(void)
 		board = dest;
 		dest = tmp;
 		
-		render(window, tiles, board, WIDTH, HEIGHT);
+		render(renderer, tiles, board, WIDTH, HEIGHT);
 		SDL_Delay(1000);
 	}
 

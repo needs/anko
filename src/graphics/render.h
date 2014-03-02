@@ -5,7 +5,7 @@
 #include "../simulator.h"
 
 
-#define ADD_TILE(type, path) TILE_type,
+#define ADD_TILE(type, path) TILE_##type,
 typedef enum tile_t {
 	TILE_NONE = -1,
 #include "tiles.h"
@@ -15,7 +15,7 @@ typedef enum tile_t {
 
 
 SDL_Texture** load_tiles(SDL_Renderer *renderer);
-void render(SDL_Window *window, SDL_Texture **tiles, state_t **board, int width, int height);
+void render(SDL_Renderer *renderer, SDL_Texture **tiles, state_t **board, int width, int height);
 void unload_tiles(SDL_Texture **tiles);
 
 

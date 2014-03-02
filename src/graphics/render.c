@@ -43,13 +43,28 @@ err_tiles:
 }
 
 
-void render(SDL_Window *window, SDL_Texture **tiles, state_t **board, int width, int height)
+/* Render the texture at x, y */
+static void render_texture(int x, int y, SDL_Texture *tex, SDL_Renderer *rend)
 {
-	assert(window != NULL);
+	SDL_Rect pos;
+	pos.x = x;
+	pos.y = y;
+	SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
+	SDL_RenderCopy(rend, tex, NULL, &pos);
+}
+
+
+void render(SDL_Renderer *renderer, SDL_Texture **tiles, state_t **board, int width, int height)
+{
+	assert(renderer != NULL);
 	assert(tiles != NULL);
 	assert(board != NULL);
 	assert(height > 0);
 	assert(width > 0);
+
+	SDL_RenderClear(renderer);
+	render_texture(0, 0, tiles[TILE_GRASS], renderer);
+	SDL_RenderPresent(renderer);
 }
 
 
