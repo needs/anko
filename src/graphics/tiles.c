@@ -6,7 +6,7 @@
 
 /* Trick to  get the tile path, used by load_tiles */
 #define ADD_TILE(type, path) "./data/tiles/"path,
-static const char tiles_path[TILE_COUNT][64] = {
+static const char tiles_path[][64] = {
 #include "tiles.def"
 };
 #undef ADD_TILE
@@ -19,12 +19,12 @@ SDL_Texture** load_tiles(SDL_Renderer *renderer)
 
 	assert(renderer != NULL);
 
-	if ((tiles = malloc(TILE_COUNT * sizeof(*tiles))) == NULL) {
+	if ((tiles = malloc(TT_COUNT * sizeof(*tiles))) == NULL) {
 		perror("malloc(tiles)");
 		goto err_tiles;
 	}
 
-	for (i = 0; i < TILE_COUNT; i++) {
+	for (i = 0; i < TT_COUNT; i++) {
 		SDL_Surface *surf = IMG_Load(tiles_path[i]);
 		if (surf == NULL) {
 			fprintf(stderr, "%s\n", SDL_GetError());
@@ -49,7 +49,7 @@ void unload_tiles(SDL_Texture **tiles)
 {
 	int i;
 	assert(tiles != NULL);
-	for (i = 0; i < TILE_COUNT; i++)
+	for (i = 0; i < TT_COUNT; i++)
 		SDL_DestroyTexture(tiles[i]);
 	free(tiles);
 }

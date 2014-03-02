@@ -3,6 +3,11 @@
 
 #include <SDL2/SDL.h>
 
+
+#define TILE_WIDTH  66
+#define TILE_HEIGHT 34
+
+
 /* TT for Tile Type */
 #define ADD_TILE(type, path) TT_##type,
 typedef enum tile_t {
