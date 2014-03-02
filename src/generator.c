@@ -5,11 +5,11 @@
 #include "simulator.h"
 
 
-state_t** generate(int width, int height)
+state_t** generate(int width, int height, float tree_density)
 {
 	state_t **board = NULL;
 	int i, j;
-
+		
 	assert(width > 0);
 	assert(height > 0);
 
@@ -18,7 +18,10 @@ state_t** generate(int width, int height)
 
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
-			board[i][j] = BURNABLE;
+			if( (float)random() / RAND_MAX < tree_density)
+				board[i][j] = BURNABLE;
+			else
+				board[i][j] = NEUTRAL;
 		}
 	}
 
