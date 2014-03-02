@@ -56,6 +56,9 @@ static void render_texture(int x, int y, SDL_Texture *tex, SDL_Renderer *rend)
 
 void render(SDL_Renderer *renderer, SDL_Texture **tiles, state_t **board, int width, int height)
 {
+	int i, j;
+	int w, h;
+
 	assert(renderer != NULL);
 	assert(tiles != NULL);
 	assert(board != NULL);
@@ -63,7 +66,19 @@ void render(SDL_Renderer *renderer, SDL_Texture **tiles, state_t **board, int wi
 	assert(width > 0);
 
 	SDL_RenderClear(renderer);
-	render_texture(0, 0, tiles[TILE_GRASS], renderer);
+
+	/* Some tiles might 'overflow' on others on x axis, the real rendering
+	 * should go through the board diagonaly, for now, keep it simple. */
+
+	SDL_QueryTexture(tiles[TILE_GRASS], NULL, NULL, &w, &h);
+	w /= 2; h /= 2;
+
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			render_texture((j*-w) + (i*w), i*h + j*h, tiles[TILE_GRASS], renderer);
+		}
+	}
+
 	SDL_RenderPresent(renderer);
 }
 
