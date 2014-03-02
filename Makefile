@@ -1,5 +1,5 @@
 CFLAGS = -Wall -Werror -Wextra -g
 CC = gcc
 
-anko: display.o main.o
+anko: display.o main.o simulator.o
 	$(CC) $(CFLAGS) -o $@ $^
