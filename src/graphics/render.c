@@ -10,10 +10,12 @@ static const char tiles_path[TILE_COUNT][64] = {
 };
 #undef ADD_TILE
 
-SDL_Surface** load_tiles()
+SDL_Texture** load_tiles(SDL_Renderer *renderer)
 {
-	SDL_Surface** tiles;
+	SDL_Texture** tiles;
 	int i;
+
+	assert(renderer != NULL);
 
 	if ((tiles = malloc(TILE_COUNT * sizeof(*tiles))) == NULL) {
 		perror("malloc(tiles)");
@@ -21,24 +23,27 @@ SDL_Surface** load_tiles()
 	}
 
 	for (i = 0; i < TILE_COUNT; i++) {
-		if ((tiles[i] = IMG_Load(tiles_path[i])) == NULL) {
+		SDL_Surface *surf = IMG_Load(tiles_path[i]);
+		if (surf == NULL) {
 			fprintf(stderr, "%s\n", SDL_GetError());
 			goto err_tile;
 		}
+		tiles[i] = SDL_CreateTextureFromSurface(renderer, surf);
+		SDL_FreeSurface(surf);
 	}
 
 	return tiles;
 
 err_tile:
 	while (i --> 0)
-		free(tiles[i]);
+		SDL_DestroyTexture(tiles[i]);
 	free(tiles);
 err_tiles:
 	return NULL;
 }
 
 
-void render(SDL_Window *window, SDL_Surface **tiles, state_t **board, int width, int height)
+void render(SDL_Window *window, SDL_Texture **tiles, state_t **board, int width, int height)
 {
 	assert(window != NULL);
 	assert(tiles != NULL);
@@ -48,11 +53,11 @@ void render(SDL_Window *window, SDL_Surface **tiles, state_t **board, int width,
 }
 
 
-void unload_tiles(SDL_Surface **tiles)
+void unload_tiles(SDL_Texture **tiles)
 {
 	int i;
 	assert(tiles != NULL);
 	for (i = 0; i < TILE_COUNT; i++)
-		SDL_FreeSurface(tiles[i]);
+		SDL_DestroyTexture(tiles[i]);
 	free(tiles);
 }
