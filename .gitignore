@@ -1,4 +1,5 @@
 *.o
-anko
+/anko
+/anko_text
 *#*
 *~
