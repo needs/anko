@@ -9,7 +9,7 @@ all: anko_text anko
 anko_text: src/text/display.o src/text/main.o src/generator.o src/simulator.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-anko: src/graphics/main.o src/graphics/render.o src/generator.o src/simulator.o
+anko: src/graphics/main.o src/graphics/render.o src/graphics/tiles.o src/generator.o src/simulator.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 clean:

@@ -3,6 +3,7 @@
 #include <time.h>
 #include <SDL2/SDL.h>
 #include "render.h"
+#include "tiles.h"
 #include "../generator.h"
 #include "../simulator.h"
 
