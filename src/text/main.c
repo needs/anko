@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <time.h>
 #include "display.h"
-#include "generator.h"
-#include "simulator.h"
+#include "../generator.h"
+#include "../simulator.h"
 
 static const int WIDTH = 20;
 static const int HEIGHT = 20;

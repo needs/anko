@@ -3,8 +3,8 @@ CC = gcc
 
 .PHONY: clean
 
-anko: display.o generator.o main.o simulator.o
+anko_text: src/text/display.o src/generator.o src/text/main.o src/simulator.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -f anko *.o
+	rm -f anko_text *.o src/*.o src/text/*.o

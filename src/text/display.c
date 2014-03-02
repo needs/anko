@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "display.h"
-#include "simulator.h"
+#include "../simulator.h"
 
 static void reset_screen(void);
 
