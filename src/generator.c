@@ -5,12 +5,15 @@
 #include "simulator.h"
 #include "board.h"
 
+#define RANDOM_FLOAT() ((float)random()/RAND_MAX)
+
+static int should_spawn(state_t type, state_t **board, int width, int height, float density);
+static void extend_water(state_t **board, int width, int height ,int x, int y, float water_density);
+
 state_t** generate(int width, int height, float tree_density, float water_density)
 {
 	state_t **board = NULL;
 	int i, j;
-
-	int water_count = 0;
 	int tree_count = 0;
 	
 	assert(width > 0);
@@ -25,22 +28,9 @@ state_t** generate(int width, int height, float tree_density, float water_densit
 	
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
-			
-			float rand = (float)random() / RAND_MAX;
-
-			// we augment the probabillity of water if in "lake"
-			float should_more_water = (float)get_neighbors_count(j,i,board,width,height,ST_WATER)/16;
-
-			// soft threshold
-			int too_much_water = ((float) water_count / (width*height)) >  water_density+water_density/4;
 			int too_much_trees = ((float) tree_count / (width*height)) > tree_density;
-			
-			if(rand < (water_density + should_more_water) && !too_much_water )
-			{
-				board[i][j] = ST_WATER;
-				water_count++;
-			}
-			else if(rand < tree_density && !too_much_trees)
+
+			if(RANDOM_FLOAT() < tree_density && !too_much_trees)
 			{
 				board[i][j] = ST_BURNABLE;
 				tree_count++;
@@ -50,8 +40,45 @@ state_t** generate(int width, int height, float tree_density, float water_densit
 		}
 	}
 
+	while(should_spawn(ST_WATER, board, width,height,water_density))
+	{
+		extend_water(board, width, height,random()%width,random()%height, water_density);
+	}
+
 	board[random()%height][random()%width] = ST_BURNING;
-	
 	return board;
+}
+
+static int should_spawn(state_t type, state_t**board, int width, int height, float density)
+{
+	int i,j;
+	int count = 0;
+	for(i = 0; i < height; i++)
+		for(j = 0; j < width; j++)
+			if(board[i][j] == type)
+				count++;
+	return (float)count/(width*height) < density;
+}
+
+static void extend_water_rec(state_t **board, int width, int height, int x, int y, int *count, int size)
+{
+	if(IS_OUT_OF_BOUNDS(x,y,width,height) || board[y][x] == ST_WATER)
+		return;
+	
+	if(RANDOM_FLOAT() > (float)*count/size)
+	{
+		board[y][x] = ST_WATER;
+		*count = *count+1;
+		extend_water_rec(board, width, height, x+1, y, count, size);
+		extend_water_rec(board, width, height, x-1, y, count, size);
+		extend_water_rec(board, width, height, x, y+1, count, size);
+		extend_water_rec(board, width, height, x, y-1, count, size);
+	}
+}
+static void extend_water(state_t **board, int width, int height,int x, int y, float water_density)
+{
+	float size = ((float)random()/RAND_MAX) * water_density *width*height;
+	int water_count = 0;
+	extend_water_rec(board,width,height, x,y, &water_count, size);
 }
 
