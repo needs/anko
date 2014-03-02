@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -12,7 +13,6 @@ static const int HEIGHT = 20;
 int main(void)
 {
 	state_t **board, **dest, **tmp;
-	char c;
 	
 	srandom(time(NULL));
 	
@@ -21,9 +21,10 @@ int main(void)
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		return EXIT_FAILURE;
 
+	clear_screen();
 	display(board, WIDTH, HEIGHT);
 	
-	while((c = getchar()) != EOF)
+	while(1)
 	{
 		step(dest,board, WIDTH,HEIGHT);
 
@@ -32,6 +33,7 @@ int main(void)
 		dest = tmp;
 		
 		display(board, WIDTH, HEIGHT);
+		sleep(1);
 	}
 	
 	

@@ -5,7 +5,6 @@
 #include "simulator.h"
 
 
-
 state_t** generate(int width, int height)
 {
 	state_t **board = NULL;
