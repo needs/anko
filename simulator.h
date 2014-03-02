@@ -21,6 +21,7 @@ typedef enum state_t {
 	BURNABLE,
 	BURNING,
 	BURNED,
+	NB_STATE,
 } state_t;
 
 void step(state_t** dest, state_t** src, int width, int height);
