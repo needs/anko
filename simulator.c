@@ -33,8 +33,12 @@ void step(state_t** dest, state_t** src, int width, int height)
 				}
 			}
 			else
-				dest[j][i] = src[j][i];
-			
+			{
+				if(src[j][i] == BURNING)
+					dest[j][i] = BURNED;
+				else
+					dest[j][i] = src[j][i];
+			}
 		}
 	}
 }
