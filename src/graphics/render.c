@@ -33,17 +33,21 @@ void render(SDL_Renderer *renderer, SDL_Texture **tiles, state_t **board, int wi
 
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
+			int x, y;
+			x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2 + 300;
+			y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2 - 50;
+
 			if (board[i][j] == ST_WATER)
-				render_ctexture((j*-TILE_WIDTH/2) + (i*TILE_WIDTH/2), i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, tiles[TT_WATER], renderer);
+				render_ctexture(x, y, tiles[TT_WATER], renderer);
 			else
-				render_ctexture((j*-TILE_WIDTH/2) + (i*TILE_WIDTH/2), i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, tiles[TT_GRASS], renderer);
+				render_ctexture(x, y, tiles[TT_GRASS], renderer);
 
 			if (board[i][j] == ST_BURNABLE)
-				render_ctexture((j*-TILE_WIDTH/2) + (i*TILE_WIDTH/2), i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, tiles[TT_TREE], renderer);
+				render_ctexture(x, y, tiles[TT_TREE], renderer);
 			else if (board[i][j] == ST_BURNED)
-				render_ctexture((j*-TILE_WIDTH/2) + (i*TILE_WIDTH/2), i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, tiles[TT_BURNED_TREE], renderer);
+				render_ctexture(x, y, tiles[TT_BURNED_TREE], renderer);
 			else if (board[i][j] == ST_BURNING)
-				render_ctexture((j*-TILE_WIDTH/2) + (i*TILE_WIDTH/2), i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, tiles[TT_BURNING_TREE], renderer);
+				render_ctexture(x, y, tiles[TT_BURNING_TREE], renderer);
 		}
 	}
 
