@@ -5,6 +5,7 @@
 SDL_Texture  **tiles = NULL;
 SDL_Window   *window = NULL;
 SDL_Renderer *renderer = NULL;
+SDL_Rect camera = {.x = 0, .y = 0, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT};
 int quit = 0;
 
 int init_context(void)
@@ -14,8 +15,8 @@ int init_context(void)
 	window = SDL_CreateWindow("Anko",
 				   SDL_WINDOWPOS_UNDEFINED, // x
 				   SDL_WINDOWPOS_UNDEFINED, // y
-				   640,			    // Width
-				   480,			    // Height
+				   SCREEN_WIDTH,	    // Width
+				   SCREEN_HEIGHT,	    // Height
 				   SDL_WINDOW_SHOWN);
 
 	if (!window) {
