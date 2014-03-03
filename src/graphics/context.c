@@ -34,8 +34,9 @@ int init_context(void)
 
 	if ((sprites = load_sprites(renderer)) == NULL)
 		goto err_sprites;
-	return 1;
 
+	return 1;
+	
 err_sprites:
 	SDL_DestroyRenderer(renderer);
 err_renderer:
