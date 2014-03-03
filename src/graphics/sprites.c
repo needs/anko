@@ -5,7 +5,7 @@
 
 
 /* Trick to  get the tile path, used by load_sprites */
-#define ADD_SPRITE(type, path) "./data/tiles/"path,
+#define ADD_SPRITE(type, path) "./data/"path,
 static const char sprites_path[][64] = {
 #include "sprites.def"
 };
