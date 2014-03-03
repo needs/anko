@@ -19,6 +19,7 @@ int main(void)
 		return EXIT_FAILURE;
 	}
 
+	glfwWindowHint(GLFW_RESIZABLE, 0);
 	window = glfwCreateWindow(1024, 720, "Anko", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
@@ -42,6 +43,7 @@ int main(void)
 	}
 
 	close_rendering();
+	glfwDestroyWindow(window);
 	glfwTerminate();
 	
 	return EXIT_SUCCESS;
