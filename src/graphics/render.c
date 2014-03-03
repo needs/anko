@@ -15,17 +15,12 @@ static void render_ctexture(int x, int y, SDL_Texture *tex)
 	assert(tex != NULL);
 
 	SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
-
-	// +0.05 is to round up the scaling
-	pos.w *= scale+0.05;
-	pos.h *= scale+0.05;
 	
 	pos.x = x - pos.w / 2;
 	pos.y = y - pos.h / 2;
 
 	SDL_RenderCopy(renderer, tex, NULL, &pos);
 }
-
 
 void render(board_t *board, map_t *map)
 {
@@ -35,7 +30,9 @@ void render(board_t *board, map_t *map)
 	assert(map   != NULL);
 
 	SDL_RenderClear(renderer);
-
+	SDL_SetRenderTarget(renderer, camera_texture);
+	SDL_RenderClear(renderer);
+	
 	/* Some sprites might 'overflow' on others on x axis, the real rendering
 	 * should go through the map diagonaly, for now, keep it simple. */
 
@@ -45,8 +42,8 @@ void render(board_t *board, map_t *map)
 			int state;
 			 
 			/* Note: the camera is centered */
-			x = (map->cells[i][j].x + camera.x)*scale + camera.w / 2;
-			y = (map->cells[i][j].y + camera.y)*scale + camera.h / 2;
+			x = map->cells[i][j].x+camera.x;
+			y = map->cells[i][j].y+camera.y;
 
 			state = board->cells[i][j];
 
@@ -57,5 +54,10 @@ void render(board_t *board, map_t *map)
 		}
 	}
 
+	SDL_SetRenderTarget(renderer, NULL);
+	
+	SDL_Rect pos = {.x = 0, .y = 0, .w = camera.w*scale, .h = camera.h*scale };  
+	SDL_RenderCopy(renderer, camera_texture, &pos, NULL);
+	
 	SDL_RenderPresent(renderer);
 }

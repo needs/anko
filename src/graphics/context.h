@@ -3,12 +3,14 @@
 
 #define SCREEN_WIDTH  1024
 #define SCREEN_HEIGHT 720
+#define ZOOM_MAX_FACTOR 3
 
 /* Contains some global variables representing the game context */
 extern SDL_Texture  **sprites;
 extern SDL_Window   *window;
 extern SDL_Renderer *renderer;
 extern SDL_Rect camera;
+extern SDL_Texture *camera_texture;
 extern float scale;
 extern unsigned scroll_dir;
 extern int quit;
