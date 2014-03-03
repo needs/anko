@@ -11,11 +11,11 @@ enum {
 	DIR_DOWN  = 8,
 };
 
+static const int CAMERA_SPEED = 500;
 
-static void scrolling(unsigned dir);
+static void scrolling(unsigned dir, float deltatime);
 
-
-void process_events(void)
+void process_events(float deltatime)
 {
 	SDL_Event e;
 	int x, y;
@@ -55,27 +55,27 @@ void process_events(void)
 
 	SDL_GetMouseState(&x, &y);
 	if (x < MOUSE_SCROLL_ZONE)
-		scrolling(DIR_LEFT);
+		scrolling(DIR_LEFT, deltatime);
 	if (x > camera.w - MOUSE_SCROLL_ZONE)
-		scrolling(DIR_RIGHT);
+		scrolling(DIR_RIGHT, deltatime);
 	if (y < MOUSE_SCROLL_ZONE)
-		scrolling(DIR_UP);
+		scrolling(DIR_UP, deltatime);
 	if (y > camera.h - MOUSE_SCROLL_ZONE)
-		scrolling(DIR_DOWN);
+		scrolling(DIR_DOWN,deltatime);
 
-	scrolling(scroll_dir);
+	scrolling(scroll_dir, deltatime);
 }
 
-
-static void scrolling(unsigned dir)
+// Cannot move int value efficiently because of fucking integer
+static void scrolling(unsigned dir, float deltatime)
 {
 	/* Update position of the camera */
 	if (dir & DIR_DOWN)
-		camera.y -= 5;
+		camera.y -= CAMERA_SPEED * deltatime;
 	if (dir & DIR_UP)
-		camera.y += 5;
+		camera.y += CAMERA_SPEED * deltatime;
 	if (dir & DIR_RIGHT)
-		camera.x -= 5;
+		camera.x -= CAMERA_SPEED * deltatime;
 	if (dir & DIR_LEFT)
-		camera.x += 5;
+		camera.x += CAMERA_SPEED * deltatime;
 }
