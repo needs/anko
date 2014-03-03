@@ -6,6 +6,7 @@ SDL_Texture  **tiles = NULL;
 SDL_Window   *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Rect camera = {.x = 0, .y = 0, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT};
+unsigned camera_dir = 0;
 int quit = 0;
 
 int init_context(void)
