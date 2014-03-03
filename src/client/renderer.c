@@ -57,5 +57,5 @@ void render_rect(float x, float y, float width, float height)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	/* And render them */
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_QUADS, 0, 4);
 }
