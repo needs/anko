@@ -31,8 +31,11 @@ void render(board_t *board)
 	for (i = 0; i < board->height; i++) {
 		for (j = 0; j < board->width; j++) {
 			int x, y;
-			x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2 + 300;
-			y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2 - 50;
+			/* Note: the camera is centered */
+			x = camera.x + camera.w / 2;
+			y = camera.y + camera.h / 2;
+			x += j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
+			y += i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
 
 			if (board->cells[i][j] == ST_WATER)
 				render_ctexture(x, y, tiles[TT_WATER]);

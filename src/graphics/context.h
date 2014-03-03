@@ -1,10 +1,14 @@
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
+#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH  640
+
 /* Contains some global variables representing the game context */
 extern SDL_Texture  **tiles;
 extern SDL_Window   *window;
 extern SDL_Renderer *renderer;
+extern SDL_Rect camera;
 extern int quit;
 
 /* Initialize the context, return 0 on error */
