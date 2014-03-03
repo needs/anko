@@ -1,6 +1,8 @@
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
+#include "camera.h"
+
 #define SCREEN_HEIGHT 720
 #define SCREEN_WIDTH  1024
 
@@ -8,7 +10,7 @@
 extern SDL_Texture  **sprites;
 extern SDL_Window   *window;
 extern SDL_Renderer *renderer;
-extern SDL_Rect camera;
+extern camera_t camera;
 extern unsigned scroll_dir;
 extern int quit;
 

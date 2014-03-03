@@ -39,8 +39,8 @@ void render(board_t *board, map_t *map)
 			int state;
 
 			/* Note: the camera is centered */
-			x = map->cells[i][j].x + camera.x + camera.w / 2;
-			y = map->cells[i][j].y + camera.y + camera.h / 2;
+			x = map->cells[i][j].x + camera.pos.x + camera.dim.x / 2;
+			y = map->cells[i][j].y + camera.pos.y + camera.dim.y / 2;
 
 			state = board->cells[i][j];
 
