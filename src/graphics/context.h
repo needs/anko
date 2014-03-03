@@ -9,6 +9,7 @@ extern SDL_Texture  **sprites;
 extern SDL_Window   *window;
 extern SDL_Renderer *renderer;
 extern SDL_Rect camera;
+extern float scale;
 extern unsigned scroll_dir;
 extern int quit;
 

@@ -11,8 +11,8 @@
 
 
 static const int FPS = 60;
-static const int WIDTH  = 20;
-static const int HEIGHT = 20;
+static const int WIDTH  = 50;
+static const int HEIGHT = 50;
 static const int STEP_TIMER = 1000;
 
 static unsigned frames = 0;
@@ -37,7 +37,7 @@ int main(void)
 	if (!init_context())
 		goto err_context;
 
-	if ((board = generate(WIDTH, HEIGHT, 0.7, 0.1, 0.4)) == NULL)
+	if ((board = generate(WIDTH, HEIGHT, 0.3, 0.1, 0.4)) == NULL)
 		goto err_board;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		goto err_dest;

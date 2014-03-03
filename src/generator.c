@@ -20,7 +20,7 @@ board_t* generate(int width, int height, float tree_density, float water_density
 	assert(height > 0);
 	assert(tree_density<1);
    	assert(water_density<1);
-	assert(water_shatter_factor > 0 && water_shatter_factor < 1);
+	assert(water_shatter_factor > 0 && water_shatter_factor <= 1);
 	
 	if ((board = alloc_board(width, height)) == NULL)
 		return NULL;

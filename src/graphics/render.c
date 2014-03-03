@@ -5,7 +5,7 @@
 #include "render.h"
 #include "sprites.h"
 
-
+#include <math.h>
 
 /* Render the texture at x, y, the texture is centered */
 static void render_ctexture(int x, int y, SDL_Texture *tex)
@@ -15,8 +15,13 @@ static void render_ctexture(int x, int y, SDL_Texture *tex)
 	assert(tex != NULL);
 
 	SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
+
+	pos.w *= scale;
+	pos.h *= scale;
+	
 	pos.x = x - pos.w / 2;
 	pos.y = y - pos.h / 2;
+
 	SDL_RenderCopy(renderer, tex, NULL, &pos);
 }
 
@@ -37,10 +42,10 @@ void render(board_t *board, map_t *map)
 		for (j = 0; j < board->width; j++) {
 			int x, y;
 			int state;
-
+			 
 			/* Note: the camera is centered */
-			x = map->cells[i][j].x + camera.x + camera.w / 2;
-			y = map->cells[i][j].y + camera.y + camera.h / 2;
+			x = (map->cells[i][j].x + camera.x)*scale + camera.w / 2;
+			y = (map->cells[i][j].y + camera.y)*scale + camera.h / 2;
 
 			state = board->cells[i][j];
 
