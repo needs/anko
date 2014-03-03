@@ -1,8 +1,8 @@
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
-#define SCREEN_HEIGHT 480
-#define SCREEN_WIDTH  640
+#define SCREEN_HEIGHT 720
+#define SCREEN_WIDTH  1024
 
 /* Contains some global variables representing the game context */
 extern SDL_Texture  **tiles;
