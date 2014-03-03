@@ -34,9 +34,9 @@ int main(void)
 		return EXIT_FAILURE;
 	}
 
-	init_rendering(window);
-
 	glfwMakeContextCurrent(window);
+	init_rendering(window);
+	
 	glClearColor(0.3, 0.4, 0.7, 1);
 	
 

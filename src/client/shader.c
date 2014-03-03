@@ -31,14 +31,19 @@ GLuint load_shaders(const char * vertex_filename, const char * fragment_filename
 
 	// Check errors
 	glGetProgramiv(program, GL_LINK_STATUS, &info_result);
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_length);
-	info_msg = malloc(sizeof(char)*info_length);
-	if(info_msg)
+	if(info_result != GL_TRUE)
 	{
-		glGetProgramInfoLog(program, info_length, NULL, info_msg);
-		printf("link info: %s\n", info_msg);
-		free(info_msg);
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_length);
+		info_msg = malloc(sizeof(char)*info_length);
+		if(info_msg)
+		{
+			glGetProgramInfoLog(program, info_length, NULL, info_msg);
+			printf("link info: %s\n", info_msg);
+			free(info_msg);
+		}
 	}
+	else
+		printf("program successfully linked.\n");
 	
 	return program;
 	
@@ -81,10 +86,12 @@ static GLuint get_shader(const char * filename, GLenum type)
 
 	// Reading shader data
 	fseek(f, 0, SEEK_SET);
-	buffer = malloc(sizeof(char)*len);
+	buffer = malloc(sizeof(char)*(len+1));
 	if(!buffer)
 		goto err_alloc;
 	fread(buffer,sizeof(char),len,f);
+	buffer[len] = 0;
+	
 	printf("compiling %s ...\n", filename);
 	
 	glShaderSource(shader, 1, (const char**)&buffer, NULL);
@@ -92,15 +99,19 @@ static GLuint get_shader(const char * filename, GLenum type)
 
 	// Check errors
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &info_result);
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_length);
-	info_msg = malloc(sizeof(char)*info_length);
-	if(info_msg)
+	if(info_result != GL_TRUE)
 	{
-		glGetShaderInfoLog(shader, info_length, NULL, info_msg);
-		printf("compile info: %s\n", info_msg);
-		free(info_msg);
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_length);
+		info_msg = malloc(sizeof(char)*info_length);
+		if(info_msg)
+		{
+			glGetShaderInfoLog(shader, info_length, NULL, info_msg);
+			printf("compile info: %s\n", info_msg);
+			free(info_msg);
+		}
 	}
-
+	else
+		printf("shader successfully compiled.\n\n");
 	
 	free(buffer);
 	fclose(f);
