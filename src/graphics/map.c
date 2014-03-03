@@ -88,23 +88,38 @@ static void seed_map(map_t *map)
 
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
+			int seed = random();
+
 			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
 			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
 			
 			for (k = 0; k < ST_TOTAL; k++) {
+				/* Floor */
 				if (k == ST_WATER)
 					map->cells[i][j].floor[k] = sprites[SP_WATER];
 				else
 					map->cells[i][j].floor[k] = sprites[SP_GRASS];
 				
-				if (k == ST_BURNABLE)
-					map->cells[i][j].entity[k] = sprites[SP_TREE];
-				else if (k == ST_BURNED)
+				/* Entity */
+				switch (k) {
+				case ST_BURNABLE:
+					if (seed % 50 == 0)
+						map->cells[i][j].entity[k] = sprites[SP_TREE2];
+					else if (seed % 50 > 0 && seed % 50 < 15)
+						map->cells[i][j].entity[k] = sprites[SP_TREE3];
+					else
+						map->cells[i][j].entity[k] = sprites[SP_TREE];
+						
+					break;
+				case ST_BURNED:
 					map->cells[i][j].entity[k] = sprites[SP_BURNED_TREE];
-				else if (k == ST_BURNING)
+					break;
+				case ST_BURNING:
 					map->cells[i][j].entity[k] = sprites[SP_BURNING_TREE];
-				else
+					break;
+				default:
 					map->cells[i][j].entity[k] = NULL;
+				}
 			}
 		}
 	}
