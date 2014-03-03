@@ -18,7 +18,9 @@ board_t* generate(int width, int height, float tree_density, float water_density
 	
 	assert(width > 0);
 	assert(height > 0);
-
+	assert(tree_density<1);
+   	assert(water_density<1);
+	
 	if ((board = alloc_board(width, height)) == NULL)
 		return NULL;
 
@@ -62,8 +64,9 @@ static int should_spawn(state_t type, board_t *board, float density)
 
 static void extend_water(board_t *board, int x, int y, int *count, int size)
 {
-	if(IS_OUT_OF_BOUNDS(x,y,board->width,board->height) || board->cells[y][x] == ST_WATER)
+	if(IS_OUT_OF_BOUNDS(board,x,y) || board->cells[y][x] == ST_WATER)
 		return;
+
 	
 	if(RANDOM_FLOAT() > (float)*count/size)
 	{
@@ -77,7 +80,8 @@ static void extend_water(board_t *board, int x, int y, int *count, int size)
 }
 static void spawn_water(board_t *board, float water_density)
 {
-	float size = ((float)random()/RAND_MAX) * water_density *board->width*board->height;
+	float size = ((float)random()/RAND_MAX)*water_density*board->width*board->height;
+	printf("lake percentage : %f\n", size/board->width/board->height);
 	int water_count = 0;
 	extend_water(board, random()%board->width, random()%board->height, &water_count, size);
 }
