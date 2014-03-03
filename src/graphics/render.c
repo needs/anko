@@ -16,8 +16,9 @@ static void render_ctexture(int x, int y, SDL_Texture *tex)
 
 	SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
 
-	pos.w *= scale;
-	pos.h *= scale;
+	// +0.05 is to round up the scaling
+	pos.w *= scale+0.05;
+	pos.h *= scale+0.05;
 	
 	pos.x = x - pos.w / 2;
 	pos.y = y - pos.h / 2;

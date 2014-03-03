@@ -25,9 +25,6 @@ void process_events(float deltatime)
 	while (SDL_PollEvent(&e)) {
 		if (e.type == SDL_QUIT)
 			quit = 1;
-		else if (e.type == SDL_MOUSEBUTTONDOWN)
-			quit = 1;
-
 		else if (e.type == SDL_KEYUP) {
 			if (e.key.keysym.sym == SDLK_DOWN)
 				scroll_dir &= ~DIR_DOWN;
