@@ -29,11 +29,10 @@ int main(void)
 	glfwMakeContextCurrent(window);
 	init_rendering();
 	
-	glClearColor(0.3, 0.4, 0.7, 1);
+	glClearColor(0.0, 0.0, 0.0, 1);
 	
 
-	while(!glfwWindowShouldClose(window))
-	{
+	while(!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		
 		glClear(GL_COLOR_BUFFER_BIT);
