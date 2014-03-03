@@ -8,9 +8,9 @@
 #define RANDOM_FLOAT() ((float)random()/RAND_MAX)
 
 static int should_spawn(state_t type, board_t *board, float density);
-static void spawn_water(board_t *board, float water_density);
+static void spawn_water(board_t *board, float density, float shatter_factor);
 
-board_t* generate(int width, int height, float tree_density, float water_density)
+board_t* generate(int width, int height, float tree_density, float water_density, float water_shatter_factor)
 {
 	board_t *board = NULL;
 	int i, j;
@@ -20,6 +20,7 @@ board_t* generate(int width, int height, float tree_density, float water_density
 	assert(height > 0);
 	assert(tree_density<1);
    	assert(water_density<1);
+	assert(water_shatter_factor > 0 && water_shatter_factor < 1);
 	
 	if ((board = alloc_board(width, height)) == NULL)
 		return NULL;
@@ -44,7 +45,7 @@ board_t* generate(int width, int height, float tree_density, float water_density
 
 	while(should_spawn(ST_WATER, board, water_density))
 	{
-		spawn_water(board, water_density);
+		spawn_water(board, water_density, water_shatter_factor);
 	}
 
 	board->cells[random()%board->height][random()%board->width] = ST_BURNING;
@@ -67,7 +68,6 @@ static void extend_water(board_t *board, int x, int y, int *count, int size)
 	if(IS_OUT_OF_BOUNDS(board,x,y) || board->cells[y][x] == ST_WATER)
 		return;
 
-	
 	if(RANDOM_FLOAT() > (float)*count/size)
 	{
 		board->cells[y][x] = ST_WATER;
@@ -78,10 +78,10 @@ static void extend_water(board_t *board, int x, int y, int *count, int size)
 		extend_water(board, x, y-1, count, size);
 	}
 }
-static void spawn_water(board_t *board, float water_density)
+static void spawn_water(board_t *board, float density, float shatter_factor)
 {
-	float size = ((float)random()/RAND_MAX)*water_density*board->width*board->height;
-	int water_count = 0;
-	extend_water(board, random()%board->width, random()%board->height, &water_count, size);
+	float size = ((float)random()/RAND_MAX)*density*board->width*board->height*shatter_factor;
+	int count = 0;
+	extend_water(board, random()%board->width, random()%board->height, &count, size);
 }
 
