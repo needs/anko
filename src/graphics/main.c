@@ -64,9 +64,11 @@ int main(void)
 		render(board, map);
 
 		deltatime = SDL_GetTicks() - last_time;
-		
+
 		if(deltatime < (unsigned)1000/FPS)
 			SDL_Delay(1000/FPS - deltatime);
+
+		deltatime = SDL_GetTicks() - last_time;
 	}
 	
 	free_map(map);
