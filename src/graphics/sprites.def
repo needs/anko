@@ -1,0 +1,6 @@
+/* Définit les tuiles et les images associées */
+ADD_SPRITE(GRASS, "grass.png")
+ADD_SPRITE(TREE, "tree.png")
+ADD_SPRITE(BURNED_TREE, "burned_tree.png")
+ADD_SPRITE(BURNING_TREE, "burning_tree.png")
+ADD_SPRITE(WATER, "water.png")

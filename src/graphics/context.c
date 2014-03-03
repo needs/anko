@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
 #include "context.h"
-#include "tiles.h"
+#include "sprites.h"
 
-SDL_Texture  **tiles = NULL;
+SDL_Texture  **sprites = NULL;
 SDL_Window   *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Rect camera = {.x = 0, .y = 0, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT};
@@ -32,11 +32,11 @@ int init_context(void)
 		goto err_renderer;
 	}
 
-	if ((tiles = load_tiles(renderer)) == NULL)
-		goto err_tiles;
+	if ((sprites = load_sprites(renderer)) == NULL)
+		goto err_sprites;
 	return 1;
 
-err_tiles:
+err_sprites:
 	SDL_DestroyRenderer(renderer);
 err_renderer:
 	SDL_DestroyWindow(window);
@@ -49,7 +49,7 @@ err_window:
 
 void close_context(void)
 {
-	unload_tiles(tiles);
+	unload_sprites(sprites);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

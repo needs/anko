@@ -5,7 +5,6 @@
 #include "context.h"
 #include "event.h"
 #include "render.h"
-#include "tiles.h"
 #include "../board.h"
 #include "../generator.h"
 #include "../simulator.h"

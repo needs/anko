@@ -5,7 +5,7 @@
 #define SCREEN_WIDTH  1024
 
 /* Contains some global variables representing the game context */
-extern SDL_Texture  **tiles;
+extern SDL_Texture  **sprites;
 extern SDL_Window   *window;
 extern SDL_Renderer *renderer;
 extern SDL_Rect camera;

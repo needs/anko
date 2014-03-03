@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include "context.h"
 #include "render.h"
-#include "tiles.h"
+#include "sprites.h"
 
 
 
@@ -25,7 +25,7 @@ void render(board_t *board)
 
 	SDL_RenderClear(renderer);
 
-	/* Some tiles might 'overflow' on others on x axis, the real rendering
+	/* Some sprites might 'overflow' on others on x axis, the real rendering
 	 * should go through the board diagonaly, for now, keep it simple. */
 
 	for (i = 0; i < board->height; i++) {
@@ -39,16 +39,16 @@ void render(board_t *board)
 			y += i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
 
 			if (board->cells[i][j] == ST_WATER)
-				render_ctexture(x, y, tiles[TT_WATER]);
+				render_ctexture(x, y, sprites[SP_WATER]);
 			else
-				render_ctexture(x, y, tiles[TT_GRASS]);
+				render_ctexture(x, y, sprites[SP_GRASS]);
 
 			if (board->cells[i][j] == ST_BURNABLE)
-				render_ctexture(x, y, tiles[TT_TREE]);
+				render_ctexture(x, y, sprites[SP_TREE]);
 			else if (board->cells[i][j] == ST_BURNED)
-				render_ctexture(x, y, tiles[TT_BURNED_TREE]);
+				render_ctexture(x, y, sprites[SP_BURNED_TREE]);
 			else if (board->cells[i][j] == ST_BURNING)
-				render_ctexture(x, y, tiles[TT_BURNING_TREE]);
+				render_ctexture(x, y, sprites[SP_BURNING_TREE]);
 		}
 	}
 
