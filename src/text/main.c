@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
 	signal(SIGINT,&handler);
 	
-	if ((board = generate(WIDTH, HEIGHT,tree_density, water_density)) == NULL)
+	if ((board = generate(WIDTH, HEIGHT,tree_density, water_density,0.4)) == NULL)
 		return EXIT_FAILURE;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		return EXIT_FAILURE;

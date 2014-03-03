@@ -26,7 +26,7 @@ int main(void)
 	if (!init_context())
 		goto err_context;
 
-	if ((board = generate(WIDTH, HEIGHT, 0.7, 0.1)) == NULL)
+	if ((board = generate(WIDTH, HEIGHT, 0.7, 0.1,0.4)) == NULL)
 		goto err_board;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		goto err_dest;
