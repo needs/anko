@@ -23,29 +23,33 @@ void process_events(void)
 	while (SDL_PollEvent(&e)) {
 		if (e.type == SDL_QUIT)
 			quit = 1;
-		if (e.type == SDL_MOUSEBUTTONDOWN)
+		else if (e.type == SDL_MOUSEBUTTONDOWN)
 			quit = 1;
 
-		if (e.type == SDL_KEYUP) {
+		else if (e.type == SDL_KEYUP) {
 			if (e.key.keysym.sym == SDLK_DOWN)
 				scroll_dir &= ~DIR_DOWN;
-			if (e.key.keysym.sym == SDLK_UP)
+			else if (e.key.keysym.sym == SDLK_UP)
 				scroll_dir &= ~DIR_UP;
-			if (e.key.keysym.sym == SDLK_RIGHT)
+			else if (e.key.keysym.sym == SDLK_RIGHT)
 				scroll_dir &= ~DIR_RIGHT;
-			if (e.key.keysym.sym == SDLK_LEFT)
+			else if (e.key.keysym.sym == SDLK_LEFT)
 				scroll_dir &= ~DIR_LEFT;
 		}
 
-		if (e.type == SDL_KEYDOWN) {
+		else if (e.type == SDL_KEYDOWN) {
 			if (e.key.keysym.sym == SDLK_DOWN)
 				scroll_dir |= DIR_DOWN;
-			if (e.key.keysym.sym == SDLK_UP)
+			else if (e.key.keysym.sym == SDLK_UP)
 				scroll_dir |= DIR_UP;
-			if (e.key.keysym.sym == SDLK_RIGHT)
+			else if (e.key.keysym.sym == SDLK_RIGHT)
 				scroll_dir |= DIR_RIGHT;
-			if (e.key.keysym.sym == SDLK_LEFT)
+			else if (e.key.keysym.sym == SDLK_LEFT)
 				scroll_dir |= DIR_LEFT;
+			else if (e.key.keysym.sym == SDLK_ESCAPE)
+				quit = 1;
+			else if (e.key.keysym.sym == SDLK_q && e.key.keysym.mod == KMOD_LCTRL)
+				quit = 1;
 		}
 	}
 
