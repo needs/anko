@@ -52,9 +52,9 @@ void process_events(float deltatime)
 		}
 		else if(e.type == SDL_MOUSEWHEEL)
 		{
-			scale -= (float)e.wheel.y*deltatime*ZOOM_SPEED;
-			if(scale > ZOOM_MAX_FACTOR) scale = ZOOM_MAX_FACTOR;
-			else if(scale < 1) scale = 1;
+			scale += (float)e.wheel.y*deltatime*ZOOM_SPEED;
+			if(scale > 1) scale = 1;
+			else if(scale < ZOOM_MIN) scale = ZOOM_MIN;
 		}
 	}
 

@@ -6,7 +6,6 @@ SDL_Texture  **sprites = NULL;
 SDL_Window   *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Rect camera = {.x = 0, .y = 0, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT};
-SDL_Texture *camera_texture = NULL;
 unsigned scroll_dir = 0;
 float scale=1;
 int quit = 0;
@@ -38,16 +37,8 @@ int init_context(void)
 	if ((sprites = load_sprites(renderer)) == NULL)
 		goto err_sprites;
 
-	camera_texture = SDL_CreateTexture(renderer,
-									   SDL_PIXELFORMAT_ARGB8888,
-									   SDL_TEXTUREACCESS_TARGET,
-									   SCREEN_WIDTH*ZOOM_MAX_FACTOR,
-									   SCREEN_HEIGHT*ZOOM_MAX_FACTOR);
-	if(!camera_texture)
-		goto err_camera_texture;
 	return 1;
 	
-err_camera_texture:
 err_sprites:
 	SDL_DestroyRenderer(renderer);
 err_renderer:
@@ -61,7 +52,6 @@ err_window:
 
 void close_context(void)
 {
-	SDL_DestroyTexture(camera_texture);
 	unload_sprites(sprites);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
