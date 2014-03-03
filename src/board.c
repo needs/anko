@@ -3,21 +3,24 @@
 #include <assert.h>
 #include <stdio.h>
 
-state_t **alloc_board(int width, int height)
+board_t* alloc_board(int width, int height)
 {
 	int i;
 
 	assert(width > 0);
 	assert(height > 0);
 
-	state_t **board = NULL;
-	if ((board = malloc(height * sizeof(*board))) == NULL) {
+	board_t * board = malloc(sizeof(board_t));
+	board->width = width;
+	board->height = height;
+	
+	if ((board->cells = malloc(height * sizeof(*board->cells))) == NULL) {
 		perror("malloc(board)");
 		goto err_height;
 	}
 
 	for (i = 0; i < height; i++) {
-		if ((board[i] = malloc(width * sizeof(**board))) == NULL) {
+		if ((board->cells[i] = malloc(width * sizeof(**board->cells))) == NULL) {
 			perror("malloc(board[i])");
 			goto err_width;
 		}
@@ -27,34 +30,34 @@ state_t **alloc_board(int width, int height)
 
 err_width:
 	while (--i >= 0)
-		free(board[i]);
-	free(board);
+		free(board->cells[i]);
+	free(board->cells);
 err_height:
 	return NULL;
 }
 
-
-void free_board(state_t **board, int width, int height)
+void free_board(board_t *board)
 {
 	int i;
 
 	assert(board != NULL);
-	assert(width > 0);
-	assert(height > 0);
+	assert(board->cells != NULL);
+	assert(board->width > 0);
+	assert(board->height > 0);
 
-	for (i = 0; i < height; i++)
-		free(board[i]);
+	for (i = 0; i < board->height; i++)
+		free(board->cells[i]);
+	free(board->cells);
 	free(board);
 }
 
-int get_neighbors_count(int x, int y, state_t** board, int width, int height, state_t type)
+int get_neighbors_count(int x, int y, board_t* board, state_t type)
 {
 	int count = 0;
 	int i,j;
 	for(j = -1; j <=1; j++)
 		for(i = -1; i <= 1; i++)
-			if((i || j) && !IS_OUT_OF_BOUNDS(x+i,y+j, w,h) && board[y+j][x+i] == type)
+			if((i || j) && !IS_OUT_OF_BOUNDS(x+i,y+j, board->width, board->height) && board->cells[y+j][x+i] == type)
 				count++;
-	
 	return count;
 }

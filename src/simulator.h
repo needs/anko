@@ -20,6 +20,6 @@
   p(Nb) = Nb/8
 */
 
-void step(state_t** dest, state_t** src, int width, int height);
+void step(board_t* dest, board_t* src);
 
 #endif /* _SIMULATOR_H_ */
