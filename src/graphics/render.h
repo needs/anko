@@ -3,7 +3,8 @@
 
 #include <SDL2/SDL.h>
 #include "../simulator.h"
+#include "../board.h"
 
-void render(state_t **board, int width, int height);
+void render(board_t *board);
 
 #endif /* _RENDER_H_ */

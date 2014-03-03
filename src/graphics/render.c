@@ -17,37 +17,33 @@ static void render_ctexture(int x, int y, SDL_Texture *tex)
 }
 
 
-void render(state_t **board, int width, int height)
+void render(board_t *board)
 {
 	int i, j;
 
-	assert(renderer != NULL);
-	assert(tiles != NULL);
 	assert(board != NULL);
-	assert(height > 0);
-	assert(width > 0);
 
 	SDL_RenderClear(renderer);
 
 	/* Some tiles might 'overflow' on others on x axis, the real rendering
 	 * should go through the board diagonaly, for now, keep it simple. */
 
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
+	for (i = 0; i < board->height; i++) {
+		for (j = 0; j < board->width; j++) {
 			int x, y;
 			x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2 + 300;
 			y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2 - 50;
 
-			if (board[i][j] == ST_WATER)
+			if (board->cells[i][j] == ST_WATER)
 				render_ctexture(x, y, tiles[TT_WATER]);
 			else
 				render_ctexture(x, y, tiles[TT_GRASS]);
 
-			if (board[i][j] == ST_BURNABLE)
+			if (board->cells[i][j] == ST_BURNABLE)
 				render_ctexture(x, y, tiles[TT_TREE]);
-			else if (board[i][j] == ST_BURNED)
+			else if (board->cells[i][j] == ST_BURNED)
 				render_ctexture(x, y, tiles[TT_BURNED_TREE]);
-			else if (board[i][j] == ST_BURNING)
+			else if (board->cells[i][j] == ST_BURNING)
 				render_ctexture(x, y, tiles[TT_BURNING_TREE]);
 		}
 	}
