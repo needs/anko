@@ -10,11 +10,11 @@
 
 /* TT for Tile Type */
 #define ADD_SPRITE(type, path) SP_##type,
-typedef enum tile_t {
+typedef enum sprite_t {
 	SP_NONE = -1,
 #include "sprites.def"
 	SP_COUNT,
-} tile_t;
+} sprite_t;
 #undef ADD_SPRITE
 
 

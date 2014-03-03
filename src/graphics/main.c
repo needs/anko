@@ -23,6 +23,7 @@ int main(void)
 	unsigned last_time = 0;
 	unsigned deltatime = 0;
 	unsigned step_current_timer = STEP_TIMER;
+	map_t *map;
 	
 	srandom(time(NULL));
 	
@@ -33,6 +34,8 @@ int main(void)
 		goto err_board;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		goto err_dest;
+	if ((map = create_map(WIDTH, HEIGHT)) == NULL)
+		goto err_map;
 
 	while(!quit) {
 		last_time = SDL_GetTicks();
@@ -58,18 +61,23 @@ int main(void)
 		else
 			frames++;
 
-		render(board);
+		render(board, map);
 
 		deltatime = SDL_GetTicks() - last_time;
 		
 		if(deltatime < (unsigned)1000/FPS)
 			SDL_Delay(1000/FPS - deltatime);
 	}
-		
+	
+	free_map(map);
+	free_board(dest);
+	free_board(board);
 	close_context();
 
 	return EXIT_SUCCESS;
 
+err_map:
+	free_board(dest);
 err_dest:
 	free_board(board);
 err_board:
