@@ -21,6 +21,6 @@ void free_board(board_t *board);
 board_t* alloc_board(int width, int height);
 int get_neighbors_count(int x, int y, board_t* board, state_t type);
 
-#define IS_OUT_OF_BOUNDS(x,y,w,h) (x < 0 || x >= w || y < 0 || y >= h)
+#define IS_OUT_OF_BOUNDS(b,x,y) (x < 0 || x >= b->width || y < 0 || y >= b->height)
 
 #endif /* _BOARD_H_ */
