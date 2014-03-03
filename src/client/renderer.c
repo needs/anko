@@ -40,7 +40,7 @@ void init_rendering(void)
 
 void close_rendering(void)
 {
-	destroy_shader(program);
+	destroy_shaders(program);
 }
 
 
