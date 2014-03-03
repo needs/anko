@@ -81,7 +81,6 @@ static void extend_water(board_t *board, int x, int y, int *count, int size)
 static void spawn_water(board_t *board, float water_density)
 {
 	float size = ((float)random()/RAND_MAX)*water_density*board->width*board->height;
-	printf("lake percentage : %f\n", size/board->width/board->height);
 	int water_count = 0;
 	extend_water(board, random()%board->width, random()%board->height, &water_count, size);
 }
