@@ -11,6 +11,7 @@
 #include "../simulator.h"
 
 
+static const int FPS = 60;
 static const int WIDTH  = 20;
 static const int HEIGHT = 20;
 
@@ -18,6 +19,7 @@ static const int HEIGHT = 20;
 int main(void)
 {
 	board_t *board, *dest, *tmp;
+	int frame = 0;
 
 	srandom(time(NULL));
 
@@ -31,14 +33,19 @@ int main(void)
 
 	while(!quit) {
 		process_events();
-		step(dest, board);
+		if (frame % FPS == 0) {
+			step(dest, board);
+			frame = 0;
+		} else {
+			frame++;
+		}
 
 		tmp = board;
 		board = dest;
 		dest = tmp;
 		
 		render(board);
-		SDL_Delay(500);
+		SDL_Delay(1 / FPS);
 	}
 
 	close_context();

@@ -31,6 +31,7 @@ void render(board_t *board)
 	for (i = 0; i < board->height; i++) {
 		for (j = 0; j < board->width; j++) {
 			int x, y;
+
 			/* Note: the camera is centered */
 			x = camera.x + camera.w / 2;
 			y = camera.y + camera.h / 2;
