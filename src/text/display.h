@@ -3,7 +3,7 @@
 
 #include "../simulator.h"
 
-void display(state_t **board, int width, int height);
+void display(board_t *board);
 void clear_screen(void);
 
 #endif /* _DISPLAY_H_ */

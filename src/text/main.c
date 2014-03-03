@@ -27,7 +27,7 @@ void handler(int sig)
 
 int main(int argc, char **argv)
 {
-	state_t **board, **dest, **tmp;
+	board_t *board, *dest, *tmp;
 	int speed = 500;
 	float tree_density = 0.70;
 	float water_density = 0.10;
@@ -45,22 +45,22 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 
 	clear_screen();
-	display(board, WIDTH, HEIGHT);
+	display(board);
 	
 	while(is_running)
 	{
-		step(dest,board, WIDTH,HEIGHT);
+		step(dest,board);
 
 		tmp = board;
 		board = dest;
 		dest = tmp;
 		
-		display(board, WIDTH, HEIGHT);
+		display(board);
 		usleep(speed*1000);
 	}
 
-	free_board(board, WIDTH, HEIGHT);
-	free_board(dest , WIDTH, HEIGHT);
+	free_board(board);
+	free_board(dest);
 
 	return EXIT_SUCCESS;
 }

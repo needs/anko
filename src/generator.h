@@ -2,7 +2,8 @@
 #define _GENERATOR_H_
 
 #include "simulator.h"
+#include "board.h"
 
-state_t** generate(int width, int height, float tree_density, float water_density);
+board_t* generate(int width, int height, float tree_density, float water_density);
 
 #endif /* _GENERATOR_H_ */

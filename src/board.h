@@ -11,10 +11,16 @@ typedef enum state_t {
 	ST_TOTAL,
 } state_t;
 
-void free_board(state_t **board, int width, int height);
-state_t** alloc_board(int width, int height);
-int get_neighbors_count(int x, int y, state_t** board, int width, int height, state_t type);
+typedef struct {
+	state_t** cells;
+	int width;
+	int height;
+} board_t;
 
-#define IS_OUT_OF_BOUNDS(x,y,w,h) (x < 0 || x >= width || y < 0 || y >= height)
+void free_board(board_t *board);
+board_t* alloc_board(int width, int height);
+int get_neighbors_count(int x, int y, board_t* board, state_t type);
+
+#define IS_OUT_OF_BOUNDS(x,y,w,h) (x < 0 || x >= w || y < 0 || y >= h)
 
 #endif /* _BOARD_H_ */
