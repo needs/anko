@@ -112,10 +112,20 @@ static void seed_map(map_t *map)
 						
 					break;
 				case ST_BURNED:
-					map->cells[i][j].entity[k] = sprites[SP_BURNED_TREE];
+					if (seed % 50 == 0)
+						map->cells[i][j].entity[k] = sprites[SP_BURNED_TREE2];
+					else if (seed % 50 > 0 && seed % 50 < 15)
+						map->cells[i][j].entity[k] = sprites[SP_BURNED_TREE3];
+					else
+						map->cells[i][j].entity[k] = sprites[SP_BURNED_TREE];
 					break;
 				case ST_BURNING:
-					map->cells[i][j].entity[k] = sprites[SP_BURNING_TREE];
+					if (seed % 50 == 0)
+						map->cells[i][j].entity[k] = sprites[SP_BURNING_TREE2];
+					else if (seed % 50 > 0 && seed % 50 < 15)
+						map->cells[i][j].entity[k] = sprites[SP_BURNING_TREE3];
+					else
+						map->cells[i][j].entity[k] = sprites[SP_BURNING_TREE];
 					break;
 				default:
 					map->cells[i][j].entity[k] = NULL;
