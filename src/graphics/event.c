@@ -56,11 +56,11 @@ void process_events(float deltatime)
 	SDL_GetMouseState(&x, &y);
 	if (x < MOUSE_SCROLL_ZONE)
 		scrolling(DIR_LEFT, deltatime);
-	if (x > camera.dim.x - MOUSE_SCROLL_ZONE)
+	if (x > camera.w - MOUSE_SCROLL_ZONE)
 		scrolling(DIR_RIGHT, deltatime);
 	if (y < MOUSE_SCROLL_ZONE)
 		scrolling(DIR_UP, deltatime);
-	if (y > camera.dim.y - MOUSE_SCROLL_ZONE)
+	if (y > camera.h - MOUSE_SCROLL_ZONE)
 		scrolling(DIR_DOWN,deltatime);
 
 	scrolling(scroll_dir, deltatime);
@@ -71,11 +71,11 @@ static void scrolling(unsigned dir, float deltatime)
 {
 	/* Update position of the camera */
 	if (dir & DIR_DOWN)
-		camera.pos.y -= CAMERA_SPEED * deltatime;
+		camera.y -= CAMERA_SPEED * deltatime;
 	if (dir & DIR_UP)
-		camera.pos.y += CAMERA_SPEED * deltatime;
+		camera.y += CAMERA_SPEED * deltatime;
 	if (dir & DIR_RIGHT)
-		camera.pos.x -= CAMERA_SPEED * deltatime;
+		camera.x -= CAMERA_SPEED * deltatime;
 	if (dir & DIR_LEFT)
-		camera.pos.x += CAMERA_SPEED * deltatime;
+		camera.x += CAMERA_SPEED * deltatime;
 }

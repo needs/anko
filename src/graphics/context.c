@@ -1,12 +1,11 @@
 #include <SDL2/SDL.h>
 #include "context.h"
-#include "camera.h"
 #include "sprites.h"
 
 SDL_Texture  **sprites = NULL;
 SDL_Window   *window = NULL;
 SDL_Renderer *renderer = NULL;
-camera_t camera = {.pos = {.x = 0, .y = 0}, .dim = {.x = SCREEN_WIDTH, .y = SCREEN_HEIGHT}};
+SDL_Rect camera = {.x = 0, .y = 0, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT};
 unsigned scroll_dir = 0;
 int quit = 0;
 
