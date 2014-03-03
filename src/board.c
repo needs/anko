@@ -36,6 +36,7 @@ err_height:
 	return NULL;
 }
 
+
 void free_board(board_t *board)
 {
 	int i;

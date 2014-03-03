@@ -18,6 +18,7 @@ static const int HEIGHT = 20;
 int main(void)
 {
 	board_t *board, *dest, *tmp;
+	map_t *map;
 	int frame = 0;
 
 	srandom(time(NULL));
@@ -29,6 +30,8 @@ int main(void)
 		goto err_board;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		goto err_dest;
+	if ((map = create_map(WIDTH, HEIGHT)) == NULL)
+		goto err_map;
 
 	while(!quit) {
 		process_events();
@@ -42,14 +45,19 @@ int main(void)
 			frame++;
 		}
 
-		render(board);
+		render(board, map);
 		SDL_Delay(1 / FPS);
 	}
 
+	free_map(map);
+	free_board(dest);
+	free_board(board);
 	close_context();
 
 	return EXIT_SUCCESS;
 
+err_map:
+	free_board(dest);
 err_dest:
 	free_board(board);
 err_board:
