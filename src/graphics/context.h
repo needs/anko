@@ -2,9 +2,10 @@
 #define _CONTEXT_H_
 
 /* Contains some global variables representing the game context */
-SDL_Texture  **tiles;
-SDL_Window   *window;
-SDL_Renderer *renderer;
+extern SDL_Texture  **tiles;
+extern SDL_Window   *window;
+extern SDL_Renderer *renderer;
+extern int quit;
 
 /* Initialize the context, return 0 on error */
 int init_context(void);

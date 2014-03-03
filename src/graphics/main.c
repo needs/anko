@@ -3,6 +3,7 @@
 #include <time.h>
 #include <SDL2/SDL.h>
 #include "context.h"
+#include "event.h"
 #include "render.h"
 #include "tiles.h"
 #include "../generator.h"
@@ -27,7 +28,8 @@ int main(void)
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		goto err_dest;
 
-	while(1) {
+	while(!quit) {
+		process_events();
 		step(dest, board, WIDTH, HEIGHT);
 
 		tmp = board;
@@ -35,7 +37,7 @@ int main(void)
 		dest = tmp;
 		
 		render(board, WIDTH, HEIGHT);
-		SDL_Delay(1000);
+		SDL_Delay(500);
 	}
 
 	close_context();

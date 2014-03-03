@@ -2,6 +2,10 @@
 #include "context.h"
 #include "tiles.h"
 
+SDL_Texture  **tiles = NULL;
+SDL_Window   *window = NULL;
+SDL_Renderer *renderer = NULL;
+int quit = 0;
 
 int init_context(void)
 {
