@@ -1,22 +1,23 @@
 #include <assert.h>
 #include <SDL2/SDL.h>
+#include "context.h"
 #include "render.h"
 #include "tiles.h"
 
 
 
 /* Render the texture at x, y, the texture is centered */
-static void render_ctexture(int x, int y, SDL_Texture *tex, SDL_Renderer *rend)
+static void render_ctexture(int x, int y, SDL_Texture *tex)
 {
 	SDL_Rect pos;
 	SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
 	pos.x = x - pos.w / 2;
 	pos.y = y - pos.h / 2;
-	SDL_RenderCopy(rend, tex, NULL, &pos);
+	SDL_RenderCopy(renderer, tex, NULL, &pos);
 }
 
 
-void render(SDL_Renderer *renderer, SDL_Texture **tiles, state_t **board, int width, int height)
+void render(state_t **board, int width, int height)
 {
 	int i, j;
 
@@ -38,16 +39,16 @@ void render(SDL_Renderer *renderer, SDL_Texture **tiles, state_t **board, int wi
 			y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2 - 50;
 
 			if (board[i][j] == ST_WATER)
-				render_ctexture(x, y, tiles[TT_WATER], renderer);
+				render_ctexture(x, y, tiles[TT_WATER]);
 			else
-				render_ctexture(x, y, tiles[TT_GRASS], renderer);
+				render_ctexture(x, y, tiles[TT_GRASS]);
 
 			if (board[i][j] == ST_BURNABLE)
-				render_ctexture(x, y, tiles[TT_TREE], renderer);
+				render_ctexture(x, y, tiles[TT_TREE]);
 			else if (board[i][j] == ST_BURNED)
-				render_ctexture(x, y, tiles[TT_BURNED_TREE], renderer);
+				render_ctexture(x, y, tiles[TT_BURNED_TREE]);
 			else if (board[i][j] == ST_BURNING)
-				render_ctexture(x, y, tiles[TT_BURNING_TREE], renderer);
+				render_ctexture(x, y, tiles[TT_BURNING_TREE]);
 		}
 	}
 
