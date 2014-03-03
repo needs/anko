@@ -1,16 +1,22 @@
-#include "simulator.h"
 #include <stdlib.h>
+#include <assert.h>
+#include "simulator.h"
 
 void step(board_t* dest, board_t* src)
 {
 	int i,j;
 	int nb;
 	
+	assert(dest != NULL);
+	assert(src != NULL);
+	assert(src->width == dest->width);
+	assert(src->height == dest->height);
+
 	for(j = 0; j < src->height; j++)
 	{
 		for(i = 0; i < src->width; i++)
 		{
-			nb = get_neighbors_count(i,j, src, ST_BURNING); 
+			nb = get_neighbors_count(i, j, src, ST_BURNING);
 			if(nb >= 1)
 			{
 				switch(src->cells[j][i])
@@ -19,6 +25,8 @@ void step(board_t* dest, board_t* src)
 					// Replace next line with should_burn with more parameters like humidity etc ?
 					if( ((float)random() / RAND_MAX ) < (float)nb/2.5)
 						dest->cells[j][i] = ST_BURNING;
+					else
+						dest->cells[j][i] = ST_BURNABLE;
 					break;
 				case ST_BURNING:
 					dest->cells[j][i] = ST_BURNED;
