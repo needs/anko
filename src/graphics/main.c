@@ -26,7 +26,7 @@ int main(void)
 	if (!init_context())
 		goto err_context;
 
-	if ((board = generate(WIDTH, HEIGHT, 0.7, 0.1,0.4)) == NULL)
+	if ((board = generate(WIDTH, HEIGHT, 0.7, 0.1, 0.4)) == NULL)
 		goto err_board;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		goto err_dest;
@@ -35,15 +35,14 @@ int main(void)
 		process_events();
 		if (frame % FPS == 0) {
 			step(dest, board);
-			frame = 0;
+			tmp = board;
+			board = dest;
+			dest = tmp;
+			frame = 1;
 		} else {
 			frame++;
 		}
 
-		tmp = board;
-		board = dest;
-		dest = tmp;
-		
 		render(board);
 		SDL_Delay(1 / FPS);
 	}
