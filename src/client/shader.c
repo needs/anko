@@ -2,6 +2,8 @@
 #include <GL/gl.h>
 #include "shader.h"
 
+#define MAX_SHADERS 2
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,8 +11,7 @@ static GLuint get_shader(const char * filename, GLenum type);
 
 GLuint load_shaders(const char * vertex_filename, const char * fragment_filename)
 {
-	GLint info_result, info_length;
-	char *info_msg;
+	GLint info_result;
 	
 	GLuint vertex_shader = get_shader(vertex_filename, GL_VERTEX_SHADER);
 	if(!vertex_shader)
@@ -31,8 +32,11 @@ GLuint load_shaders(const char * vertex_filename, const char * fragment_filename
 
 	// Check errors
 	glGetProgramiv(program, GL_LINK_STATUS, &info_result);
+
 	if(info_result != GL_TRUE)
 	{
+		GLint info_length;
+		char *info_msg;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_length);
 		info_msg = malloc(sizeof(char)*info_length);
 		if(info_msg)
@@ -55,19 +59,25 @@ err_vertex:
 	return GL_FALSE;
 }
 
-void destroy_shader(GLuint program)
+void destroy_shaders(GLuint program)
 {
-	// delete bound shaders
+	GLsizei count;
+	GLuint shaders[MAX_SHADERS];
+	int i;
+	
+	glGetAttachedShaders(program, MAX_SHADERS, &count, shaders); 
+	for(i = 0; i < count; i++)
+		glDeleteShader(shaders[i]);
+	
 	glDeleteProgram(program);
 }
 
 static GLuint get_shader(const char * filename, GLenum type)
 {
 	GLuint shader;
-	GLint info_result, info_length;
+	GLint info_result;
 	FILE *f;
 	char *buffer;
-	char *info_msg;
 	size_t len;
 
     info_result = GL_FALSE;
@@ -101,6 +111,9 @@ static GLuint get_shader(const char * filename, GLenum type)
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &info_result);
 	if(info_result != GL_TRUE)
 	{
+		GLint info_length;
+		char *info_msg;
+		
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_length);
 		info_msg = malloc(sizeof(char)*info_length);
 		if(info_msg)
