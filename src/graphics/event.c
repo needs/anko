@@ -12,6 +12,8 @@ enum {
 };
 
 static const int CAMERA_SPEED = 500;
+static const float ZOOM_SPEED = 1;
+static const float ZOOM_MIN = 0.3;
 
 static void scrolling(unsigned dir, float deltatime);
 
@@ -50,6 +52,12 @@ void process_events(float deltatime)
 				quit = 1;
 			else if (e.key.keysym.sym == SDLK_q && e.key.keysym.mod == KMOD_LCTRL)
 				quit = 1;
+		}
+		else if(e.type == SDL_MOUSEWHEEL)
+		{
+			scale += (float)e.wheel.y*deltatime*ZOOM_SPEED;
+			if(scale > 1) scale = 1;
+			else if(scale < ZOOM_MIN) scale = ZOOM_MIN;
 		}
 	}
 
