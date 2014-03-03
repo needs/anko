@@ -25,8 +25,9 @@ int init_context(void)
 		goto err_window;
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED
-				      | SDL_RENDERER_PRESENTVSYNC);
+	renderer = SDL_CreateRenderer(window, -1,
+				      SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
 	if (!renderer) {
 		fprintf(stderr, "%s\n", SDL_GetError());
 		goto err_renderer;
