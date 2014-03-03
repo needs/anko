@@ -57,7 +57,7 @@ int get_neighbors_count(int x, int y, board_t* board, state_t type)
 	int i,j;
 	for(j = -1; j <=1; j++)
 		for(i = -1; i <= 1; i++)
-			if((i || j) && !IS_OUT_OF_BOUNDS(x+i,y+j, board->width, board->height) && board->cells[y+j][x+i] == type)
+			if((i || j) && !IS_OUT_OF_BOUNDS(board,x+i,y+j) && board->cells[y+j][x+i] == type)
 				count++;
 	return count;
 }
