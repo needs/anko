@@ -9,7 +9,7 @@ extern SDL_Texture  **tiles;
 extern SDL_Window   *window;
 extern SDL_Renderer *renderer;
 extern SDL_Rect camera;
-extern unsigned camera_dir;
+extern unsigned scroll_dir;
 extern int quit;
 
 /* Initialize the context, return 0 on error */
