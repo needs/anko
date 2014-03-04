@@ -34,7 +34,7 @@ int main(void)
 		update_fps();
 		
 		glClear(GL_COLOR_BUFFER_BIT);
-		render_rect(0, 0, 0.3, 0.3, TEX_GRASS);
+		render_rect(100, 100, 70, 63, TEX_GRASS);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
@@ -72,7 +72,7 @@ void init()
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	window = glfwCreateWindow(1024, 720, "Anko", NULL, NULL);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Anko", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
 		exit(EXIT_FAILURE);

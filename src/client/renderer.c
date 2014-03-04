@@ -5,12 +5,13 @@
 #include "renderer.h"
 #include "shader.h"
 #include "textures.h"
-
+#include "linmath.h"
+#include "camera.h"
 
 static GLuint program;
 static GLuint vbo;
 static GLuint vao;
-
+static mat4x4 projection;
 
 void init_rendering(void)
 {
@@ -40,6 +41,9 @@ void init_rendering(void)
 	GLint tex_coord = glGetAttribLocation(program, "tex_coord");
 	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(tex_coord);
+
+	mat4x4_ortho(projection,0,WIDTH,HEIGHT,0,-1,1);
+	set_camera(0,0,1);
 }
 
 
@@ -54,16 +58,19 @@ void close_rendering(void)
 void render_rect(float x, float y, float width, float height, tex_t tex)
 {
 	float vertices[16] = {
-		x, y,                  0.0, 1.0,
-		x + width, y,          1.0, 1.0,
-		x + width, y + height, 1.0, 0.0,
-		x, y + height,         0.0, 0.0,
+		x, y,                  0.0, 0.0,
+		x + width, y,          1.0, 0.0,
+		x + width, y + height, 1.0, 1.0,
+		x, y + height,         0.0, 1.0,
 	};
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, get_texture(tex));
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-
+	
+	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, (GLfloat*)projection);
+	glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, (GLfloat*)camera);
+	
 	/* Let's copy them :) */
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
