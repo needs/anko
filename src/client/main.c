@@ -29,8 +29,8 @@ static void wait_fps(void);
 static void simulate(board_t **main, board_t **temp);
 
 static const float STEP_TIMER_RESET = 1; // Each second we simulate
-static const int BOARD_WIDTH = 20;
-static const int BOARD_HEIGHT = 20;
+static const int BOARD_WIDTH = 15;
+static const int BOARD_HEIGHT = 15;
 
 
 int main(void)
@@ -63,7 +63,6 @@ int main(void)
 		
 		deltatime = glfwGetTime() - last_frame;
 		wait_fps(); // Limiting frame per second 
-
 	}
 	
 	terminate();
@@ -94,7 +93,7 @@ static void update_fps(void)
 }
 
 static void init(void)
-{	
+{
 	srandom(time(NULL));
 
 	if(!glfwInit()) {
@@ -103,6 +102,7 @@ static void init(void)
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
 	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Anko", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
@@ -110,6 +110,9 @@ static void init(void)
 	}
 
 	glfwMakeContextCurrent(window);
+
+	printf("OpenGL Version : %s\n\n", glGetString(GL_VERSION));
+	
 	init_rendering();
 	if (!load_textures())
 		exit(EXIT_FAILURE);

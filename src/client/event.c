@@ -8,17 +8,16 @@
 
 static GLFWwindow *current_window;
 
-static const float CAMERA_SPEED = 10;
-static const float ZOOM_SPEED = 0.05;
+static const float CAMERA_SPEED = 500; // pixels per second
+static const float ZOOM_SPEED = 3;
 static double scroll = 0;
 
 void process_events(float deltatime)
 {
-	deltatime++;
 	glfwPollEvents();
 	if (glfwGetKey(current_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(current_window, GL_TRUE);
-
+	
 	if (glfwGetKey(current_window, GLFW_KEY_UP) == GLFW_PRESS)
 		move_camera(0, CAMERA_SPEED * deltatime);
 	if (glfwGetKey(current_window, GLFW_KEY_DOWN) == GLFW_PRESS)
