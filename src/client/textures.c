@@ -109,10 +109,10 @@ static int load_texture(tex_t tex, const char *path)
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	float vertices[16] = {
-		0, 0, 0.0, 0.0,
-		textures[tex].width, 0, 1.0, 0.0,
-		textures[tex].width, textures[tex].height, 1.0, 1.0,
-		0, textures[tex].height, 0.0, 1.0,
+		-textures[tex].width/2, -textures[tex].height/2, 0.0, 0.0,
+		 textures[tex].width/2, -textures[tex].height/2, 1.0, 0.0,
+		 textures[tex].width/2,  textures[tex].height/2, 1.0, 1.0,
+		-textures[tex].width/2,  textures[tex].height/2, 0.0, 1.0,
 	};
 
 	/* And send them to the graphic card */
