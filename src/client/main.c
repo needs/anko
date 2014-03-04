@@ -9,6 +9,7 @@
 #include "renderer.h"
 #include "textures.h"
 #include "event.h"
+#include "window.h"
 
 void init();
 void terminate();
@@ -72,7 +73,7 @@ void init()
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Anko", NULL, NULL);
+	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Anko", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
 		exit(EXIT_FAILURE);

@@ -45,7 +45,7 @@ void init_rendering(void)
 	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(tex_coord);
 
-	mat4x4_ortho(projection,0,WIDTH,HEIGHT,0,-1,1);
+	mat4x4_ortho(projection,0,WINDOW_WIDTH,WINDOW_HEIGHT,0,-1,1);
 	set_camera(0,0,1);
 }
 
