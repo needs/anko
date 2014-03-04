@@ -9,6 +9,8 @@
 static GLFWwindow *current_window;
 
 static const float CAMERA_SPEED = 2.5;
+static const float ZOOM_SPEED = 0.05;
+static double scroll = 0;
 
 void process_events(float deltatime)
 {
@@ -25,17 +27,22 @@ void process_events(float deltatime)
 		move_camera(-CAMERA_SPEED * deltatime, 0);
 	if (glfwGetKey(current_window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		move_camera(CAMERA_SPEED * deltatime, 0);
+
+	if(scroll) {
+		scale_camera(scroll*ZOOM_SPEED*deltatime);
+		scroll = 0;
+	}
 }
 
-void on_mouse_move(GLFWwindow *window, double x, double y)
+void on_scroll(GLFWwindow *window, double offx, double offy)
 {
 	UNUSED(window);
-	UNUSED(x);
-	UNUSED(y);
+	UNUSED(offx);
+	scroll = offy;
 }
 
 void init_events(GLFWwindow *window)
 {
 	current_window = window;
-	glfwSetCursorPosCallback(window, on_mouse_move);
+	glfwSetScrollCallback(window, on_scroll);
 }

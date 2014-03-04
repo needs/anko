@@ -10,6 +10,7 @@
 #include "map.h"
 #include "../board.h"
 #include "../generator.h"
+#include "window.h"
 
 
 #define MAX_FPS 150
@@ -101,7 +102,7 @@ static void init(void)
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Anko", NULL, NULL);
+	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Anko", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
