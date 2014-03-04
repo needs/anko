@@ -40,6 +40,8 @@ void init_rendering(void)
 
 void close_rendering(void)
 {
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &vao);
 	destroy_shaders(program);
 }
 

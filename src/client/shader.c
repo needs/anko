@@ -61,11 +61,14 @@ err_vertex:
 
 void destroy_shaders(GLuint program)
 {
-	GLsizei count;
+	GLsizei count = 0;
 	GLuint shaders[MAX_SHADERS];
 	int i;
+
+	if(!program) return;
 	
 	glGetAttachedShaders(program, MAX_SHADERS, &count, shaders); 
+
 	for(i = 0; i < count; i++)
 		glDeleteShader(shaders[i]);
 	
