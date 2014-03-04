@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include "textures.h"
+#include "renderer.h"
 #include "stb_image.h"
 
 
@@ -11,50 +12,58 @@ static const char tex_path[][32] = {
 };
 #undef ADD_TEXTURE
 
-static GLuint textures[TEX_TOTAL];
-static int load_texture(GLuint tex, const char *path);
+struct texture_t {
+	GLuint tex;
+	int width, height;
+};
+
+static struct texture_t textures[TEX_TOTAL];
+static int load_texture(tex_t tex, const char *path);
 
 
 int load_textures(void)
 {
 	int i;
 
-	glGenTextures(TEX_TOTAL, textures);
-
 	for (i = 0; i < TEX_TOTAL; i++)
-		if (!load_texture(textures[i], tex_path[i]))
+		if (!load_texture(i, tex_path[i]))
 			goto err_tex;
-
 	return 1;
+
 err_tex:
-	glDeleteTextures(i, textures);
+	while (i --> 0)
+		glDeleteTextures(1, &textures[i].tex);
 	return 0;
 }
 
 
 void unload_textures(void)
 {
-	glDeleteTextures(TEX_TOTAL, textures);
+	int i;
+	for (i = 0; i < TEX_TOTAL; i++)
+		glDeleteTextures(1, &textures[i].tex);
 }
 
 
-GLuint get_texture(tex_t tex)
+void render_texture(float x, float y, tex_t tex)
 {
 	assert(tex > TEX_NONE);
 	assert(tex < TEX_TOTAL);
-	return textures[tex];
+	render_rect(x - textures[tex].width/2, y - textures[tex].height/2, textures[tex].width, textures[tex].height, textures[tex].tex);
 }
 
 
-static int load_texture(GLuint tex, const char *path)
+static int load_texture(tex_t tex, const char *path)
 {
-	int width, height;
 	unsigned char *data;
 
+	assert(tex > TEX_NONE);
+	assert(tex < TEX_TOTAL);
 	assert(path != NULL);
 
-	/* Make the texture active */
-	glBindTexture(GL_TEXTURE_2D, tex);
+	/* Create and make the texture active */
+	glGenTextures(1, &textures[tex].tex);
+	glBindTexture(GL_TEXTURE_2D, textures[tex].tex);
 
 	/* For now, texture are just sample image */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -65,17 +74,17 @@ static int load_texture(GLuint tex, const char *path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	/* Note: force 4 channels because the shader only process 4 channels */
-	data = stbi_load(path, &width, &height, NULL, 4);
+	data = stbi_load(path, &textures[tex].width, &textures[tex].height, NULL, 4);
 	if (data == NULL) {
 		perror(path);
 		return 0;
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textures[tex].width, textures[tex].height, 0, GL_RGBA,
 		     GL_UNSIGNED_BYTE, data);
 	stbi_image_free(data);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
-	
+
 	return 1;
 }

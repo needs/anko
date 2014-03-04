@@ -58,7 +58,7 @@ void close_rendering(void)
 }
 
 
-void render_rect(float x, float y, float width, float height, tex_t tex)
+void render_rect(float x, float y, float width, float height, GLuint tex)
 {
 	float vertices[16] = {
 		x, y,                  0.0, 0.0,
@@ -68,7 +68,7 @@ void render_rect(float x, float y, float width, float height, tex_t tex)
 	};
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, get_texture(tex));
+	glBindTexture(GL_TEXTURE_2D, tex);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 	
 	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, (GLfloat*)projection);

@@ -12,6 +12,7 @@ typedef enum tex_t {
 
 int load_textures(void);
 void unload_textures(void);
-GLuint get_texture(tex_t tex);
+void render_texture(float x, float y, tex_t tex);
+
 
 #endif /* _TEXTURES_H_ */

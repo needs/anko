@@ -4,25 +4,43 @@
 #include <unistd.h>
 #include <GLFW/glfw3.h>
 
-#define MAX_FPS 150
-
 #include "renderer.h"
 #include "textures.h"
 #include "event.h"
+#include "map.h"
+#include "../board.h"
+#include "../generator.h"
 
-static void init(void);
-static void terminate(void);
 
-static void update_fps(void);
+#define MAX_FPS 150
 
 static GLFWwindow* window;
 static int frames = 0;
 static double last_fps = 0;
 
+
+static void init(void);
+static void terminate(void);
+static void update_fps(void);
+
+
+static const int BOARD_WIDTH = 20;
+static const int BOARD_HEIGHT = 20;
+
+
 int main(void)
 {
+	board_t *board, *dest, *tmp;
 	static float deltatime = 0;
 	double last_frame = 0;
+	map_t *map;
+
+	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.7, 0.1, 0.4)) == NULL)
+		goto err_board;
+	if ((dest = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
+		goto err_dest;
+	if ((map = create_map(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
+		goto err_map;
 	
 	init();
 	glClearColor(0, 0, 0, 1);
@@ -34,7 +52,7 @@ int main(void)
 		update_fps();
 		
 		glClear(GL_COLOR_BUFFER_BIT);
-		render_rect(100, 100, 70, 63, TEX_GRASS);
+		render_map(map, board);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
@@ -47,7 +65,18 @@ int main(void)
 	}
 	
 	terminate();
+	free_map(map);
+	free_board(dest);
+	free_board(board);
+
 	return EXIT_SUCCESS;
+
+err_map:
+	free_board(dest);
+err_dest:
+	free_board(board);
+err_board:
+	return EXIT_FAILURE;
 }
 
 static void update_fps(void)
