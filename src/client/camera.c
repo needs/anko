@@ -2,19 +2,26 @@
 #include "camera.h"
 #include "window.h"
 
-static float camera_scale;
+static void update_camera()
+{
+	mat4x4_identity(camera);
+	mat4x4_translate_in_place(camera, camera_pos[0], camera_pos[1], 0);
+	mat4x4_scale_aniso(camera, camera, camera_scale, camera_scale, 1);
+}
 
 void set_camera(float x, float y, float scale)
 {
-	mat4x4_identity(camera);
-	move_camera(x,y);
-	mat4x4_scale_aniso(camera, camera, scale, scale, 1);
 	camera_scale = scale;
+	camera_pos[0] = x;
+	camera_pos[1] = y;
+	update_camera();
 }
 
 void move_camera(float x, float y)
 {
-	mat4x4_translate_in_place(camera, x, y, 0);
+	camera_pos[0] += x;
+	camera_pos[1] += y;
+	update_camera();
 }
 
 void scale_camera(float scale)
@@ -23,5 +30,5 @@ void scale_camera(float scale)
 	if(camera_scale + scale < (float)1 / ZOOM_MAX) return;
 	
 	camera_scale += scale;
-	mat4x4_scale_aniso(camera, camera, (float)1+scale, (float)1+scale, 1);
+	update_camera();
 }

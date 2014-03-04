@@ -8,6 +8,8 @@
 #define ZOOM_MAX 3
 
 mat4x4 camera;
+float camera_scale;
+float camera_pos[2];
 
 void set_camera(float x, float y, float scale);
 void move_camera(float x, float y);
