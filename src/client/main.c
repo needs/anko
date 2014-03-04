@@ -62,11 +62,7 @@ int main(void)
 	while(!glfwWindowShouldClose(window)) {
 		last_frame = glfwGetTime();
 		process_events(deltatime);
-
-		// Only for debugging purpose (C++ style)
-		if(IS_KEY_PRESSED(window, GLFW_KEY_SPACE))
-			board = regenerate(board);
-
+		
 		update_fps();
 		
 		simulate(&board, &dest);
