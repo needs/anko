@@ -9,7 +9,6 @@
 #include "camera.h"
 
 static GLuint program;
-static GLuint vbo;
 static GLuint vao;
 static mat4x4 projection;
 
@@ -20,11 +19,6 @@ void init_rendering(void)
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	/* Get a Vertex Buffer Object, */
-	/* and make it active, so we can copy data on it */
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 	/* Load shaders and make them active */
 	program = load_shaders("data/shaders/default.vs", "data/shaders/default.fs");
@@ -45,28 +39,20 @@ void init_rendering(void)
 	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(tex_coord);
 
-	mat4x4_ortho(projection,0,WINDOW_WIDTH,WINDOW_HEIGHT,0,-1,1);
-	set_camera(0,0,1);
+	mat4x4_ortho(projection, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
+	set_camera(0, 0, 1);
 }
 
 
 void close_rendering(void)
 {
-	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
 	destroy_shaders(program);
 }
 
 
-void render_rect(float x, float y, float width, float height, GLuint tex)
+void render_rect(GLuint tex)
 {
-	float vertices[16] = {
-		x, y,                  0.0, 0.0,
-		x + width, y,          1.0, 0.0,
-		x + width, y + height, 1.0, 1.0,
-		x, y + height,         0.0, 1.0,
-	};
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
@@ -74,9 +60,6 @@ void render_rect(float x, float y, float width, float height, GLuint tex)
 	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, (GLfloat*)projection);
 	glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, (GLfloat*)camera);
 	
-	/* Let's copy them :) */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	/* And render them */
 	glDrawArrays(GL_QUADS, 0, 4);
 }
