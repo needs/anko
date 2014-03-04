@@ -56,6 +56,14 @@ static int load_texture(GLuint tex, const char *path)
 	/* Make the texture active */
 	glBindTexture(GL_TEXTURE_2D, tex);
 
+	/* For now, texture are just sample image */
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	/* Use MipMap, Note: The filtering method might not be apropriate */
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+
 	/* Note: force 4 channels because the shader only process 4 channels */
 	data = stbi_load(path, &width, &height, NULL, 4);
 	if (data == NULL) {
@@ -67,13 +75,6 @@ static int load_texture(GLuint tex, const char *path)
 		     GL_UNSIGNED_BYTE, data);
 	stbi_image_free(data);
 
-	/* For now, texture are just sample image */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	/* Use MipMap, Note: The filtering method might not be apropriate */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	
 	return 1;
