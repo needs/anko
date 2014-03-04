@@ -10,10 +10,10 @@
 #include "textures.h"
 #include "event.h"
 
-void init();
-void terminate();
+static void init(void);
+static void terminate(void);
 
-void update_fps();
+static void update_fps(void);
 
 static GLFWwindow* window;
 static int frames = 0;
@@ -50,7 +50,7 @@ int main(void)
 	return EXIT_SUCCESS;
 }
 
-void update_fps()
+static void update_fps(void)
 {
 	if(glfwGetTime() - last_fps > 1)
 	{
@@ -62,7 +62,7 @@ void update_fps()
 		frames++;
 }
 
-void init()
+static void init(void)
 {	
 	srandom(time(NULL));
 
@@ -86,7 +86,7 @@ void init()
 	init_events(window);
 }
 
-void terminate()
+static void terminate(void)
 {
 	unload_textures();
 	close_rendering();
