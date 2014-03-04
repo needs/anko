@@ -8,7 +8,7 @@
 
 static GLFWwindow *current_window;
 
-static const float CAMERA_SPEED = 2.5;
+static const float CAMERA_SPEED = 10;
 static const float ZOOM_SPEED = 0.05;
 static double scroll = 0;
 
