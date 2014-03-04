@@ -54,10 +54,10 @@ void close_rendering(void)
 void render_rect(float x, float y, float width, float height, tex_t tex)
 {
 	float vertices[16] = {
-		x, y,                  0.0, 0.0,
-		x + width, y,          1.0, 0.0,
-		x + width, y + height, 1.0, 1.0,
-		x, y + height,         0.0, 1.0,
+		x, y,                  0.0, 1.0,
+		x + width, y,          1.0, 1.0,
+		x + width, y + height, 1.0, 0.0,
+		x, y + height,         0.0, 0.0,
 	};
 
 	glActiveTexture(GL_TEXTURE0);

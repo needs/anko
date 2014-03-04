@@ -18,7 +18,9 @@ void process_events(float deltatime)
 void on_mouse_move(GLFWwindow *window, double x, double y)
 {
 	UNUSED(window);
-	printf("Mouse moved ! (%f,%f)\n", x,y);
+	UNUSED(x);
+	UNUSED(y);
+//printf("Mouse moved ! (%f,%f)\n", x,y);
 }
 
 void init_events(GLFWwindow *window)
