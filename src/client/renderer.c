@@ -18,6 +18,9 @@ void init_rendering(void)
 	glewExperimental = GL_TRUE;
 	glewInit();
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	/* Get a Vertex Buffer Object, */
 	/* and make it active, so we can copy data on it */
 	glGenBuffers(1, &vbo);
