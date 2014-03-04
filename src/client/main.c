@@ -39,17 +39,17 @@ int main(void)
 	double last_frame = 0;
 	map_t *map;
 
+	if (!init())
+		goto err_init;
 	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.5, 0.1, 0.4)) == NULL)
 		goto err_board;
 	if ((dest = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
 		goto err_dest;
 	if ((map = create_map(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
 		goto err_map;
-	if (!init())
-		goto err_init;
 
 	glClearColor(0, 0, 0, 1);
-
+	
 	while(!glfwWindowShouldClose(window)) {
 		last_frame = glfwGetTime();
 		process_events(deltatime);
@@ -73,13 +73,14 @@ int main(void)
 
 	return EXIT_SUCCESS;
 
-err_init:
-	free_map(map);
+
 err_map:
 	free_board(dest);
 err_dest:
 	free_board(board);
 err_board:
+	terminate();
+err_init:
 	return EXIT_FAILURE;
 }
 
