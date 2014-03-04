@@ -29,9 +29,17 @@ static void wait_fps(void);
 static void simulate(board_t **main, board_t **temp);
 
 static const float STEP_TIMER_RESET = 1; // Each second we simulate
-static const int BOARD_WIDTH = 15;
-static const int BOARD_HEIGHT = 15;
+static const int BOARD_WIDTH = 20;
+static const int BOARD_HEIGHT = 20;
 
+static board_t* regenerate(board_t* current)
+{
+	board_t* regen = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.5, 0.1, 0.4);
+	if(regen == NULL)
+		return current;
+	free_board(current);
+	return regen;
+}
 
 int main(void)
 {
@@ -40,7 +48,7 @@ int main(void)
 	double last_frame = 0;
 	map_t *map;
 
-	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.7, 0.1, 0.4)) == NULL)
+	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.5, 0.1, 0.4)) == NULL)
 		goto err_board;
 	if ((dest = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
 		goto err_dest;
@@ -53,6 +61,11 @@ int main(void)
 	while(!glfwWindowShouldClose(window)) {
 		last_frame = glfwGetTime();
 		process_events(deltatime);
+
+		// Only for debugging purpose
+		if(IS_KEY_PRESSED(window, GLFW_KEY_SPACE))
+			board = regenerate(board);
+
 		update_fps();
 		
 		simulate(&board, &dest);

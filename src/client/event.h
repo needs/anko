@@ -3,6 +3,8 @@
 
 #include <GLFW/glfw3.h>
 
+#define IS_KEY_PRESSED(w, k) glfwGetKey(w, k) == GLFW_PRESS
+
 void init_events(GLFWwindow *window);
 void process_events(float deltatime);
 
