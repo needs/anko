@@ -1,15 +1,19 @@
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include "shader.h"
-
-#define MAX_SHADERS 2
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <GL/glew.h>
+#include <GL/gl.h>
+
+#include "shader.h"
+
+
+#define MAX_SHADERS 2
+GLuint program;
+
 
 static GLuint get_shader(const char * filename, GLenum type);
 
-GLuint load_shaders(const char * vertex_filename, const char * fragment_filename)
+
+int load_shaders(const char * vertex_filename, const char * fragment_filename)
 {
 	GLint info_result;
 	
@@ -21,7 +25,7 @@ GLuint load_shaders(const char * vertex_filename, const char * fragment_filename
 	if(!fragment_shader)
 		goto err_fragment;
 	
-	GLuint program = glCreateProgram(); 
+	program = glCreateProgram(); 
 	if(!program)
 		goto err_program;
 
@@ -49,14 +53,14 @@ GLuint load_shaders(const char * vertex_filename, const char * fragment_filename
 	else
 		printf("program successfully linked.\n");
 	
-	return program;
+	return 1;
 	
 err_program:
 	glDeleteShader(fragment_shader);
 err_fragment:
 	glDeleteShader(vertex_shader);
 err_vertex:
-	return GL_FALSE;
+	return 0;
 }
 
 void destroy_shaders(GLuint program)
@@ -83,7 +87,7 @@ static GLuint get_shader(const char * filename, GLenum type)
 	char *buffer;
 	size_t len;
 
-    info_result = GL_FALSE;
+	info_result = GL_FALSE;
 	
 	shader = glCreateShader(type);
 	if(!shader)

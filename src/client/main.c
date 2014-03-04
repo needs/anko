@@ -22,7 +22,7 @@ static double last_fps = 0;
 static float deltatime = 0;
 static float step_timer;
 
-static void init(void);
+static int  init(void);
 static void terminate(void);
 static void update_fps(void);
 static void wait_fps(void);
@@ -54,15 +54,16 @@ int main(void)
 		goto err_dest;
 	if ((map = create_map(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
 		goto err_map;
-	
-	init();
+	if (!init())
+		goto err_init;
+
 	glClearColor(0, 0, 0, 1);
 
 	while(!glfwWindowShouldClose(window)) {
 		last_frame = glfwGetTime();
 		process_events(deltatime);
 
-		// Only for debugging purpose
+		// Only for debugging purpose (C++ style)
 		if(IS_KEY_PRESSED(window, GLFW_KEY_SPACE))
 			board = regenerate(board);
 
@@ -85,6 +86,8 @@ int main(void)
 
 	return EXIT_SUCCESS;
 
+err_init:
+	free_map(map);
 err_map:
 	free_board(dest);
 err_dest:
@@ -93,10 +96,10 @@ err_board:
 	return EXIT_FAILURE;
 }
 
+
 static void update_fps(void)
 {
-	if(glfwGetTime() - last_fps > 1)
-	{
+	if (glfwGetTime() - last_fps > 1) {
 		last_fps+=1;
 		printf("FPS: %i\n", frames);
 		frames = 0;
@@ -105,35 +108,48 @@ static void update_fps(void)
 		frames++;
 }
 
-static void init(void)
+
+static int init(void)
 {
 	srandom(time(NULL));
 
-	if(!glfwInit()) {
+	if (!glfwInit()) {
 		perror("Can't init glfw\n");
-		exit(EXIT_FAILURE);
+		goto err_glfw;
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Anko", NULL, NULL);
-	if(!window) {
+	if (!window) {
 		glfwTerminate();
-		exit(EXIT_FAILURE);
+		goto err_window;
 	}
-
 	glfwMakeContextCurrent(window);
 
 	printf("OpenGL Version : %s\n\n", glGetString(GL_VERSION));
 	
-	init_rendering();
+	if (!init_rendering())
+		goto err_rendering;
 	if (!load_textures())
-		exit(EXIT_FAILURE);
+		goto err_texture;
+
 	
 	init_events(window);
 
 	step_timer = STEP_TIMER_RESET;
+	return 1;
+
+err_texture:
+	close_rendering();
+err_rendering:
+	glfwDestroyWindow(window);
+err_window:
+	glfwTerminate();
+err_glfw:
+	return 0;
 }
+
 
 static void terminate(void)
 {
@@ -143,27 +159,26 @@ static void terminate(void)
 	glfwTerminate();
 }
 
+
 static void wait_fps(void)
 {
-	if(deltatime < (float)1/(MAX_FPS))
-	{
+	if (deltatime < (float)1/(MAX_FPS)) {
 		float sleep_time = ((float)1/MAX_FPS)-deltatime;
-		usleep(sleep_time*1000*1000); // *inMilliSec*inMicroSec
+		usleep(sleep_time * 1000 * 1000); // * inMilliSec * inMicroSec
 		deltatime += sleep_time;
 	}
 }
+
 				
 static void simulate(board_t **main, board_t **temp)
 {
-	if(step_timer < deltatime)
-	{
+	if (step_timer < deltatime) {
 		board_t *tmp;
 		step(*temp, *main);
 		tmp = *main;
 		*main = *temp;
 		*temp = tmp;
 		step_timer = STEP_TIMER_RESET;
-	}
-	else
+	} else
 		step_timer -= deltatime;
 }

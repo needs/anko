@@ -4,6 +4,15 @@
 #include "textures.h"
 #include "renderer.h"
 #include "stb_image.h"
+#include "shader.h"
+
+
+/* This VBO contains the vertex of every textures. */
+static GLuint vbo_tex;
+static const size_t tex_size = 16 * sizeof(float);
+
+/* VAO for linking shader to vbo_tex */
+static GLuint vao_tex;
 
 
 #define ADD_TEXTURE(name, path) "data/"path,
@@ -12,12 +21,15 @@ static const char tex_path[][32] = {
 };
 #undef ADD_TEXTURE
 
+
 struct texture_t {
-	GLuint tex, vbo;
+	GLuint tex;
 	int width, height;
 };
-
 static struct texture_t textures[TEX_TOTAL];
+
+
+static void init_textures();
 static int load_texture(tex_t tex, const char *path);
 
 
@@ -25,16 +37,18 @@ int load_textures(void)
 {
 	int i;
 
+	init_textures();
+
 	for (i = 0; i < TEX_TOTAL; i++)
 		if (!load_texture(i, tex_path[i]))
 			goto err_tex;
 	return 1;
 
 err_tex:
-	while (i --> 0) {
+	while (i --> 0)
 		glDeleteTextures(1, &textures[i].tex);
-		glDeleteBuffers(1, &textures[i].vbo);
-	}
+	glDeleteBuffers(1, &vbo_tex);
+	glDeleteVertexArrays(1, &vao_tex);
 	return 0;
 }
 
@@ -42,10 +56,10 @@ err_tex:
 void unload_textures(void)
 {
 	int i;
-	for (i = 0; i < TEX_TOTAL; i++) {
+	for (i = 0; i < TEX_TOTAL; i++)
 		glDeleteTextures(1, &textures[i].tex);
-		glDeleteBuffers(1, &textures[i].vbo);
-	}
+	glDeleteBuffers(1, &vbo_tex);
+	glDeleteVertexArrays(1, &vao_tex);
 }
 
 
@@ -56,9 +70,8 @@ void render_texture(float x, float y, tex_t tex)
 
 	(void)x; (void)y;
 
-	/* Make the vbo of the texture activ */
-	glBindBuffer(GL_ARRAY_BUFFER, textures[tex].vbo);
-	render_rect(textures[tex].tex);
+	glBindVertexArray(vao_tex);
+	render_rect(textures[tex].tex, tex * 4);
 }
 
 
@@ -95,18 +108,36 @@ static int load_texture(tex_t tex, const char *path)
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	/* Put vertices in the vbo */
-	glGenBuffers(1, &textures[tex].vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, textures[tex].vbo);
 	float vertices[16] = {
 		0, 0, 0.0, 0.0,
 		textures[tex].width, 0, 1.0, 0.0,
-		0 + textures[tex].width, 0 + textures[tex].height, 1.0, 1.0,
-		0, 0 + textures[tex].height, 0.0, 1.0,
+		textures[tex].width, textures[tex].height, 1.0, 1.0,
+		0, textures[tex].height, 0.0, 1.0,
 	};
 
 	/* And send them to the graphic card */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, tex * tex_size, tex_size, vertices);
 
 	return 1;
+}
+
+
+static void init_textures(void)
+{
+	glGenVertexArrays(1, &vao_tex);
+	glBindVertexArray(vao_tex);
+
+	glGenBuffers(1, &vbo_tex);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
+	glBufferData(GL_ARRAY_BUFFER, tex_size * TEX_TOTAL, NULL, GL_STATIC_DRAW);
+
+	/* Format of the vertices for the shader */
+
+	GLint position = glGetAttribLocation(program, "position");
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glEnableVertexAttribArray(position);
+
+	GLint tex_coord = glGetAttribLocation(program, "tex_coord");
+	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glEnableVertexAttribArray(tex_coord);
 }

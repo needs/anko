@@ -4,8 +4,8 @@
 #include "textures.h"
 #include "window.h"
 
-void init_rendering(void);
+int  init_rendering(void);
 void close_rendering(void);
-void render_rect(GLuint tex);
+void render_rect(GLuint tex, GLint offset);
 
 #endif /* _RENDERER_H_ */
