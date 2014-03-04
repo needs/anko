@@ -10,6 +10,7 @@
 #include "map.h"
 #include "../board.h"
 #include "../generator.h"
+#include "../simulator.h"
 #include "window.h"
 
 
@@ -18,21 +19,24 @@
 static GLFWwindow* window;
 static int frames = 0;
 static double last_fps = 0;
-
+static float deltatime = 0;
+static float step_timer;
 
 static void init(void);
 static void terminate(void);
 static void update_fps(void);
+static void wait_fps(void);
+static void simulate(board_t **main, board_t **temp);
 
-
+static const float STEP_TIMER_RESET = 1; // Each second we simulate
 static const int BOARD_WIDTH = 20;
 static const int BOARD_HEIGHT = 20;
 
 
 int main(void)
 {
-	board_t *board, *dest, *tmp;
-	static float deltatime = 0;
+	board_t *board, *dest;
+	
 	double last_frame = 0;
 	map_t *map;
 
@@ -47,22 +51,19 @@ int main(void)
 	glClearColor(0, 0, 0, 1);
 
 	while(!glfwWindowShouldClose(window)) {
-		process_events(deltatime);
-
 		last_frame = glfwGetTime();
+		process_events(deltatime);
 		update_fps();
+		
+		simulate(&board, &dest);
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 		render_map(map, board);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
-		if(deltatime < (float)1/(MAX_FPS))
-		{
-			float sleep_time = ((float)1/MAX_FPS)-deltatime;
-			usleep(sleep_time*1000*1000); // *inMilliSec*inMicroSec
-			deltatime += sleep_time;
-		}
+		wait_fps(); // Limiting frame per second 
+
 	}
 	
 	terminate();
@@ -114,6 +115,8 @@ static void init(void)
 		exit(EXIT_FAILURE);
 	
 	init_events(window);
+
+	step_timer = STEP_TIMER_RESET;
 }
 
 static void terminate(void)
@@ -122,4 +125,29 @@ static void terminate(void)
 	close_rendering();
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+static void wait_fps(void)
+{
+	if(deltatime < (float)1/(MAX_FPS))
+	{
+		float sleep_time = ((float)1/MAX_FPS)-deltatime;
+		usleep(sleep_time*1000*1000); // *inMilliSec*inMicroSec
+		deltatime += sleep_time;
+	}
+}
+				
+static void simulate(board_t **main, board_t **temp)
+{
+	if(step_timer < deltatime)
+	{
+		board_t *tmp;
+		step(*temp, *main);
+		tmp = *main;
+		*main = *temp;
+		*temp = tmp;
+		step_timer = STEP_TIMER_RESET;
+	}
+	else
+		step_timer -= deltatime;
 }
