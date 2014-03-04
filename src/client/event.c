@@ -56,8 +56,8 @@ void process_events(float deltatime)
 		//glfwSetInputMode(current_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 		
 		glfwGetCursorPos(current_window, current_mouse_pos, current_mouse_pos+1);
-		move_camera((1/(2*camera_scale))*MOUSE_SPEED*CAMERA_SPEED*(current_mouse_pos[0]-last_mouse_pos[0])*deltatime,
-					(1/(2*camera_scale))*MOUSE_SPEED*CAMERA_SPEED*(current_mouse_pos[1]-last_mouse_pos[1])*deltatime);
+		move_camera(MOUSE_SPEED*CAMERA_SPEED*(current_mouse_pos[0]-last_mouse_pos[0])*deltatime,
+					MOUSE_SPEED*CAMERA_SPEED*(current_mouse_pos[1]-last_mouse_pos[1])*deltatime);
 		//glfwSetCursorPos(current_window, last_mouse_pos[0], last_mouse_pos[1]);
 	 }
 	/* else
