@@ -25,7 +25,7 @@ int main(void)
 	double last_frame = 0;
 	
 	init();
-	glClearColor(0.0, 0.4, 0.5, 1);
+	glClearColor(0, 0, 0, 1);
 
 	while(!glfwWindowShouldClose(window)) {
 		process_events(deltatime);
