@@ -12,7 +12,7 @@
 static const int WIDTH = 50;
 static const int HEIGHT = 50;
 
-void init_from_args(int argc, char **argv, int *speed, float *tree_density,float *water_density );
+void init_from_args(int argc, char **argv, int *speed, float *tree_density,float *water_density,float *water_shattering);
 void usage(char** argv);
 
 int is_running;
@@ -31,15 +31,16 @@ int main(int argc, char **argv)
 	int speed = 500;
 	float tree_density = 0.70;
 	float water_density = 0.10;
+	float water_shattering = 0.4;
 	
 	is_running = 1;
-	init_from_args(argc, argv, &speed, &tree_density, &water_density);
+	init_from_args(argc, argv, &speed, &tree_density, &water_density, &water_shattering);
 	
 	srandom(time(NULL));
 
 	signal(SIGINT,&handler);
 	
-	if ((board = generate(WIDTH, HEIGHT,tree_density, water_density,0.4)) == NULL)
+	if ((board = generate(WIDTH, HEIGHT,tree_density, water_density,water_shattering)) == NULL)
 		return EXIT_FAILURE;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		return EXIT_FAILURE;
@@ -73,9 +74,10 @@ void usage(char** argv)
 	printf("\t-s, --speed=speed in ms\t\t\tSimulation speed\n");
 	printf("\t-t, --tree-density=density [0;1]\tTree density\n");
 	printf("\t-w, --water-density=density [0;1]\tWater density\n");
+	printf("\t-k, --water-shattering=shattering ]0;1]\tWater shattering 1 means no shatteing\n");
 }
 
-void init_from_args(int argc, char **argv, int *speed, float *tree_density, float *water_density)
+void init_from_args(int argc, char **argv, int *speed, float *tree_density, float *water_density, float *water_shattering)
 {
 	int opt;
 	static struct option long_options[] =
@@ -83,11 +85,12 @@ void init_from_args(int argc, char **argv, int *speed, float *tree_density, floa
 		{"help", no_argument, 0, 'h'},
 		{"speed", required_argument, 0, 's'},
 		{"tree-density", required_argument, 0, 't'},
-		{"water-density", required_argument, 0, 'w'},		
+		{"water-density", required_argument, 0, 'w'},
+		{"water-shattering", required_argument, 0, 'k'},
 		{NULL,0,NULL,0}
 	};
 
-	while((opt = getopt_long(argc,argv, "s:t:w:h", long_options, NULL)) != -1)
+	while((opt = getopt_long(argc,argv, "s:t:w:hk:", long_options, NULL)) != -1)
 	{
 		switch(opt)
 		{
@@ -99,6 +102,9 @@ void init_from_args(int argc, char **argv, int *speed, float *tree_density, floa
 			break;
 		case 'w':
 			*water_density = atof(optarg);
+			break;
+		case 'k':
+			*water_shattering = atof(optarg);
 			break;
 		case 'h':
 			usage(argv);
