@@ -40,7 +40,7 @@ void close_rendering(void)
 }
 
 
-void render_rect(mat4x4 model, GLuint tex, GLint offset)
+void render_model(mat4x4 model, GLuint tex, GLint offset)
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);

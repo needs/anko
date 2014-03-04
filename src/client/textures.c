@@ -71,7 +71,7 @@ void render_texture(mat4x4 model, tex_t tex)
 	assert(tex < TEX_TOTAL);
 
 	glBindVertexArray(vao_tex);
-	render_rect(model, textures[tex].tex, tex * 4);
+	render_model(model, textures[tex].tex, tex * 4);
 }
 
 

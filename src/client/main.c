@@ -29,8 +29,8 @@ static void wait_fps(void);
 static void simulate(board_t **main, board_t **temp);
 
 static const float STEP_TIMER_RESET = 1; // Each second we simulate
-static const int BOARD_WIDTH = 50;
-static const int BOARD_HEIGHT = 50;
+static const int BOARD_WIDTH = 100;
+static const int BOARD_HEIGHT = 100;
 
 int main(void)
 {

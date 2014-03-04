@@ -7,6 +7,6 @@
 
 int  init_rendering(void);
 void close_rendering(void);
-void render_rect(mat4x4 model, GLuint tex, GLint offset);
+void render_model(mat4x4 model, GLuint tex, GLint offset);
 
 #endif /* _RENDERER_H_ */
