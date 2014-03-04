@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "textures.h"
@@ -89,9 +90,8 @@ static void seed_map(map_t *map)
 		for (j = 0; j < map->width; j++) {
 			int seed = random();
 
-			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
-			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
-			
+			mat4x4_translate(map->cells[i][j].model, j*-TILE_WIDTH/2 + i*TILE_WIDTH/2, i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, 0);
+
 			for (k = 0; k < ST_TOTAL; k++) {
 				/* Floor */
 				if (k == ST_WATER)
@@ -150,7 +150,7 @@ void render_map(map_t *map, board_t *board)
 			tex_t floor  = cell->floor[board->cells[i][j]];
 
 			if (floor != TEX_NONE)
-				render_texture(cell->x, cell->y, floor);
+				render_texture(cell->model, floor);
 		}
 	}
 
@@ -160,7 +160,7 @@ void render_map(map_t *map, board_t *board)
 			tex_t entity = cell->entity[board->cells[i][j]];
 
 			if (entity != TEX_NONE)
-				render_texture(cell->x, cell->y, entity);
+				render_texture(cell->model, entity);
 		}
 	}
 }

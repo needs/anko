@@ -133,8 +133,6 @@ static int init(void)
 		goto err_rendering;
 	if (!load_textures())
 		goto err_texture;
-
-	
 	init_events(window);
 
 	step_timer = STEP_TIMER_RESET;

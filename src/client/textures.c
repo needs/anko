@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <GL/glew.h>
 #include <GL/gl.h>
+
+#include "linmath.h"
 #include "textures.h"
 #include "renderer.h"
 #include "stb_image.h"
@@ -63,15 +65,13 @@ void unload_textures(void)
 }
 
 
-void render_texture(float x, float y, tex_t tex)
+void render_texture(mat4x4 model, tex_t tex)
 {
 	assert(tex > TEX_NONE);
 	assert(tex < TEX_TOTAL);
 
-	(void)x; (void)y;
-
 	glBindVertexArray(vao_tex);
-	render_rect(textures[tex].tex, tex * 4);
+	render_rect(model, textures[tex].tex, tex * 4);
 }
 
 

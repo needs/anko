@@ -40,14 +40,18 @@ void close_rendering(void)
 }
 
 
-void render_rect(GLuint tex, GLint offset)
+void render_rect(mat4x4 model, GLuint tex, GLint offset)
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, (GLfloat*)projection);
-	glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, (GLfloat*)camera);
+	glUniformMatrix4fv(glGetUniformLocation(program, "model"),
+			   1, GL_FALSE, (GLfloat*)model);
+	glUniformMatrix4fv(glGetUniformLocation(program, "projection"),
+			   1, GL_FALSE, (GLfloat*)projection);
+	glUniformMatrix4fv(glGetUniformLocation(program, "view"),
+			   1, GL_FALSE, (GLfloat*)camera);
 
 	/* And render them */
 	glDrawArrays(GL_QUADS, offset, 4);

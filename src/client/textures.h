@@ -1,6 +1,9 @@
 #ifndef _TEXTURES_H_
 #define _TEXTURES_H_
 
+#include "linmath.h"
+
+
 #define ADD_TEXTURE(name, path) TEX_##name,
 typedef enum tex_t {
 	TEX_NONE = -1,
@@ -12,7 +15,7 @@ typedef enum tex_t {
 
 int load_textures(void);
 void unload_textures(void);
-void render_texture(float x, float y, tex_t tex);
+void render_texture(mat4x4 model, tex_t tex);
 
 
 #endif /* _TEXTURES_H_ */

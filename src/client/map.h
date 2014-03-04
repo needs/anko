@@ -1,7 +1,7 @@
 #ifndef _MAP_H_
 #define _MAP_H_
 
-#include <SDL2/SDL.h>
+#include "linmath.h"
 #include "../board.h"
 #include "textures.h"
 
@@ -10,7 +10,7 @@
 #define TILE_HEIGHT 34
 
 typedef struct mapcell_t {
-	int x, y;
+	mat4x4 model;
 	tex_t floor[TEX_TOTAL], entity[TEX_TOTAL];
 } mapcell_t;
 
