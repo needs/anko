@@ -32,15 +32,6 @@ static const float STEP_TIMER_RESET = 1; // Each second we simulate
 static const int BOARD_WIDTH = 50;
 static const int BOARD_HEIGHT = 50;
 
-static board_t* regenerate(board_t* current)
-{
-	board_t* regen = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.5, 0.1, 0.4);
-	if(regen == NULL)
-		return current;
-	free_board(current);
-	return regen;
-}
-
 int main(void)
 {
 	board_t *board, *dest;
