@@ -1,7 +1,7 @@
 #
 # Configuration de la compilation
 #
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Werror -Wextra -g
 BINDIR = .
 
 
