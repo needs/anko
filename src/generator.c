@@ -68,7 +68,8 @@ static void extend_water(board_t *board, int x, int y, int *count, int size)
 	if(IS_OUT_OF_BOUNDS(board,x,y) || board->cells[y][x] == ST_WATER)
 		return;
 
-	if(RANDOM_FLOAT() > (float)*count/size)
+	if(RANDOM_FLOAT() > (float)*count/size
+		&& (get_neighbors_count(x,y, board, ST_WATER) != 1 || RANDOM_FLOAT() > 0.5))
 	{
 		board->cells[y][x] = ST_WATER;
 		*count = *count+1;
@@ -80,7 +81,7 @@ static void extend_water(board_t *board, int x, int y, int *count, int size)
 }
 static void spawn_water(board_t *board, float density, float shatter_factor)
 {
-	float size = ((float)random()/RAND_MAX)*density*board->width*board->height*shatter_factor;
+	float size = density*board->width*board->height*shatter_factor;
 	int count = 0;
 	extend_water(board, random()%board->width, random()%board->height, &count, size);
 }
