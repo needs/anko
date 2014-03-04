@@ -141,14 +141,24 @@ void render_map(map_t *map, board_t *board)
 	assert(map != NULL);
 	assert(board != NULL);
 
+	/* For now, split the floor rendering and the entity rendering to
+	 * avoid textures switching (HACK) */
+
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			mapcell_t *cell = &map->cells[i][j];
 			tex_t floor  = cell->floor[board->cells[i][j]];
-			tex_t entity = cell->entity[board->cells[i][j]];
 
 			if (floor != TEX_NONE)
 				render_texture(cell->x, cell->y, floor);
+		}
+	}
+
+	for (i = 0; i < map->height; i++) {
+		for (j = 0; j < map->width; j++) {
+			mapcell_t *cell = &map->cells[i][j];
+			tex_t entity = cell->entity[board->cells[i][j]];
+
 			if (entity != TEX_NONE)
 				render_texture(cell->x, cell->y, entity);
 		}
