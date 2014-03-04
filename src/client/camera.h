@@ -3,6 +3,9 @@
 
 #include "linmath.h"
 
+#define ZOOM_MIN 1
+#define ZOOM_MAX 3
+
 mat4x4 camera;
 
 void set_camera(float x, float y, float scale);
