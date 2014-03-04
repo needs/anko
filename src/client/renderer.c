@@ -4,6 +4,7 @@
 
 #include "renderer.h"
 #include "shader.h"
+#include "textures.h"
 
 
 static GLuint program;
@@ -32,9 +33,13 @@ void init_rendering(void)
 	glBindVertexArray(vao);
 
 	/* Format of the vertices */
-	GLint posAttrib = glGetAttribLocation(program, "position");
-	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(posAttrib);
+	GLint position = glGetAttribLocation(program, "position");
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glEnableVertexAttribArray(position);
+
+	GLint tex_coord = glGetAttribLocation(program, "tex_coord");
+	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glEnableVertexAttribArray(tex_coord);
 }
 
 
@@ -44,14 +49,18 @@ void close_rendering(void)
 }
 
 
-void render_rect(float x, float y, float width, float height)
+void render_rect(float x, float y, float width, float height, tex_t tex)
 {
-	float vertices[8] = {
-		x, y,
-		x + width, y,
-		x + width, y + height,
-		x, y + height,
+	float vertices[16] = {
+		x, y,                  0.0, 0.0,
+		x + width, y,          1.0, 0.0,
+		x + width, y + height, 1.0, 1.0,
+		x, y + height,         0.0, 1.0,
 	};
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, get_texture(tex));
+	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
 	/* Let's copy them :) */
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);

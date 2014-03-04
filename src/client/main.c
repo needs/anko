@@ -6,6 +6,7 @@
 
 #include "shader.h"
 #include "renderer.h"
+#include "textures.h"
 
 
 int main(void)
@@ -28,6 +29,8 @@ int main(void)
 
 	glfwMakeContextCurrent(window);
 	init_rendering();
+	if (!load_textures())
+		return EXIT_FAILURE;
 	
 	glClearColor(0.0, 0.0, 0.0, 1);
 	
@@ -36,11 +39,12 @@ int main(void)
 		glfwPollEvents();
 		
 		glClear(GL_COLOR_BUFFER_BIT);
-		render_rect(0, 0, 0.3, 0.3);
+		render_rect(0, 0, 0.3, 0.3, TEX_GRASS);
 
 		glfwSwapBuffers(window);
 	}
 
+	unload_textures();
 	close_rendering();
 	glfwDestroyWindow(window);
 	glfwTerminate();
