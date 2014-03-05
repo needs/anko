@@ -88,8 +88,13 @@ void render_texture(mat4x4 model, tex_t tex)
 	assert(tex > TEX_NONE);
 	assert(tex < TEX_TOTAL);
 
-	glBindVertexArray(vao_tex);
-	render_model(model, textures[tex].tex, textures[tex].offset);
+	static texture_t *current = NULL;
+	if (current == NULL || current != textures + tex) {
+		glBindTexture(GL_TEXTURE_2D, textures[tex].tex);
+		current = textures + tex;
+	}
+
+	render_model(model, textures[tex].offset);
 }
 
 

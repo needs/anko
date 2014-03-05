@@ -40,10 +40,9 @@ void close_rendering(void)
 }
 
 
-void render_model(mat4x4 model, GLuint tex, GLint offset)
+void render_model(mat4x4 model, GLint offset)
 {
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 	glUniformMatrix4fv(glGetUniformLocation(program, "model"),
