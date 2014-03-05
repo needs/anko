@@ -9,6 +9,10 @@ int is_burning(void* data)
 	return tree->life < 100 && tree->life > 0;
 }
 
+static board_t *main_board, *copy_board;
+static board_t **update;
+
+// still here for compatibility
 void step(board_t* dest, board_t* src)
 {
 	int i,j;
@@ -40,8 +44,6 @@ void step(board_t* dest, board_t* src)
 				}
 				else if(src->cells[j][i].data.tree.life > 0)
 					dest->cells[j][i].data.tree.life = 0; // src->cells[j][i].data.tree.life - 20;
-		  
-				
 			}
 			else
 			{
@@ -55,3 +57,34 @@ void step(board_t* dest, board_t* src)
 	}
 }
 
+void simulate()
+{
+	board_t *tmp;
+	step(copy_board, main_board);
+	tmp = main_board;
+	main_board = copy_board;
+	copy_board = tmp;
+	*update = main_board;
+}
+
+int init_simulator(board_t **dest, int width, int height, gen_params_t params)
+{
+	update = dest;
+	if ((main_board = generate(width,height, params)) == NULL)
+		goto err_main;
+	if ((copy_board = alloc_board(width, height)) == NULL)
+		goto err_copy;
+	*update = main_board;
+	return 1;
+	
+err_copy:
+	free_board(main_board);
+err_main:
+	return 0;
+}
+
+void terminate_simulator()
+{
+	free_board(main_board);
+	free_board(copy_board);
+}
