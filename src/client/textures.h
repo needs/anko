@@ -5,11 +5,13 @@
 
 
 #define ADD_TEXTURE(name, path) TEX_##name,
+#define ADD_IN_TEXTURE(name, from, x, y, w, h) TEX_##name,
 typedef enum tex_t {
 	TEX_NONE = -1,
 #include "textures.def"
 	TEX_TOTAL,
 } tex_t;
+#undef ADD_IN_TEXTURE
 #undef ADD_TEXTURE
 
 

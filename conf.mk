@@ -3,6 +3,7 @@
 #
 CFLAGS = -Wall -Werror -Wextra -g
 BINDIR = .
+CC = gcc
 
 
 #
@@ -18,10 +19,12 @@ SRCS_anko = src/*.c src/client/*.c
 LDFLAGS_anko = -lglfw -lGL -lm -lGLEW
 CFLAGS_anko = $(CFLAGS)
 
+# We create textures_pack.def if missing to avoid include error.
+$(shell test -f src/client/textures_pack.def || touch src/client/textures_pack.def)
+
 src/client/textures.def: src/client/textures_pack.def
 
 src/client/textures_pack.def: data/tiles.png data/entities.png
-	@touch $@
 
 data/tiles.png: $(wildcard data/tiles/*.png)
 	@./pack.sh $@ $^ >> src/client/textures_pack.def
