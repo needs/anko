@@ -36,7 +36,7 @@ static texture_t textures[TEX_TOTAL];
 
 static void init_textures();
 static int  load_from_file(texture_t *tex, const char *path);
-static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float w, float h);
+static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float w, float h, float ox, float oy);
 
 
 int load_textures(void)
@@ -54,9 +54,9 @@ int load_textures(void)
 #define ADD_TEXTURE(name, path)						\
 	if (!load_from_file(&textures[TEX_##name], path))		\
 		goto err_tex;						\
-	ref_texture(&textures[TEX_##name], &textures[TEX_##name], 0, 0, textures[TEX_##name].width, textures[TEX_##name].height);
-#define ADD_IN_TEXTURE(name, from, x, y, w, h)				\
-	ref_texture(&textures[TEX_##name], &textures[TEX_##from], x, y, w, h);
+	ref_texture(&textures[TEX_##name], &textures[TEX_##name], 0, 0, textures[TEX_##name].width, textures[TEX_##name].height, 0, 0);
+#define ADD_IN_TEXTURE(name, from, x, y, w, h, ox, oy)			\
+	ref_texture(&textures[TEX_##name], &textures[TEX_##from], x, y, w, h, ox, oy);
 #include "textures.def"
 #undef ADD_IN_TEXTURE
 #undef ADD_TEXTURE
@@ -154,7 +154,7 @@ static int load_from_file(texture_t *tex, const char *path)
 }
 
 
-static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float w, float h)
+static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float w, float h, float ox, float oy)
 {
 	assert(tex != NULL);
 	assert(ref != NULL);
@@ -164,10 +164,10 @@ static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float 
 	printf("offset = %ld\n", tex - textures);
 
 	float vertices[16] = {
-		0, 0, x / ref->width,       y / ref->height,
-		w, 0, (x + w) / ref->width, y / ref->height,
-		w, h, (x + w) / ref->width, (y + h) / ref->height,
-		0, h, x / ref->width,       (y + h) / ref->height,
+		-ox, -oy, x / ref->width,       y / ref->height,
+		-ox + w, -oy, (x + w) / ref->width, y / ref->height,
+		-ox + w, -oy + h, (x + w) / ref->width, (y + h) / ref->height,
+		-ox, -oy + h, x / ref->width,       (y + h) / ref->height,
 	};
 
 	/* And send them to the graphic card */

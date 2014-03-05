@@ -18,8 +18,13 @@ echo "ADD_TEXTURE($outid, \"$out\")"
 for i; do
     texid=$(identify -format "%t" "$i" | tr '[:lower:]' '[:upper:]')
     
-    height=$(convert -trim -format "%h" "$i" info:)
+    owidth=$(identify -format "%w" "$i")
+    oheight=$(identify -format "%h" "$i")
     width=$(convert -trim -format "%w" "$i" info:)
-    printf "ADD_IN_TEXTURE(%-20s %s, %4d, %4d, %4d, %4d)\n" "$texid," "$outid" 0 $offset $width $height
+    height=$(convert -trim -format "%h" "$i" info:)
+    offx=$((($owidth / 2) - $(convert -trim -format "%X" "$i" info:)))
+    offy=$((($oheight / 2) - $(convert -trim -format "%Y" "$i" info:)))
+
+    printf "ADD_IN_TEXTURE(%-20s %s, %4d, %4d, %4d, %4d, %4d, %4d)\n" "$texid," "$outid" 0 $offset $width $height $offx $offy
     offset=$(($offset + $height))
 done
