@@ -10,7 +10,7 @@
 static int should_spawn(state_t type, board_t *board, float density);
 static void spawn_water(board_t *board, float density, float shatter_factor);
 
-board_t* generate(int width, int height, float tree_density, float water_density, float water_shatter_factor)
+board_t* generate(int width, int height, gen_params_t params)
 {
 	board_t *board = NULL;
 	int i, j;
@@ -18,9 +18,9 @@ board_t* generate(int width, int height, float tree_density, float water_density
 	
 	assert(width > 0);
 	assert(height > 0);
-	assert(tree_density<1);
-   	assert(water_density<1);
-	assert(water_shatter_factor > 0 && water_shatter_factor <= 1);
+	assert(params.tree_density<1);
+   	assert(params.water_density<1);
+	assert(params.water_shatter_factor > 0 && params.water_shatter_factor <= 1);
 	
 	if ((board = alloc_board(width, height)) == NULL)
 		return NULL;
@@ -32,8 +32,8 @@ board_t* generate(int width, int height, float tree_density, float water_density
 	for (i = 0; i < board->height; i++) {
 		for (j = 0; j < board->width; j++) {
 			
-			int too_much_trees = ((float) tree_count / (board->width*board->height)) > tree_density;
-			if(RANDOM_FLOAT() < tree_density && !too_much_trees)
+			int too_much_trees = ((float) tree_count / (board->width*board->height)) > params.tree_density;
+			if(RANDOM_FLOAT() < params.tree_density && !too_much_trees)
 			{
 				board->cells[i][j] = ST_BURNABLE;
 				tree_count++;
@@ -43,9 +43,9 @@ board_t* generate(int width, int height, float tree_density, float water_density
 		}
 	}
 
-	while(should_spawn(ST_WATER, board, water_density))
+	while(should_spawn(ST_WATER, board, params.water_density))
 	{
-		spawn_water(board, water_density, water_shatter_factor);
+		spawn_water(board, params.water_density, params.water_shatter_factor);
 	}
 
 	board->cells[random()%board->height][random()%board->width] = ST_BURNING;

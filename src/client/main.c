@@ -39,9 +39,11 @@ int main(void)
 	double last_frame = 0;
 	map_t *map;
 
+	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.1, .water_shatter_factor = 0.4 };
+	
 	if (!init())
 		goto err_init;
-	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.5, 0.1, 0.4)) == NULL)
+	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, gen_params)) == NULL)
 		goto err_board;
 	if ((dest = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
 		goto err_dest;
