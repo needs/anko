@@ -82,57 +82,60 @@ err_map:
  * Précalcule les coordonnées des cases. */
 static void seed_map(map_t *map)
 {
-	int i, j, k;
+	int i, j;//, k;
 
 	assert(map != NULL);
 
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
-			int seed = random();
+			//int seed = random();
 
 			mat4x4_translate(map->cells[i][j].model, j*-TILE_WIDTH/2 + i*TILE_WIDTH/2, i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, 0);
-
-			for (k = 0; k < ST_TOTAL; k++) {
-				/* Floor */
-				if (k == ST_WATER)
+/*
+			for (k = 0; k < CT_TOTAL; k++) {
+				// Floor
+				if (k == CT_WATER)
 					map->cells[i][j].floor[k] = TEX_WATER;
 				else
 					map->cells[i][j].floor[k] = TEX_GRASS;
 				
-				/* Entity */
+				// Entity 
 				switch (k) {
-				case ST_BURNABLE:
-					if (seed % 50 == 0)
+				case CT_TREE:
+					if (seed % 50 == 0) {
 						map->cells[i][j].entity[k] = TEX_TREE2;
-					else if (seed % 50 > 0 && seed % 50 < 15)
+					}
+					else if (seed % 50 > 0 && seed % 50 < 15) {
 						map->cells[i][j].entity[k] = TEX_TREE3;
-					else
+					}
+					else {
 						map->cells[i][j].entity[k] = TEX_TREE;
-					break;
-				case ST_BURNED:
-					if (seed % 50 == 0)
-						map->cells[i][j].entity[k] = TEX_BURNED_TREE2;
-					else if (seed % 50 > 0 && seed % 50 < 15)
-						map->cells[i][j].entity[k] = TEX_BURNED_TREE3;
-					else
-						map->cells[i][j].entity[k] = TEX_BURNED_TREE;
-					break;
-				case ST_BURNING:
-					if (seed % 50 == 0)
-						map->cells[i][j].entity[k] = TEX_BURNING_TREE2;
-					else if (seed % 50 > 0 && seed % 50 < 15)
-						map->cells[i][j].entity[k] = TEX_BURNING_TREE3;
-					else
-						map->cells[i][j].entity[k] = TEX_BURNING_TREE;
+					}
 					break;
 				default:
 					map->cells[i][j].entity[k] = TEX_NONE;
 				}
-			}
+			}*/
 		}
 	}
 }
 
+
+static tex_t get_entity_tex(cell_t c)
+{
+	switch(c.type)
+	{
+	case CT_TREE:
+		if(c.data.tree.life == 100)
+			return TEX_TREE;
+		else if (c.data.tree.life)
+			return TEX_BURNING_TREE;
+		else
+			return TEX_BURNED_TREE;
+	default:
+		return TEX_NONE;
+	}
+}
 
 void render_map(map_t *map, board_t *board)
 {
@@ -147,8 +150,9 @@ void render_map(map_t *map, board_t *board)
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			mapcell_t *cell = &map->cells[i][j];
-			tex_t floor  = cell->floor[board->cells[i][j]];
-
+			//tex_t floor  = cell->floor[board->cells[i][j]];
+			tex_t floor = board->cells[i][j].type == CT_WATER ? TEX_WATER : TEX_GRASS;
+				
 			if (floor != TEX_NONE)
 				render_texture(cell->model, floor);
 		}
@@ -157,8 +161,8 @@ void render_map(map_t *map, board_t *board)
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			mapcell_t *cell = &map->cells[i][j];
-			tex_t entity = cell->entity[board->cells[i][j]];
-
+			//tex_t entity = cell->entity[board->cells[i][j]];
+			tex_t entity = get_entity_tex(board->cells[i][j]);
 			if (entity != TEX_NONE)
 				render_texture(cell->model, entity);
 		}

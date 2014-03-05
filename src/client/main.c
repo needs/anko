@@ -26,37 +26,43 @@ static int  init(void);
 static void terminate(void);
 static void update_fps(void);
 static void wait_fps(void);
-static void simulate(board_t **main, board_t **temp);
+static void try_simulate(void);
 
 static const float STEP_TIMER_RESET = 1; // Each second we simulate
 static const int BOARD_WIDTH = 100;
 static const int BOARD_HEIGHT = 100;
 
+
 int main(void)
 {
-	board_t *board, *dest;
+	board_t *board;
 	
 	double last_frame = 0;
 	map_t *map;
 
-	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, 0.5, 0.1, 0.4)) == NULL)
-		goto err_board;
-	if ((dest = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
-		goto err_dest;
-	if ((map = create_map(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
-		goto err_map;
+	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.2, .water_shatter_factor = 0.4 };
+	
 	if (!init())
 		goto err_init;
 
-	glClearColor(0, 0, 0, 1);
+	last_frame = glfwGetTime();
+	if(!init_simulator(&board, BOARD_WIDTH, BOARD_HEIGHT, gen_params))
+		goto err_simulator;				
+	printf("board generated in %lfms\n", 1000*(glfwGetTime()-last_frame));
+	
+	if ((map = create_map(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
+		goto err_map;
 
+	glClearColor(0, 0, 0, 1);
+	
 	while(!glfwWindowShouldClose(window)) {
 		last_frame = glfwGetTime();
 		process_events(deltatime);
 		
 		update_fps();
 		
-		simulate(&board, &dest);
+		//simulate();
+		try_simulate();
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 		render_map(map, board);
@@ -67,22 +73,30 @@ int main(void)
 	}
 	
 	terminate();
+	terminate_simulator();
 	free_map(map);
-	free_board(dest);
-	free_board(board);
 
 	return EXIT_SUCCESS;
 
-err_init:
-	free_map(map);
+
 err_map:
-	free_board(dest);
-err_dest:
-	free_board(board);
-err_board:
+	terminate_simulator();
+err_simulator:
+	terminate();
+err_init:
 	return EXIT_FAILURE;
 }
 
+static void try_simulate(void)
+{
+	if(step_timer < deltatime)
+	{
+		simulate();
+		step_timer = STEP_TIMER_RESET;
+	}
+	else
+		step_timer -= deltatime;
+}
 
 static void update_fps(void)
 {
@@ -154,16 +168,3 @@ static void wait_fps(void)
 	}
 }
 
-				
-static void simulate(board_t **main, board_t **temp)
-{
-	if (step_timer < deltatime) {
-		board_t *tmp;
-		step(*temp, *main);
-		tmp = *main;
-		*main = *temp;
-		*temp = tmp;
-		step_timer = STEP_TIMER_RESET;
-	} else
-		step_timer -= deltatime;
-}

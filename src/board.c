@@ -16,7 +16,7 @@ board_t* alloc_board(int width, int height)
 	}
 	board->width = width;
 	board->height = height;
-	
+
 	if ((board->cells = malloc(height * sizeof(*board->cells))) == NULL) {
 		perror("malloc(board->cells)");
 		goto err_height;
@@ -41,7 +41,6 @@ err_board:
 	return NULL;
 }
 
-
 void free_board(board_t *board)
 {
 	int i;
@@ -57,14 +56,16 @@ void free_board(board_t *board)
 	free(board);
 }
 
-
-int get_neighbors_count(int x, int y, board_t* board, state_t type)
+int get_neighbors_count(int x, int y, board_t* board, cell_type_t type, int(*predicate)(void*))
 {
 	int count = 0;
 	int i,j;
 	for(j = -1; j <=1; j++)
 		for(i = -1; i <= 1; i++)
-			if((i || j) && !IS_OUT_OF_BOUNDS(board,x+i,y+j) && board->cells[y+j][x+i] == type)
+			if((i || j)
+			   && !IS_OUT_OF_BOUNDS(board,x+i,y+j)
+			   && board->cells[y+j][x+i].type == type
+			   && (predicate == NULL || predicate(&board->cells[y+j][x+i].data)) )
 				count++;
 	return count;
 }

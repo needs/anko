@@ -12,7 +12,7 @@
 static const int WIDTH = 50;
 static const int HEIGHT = 50;
 
-void init_from_args(int argc, char **argv, int *speed, float *tree_density,float *water_density,float *water_shattering);
+void init_from_args(int argc, char **argv, int *speed, gen_params_t *params);
 void usage(char** argv);
 
 int is_running;
@@ -29,18 +29,16 @@ int main(int argc, char **argv)
 {
 	board_t *board, *dest, *tmp;
 	int speed = 500;
-	float tree_density = 0.70;
-	float water_density = 0.10;
-	float water_shattering = 0.4;
+	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.1, .water_shatter_factor = 0.4 };
 	
 	is_running = 1;
-	init_from_args(argc, argv, &speed, &tree_density, &water_density, &water_shattering);
+	init_from_args(argc, argv, &speed, &gen_params);
 	
 	srandom(time(NULL));
 
 	signal(SIGINT,&handler);
 	
-	if ((board = generate(WIDTH, HEIGHT,tree_density, water_density,water_shattering)) == NULL)
+	if ((board = generate(WIDTH, HEIGHT, gen_params)) == NULL)
 		return EXIT_FAILURE;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		return EXIT_FAILURE;
@@ -50,11 +48,11 @@ int main(int argc, char **argv)
 	
 	while(is_running)
 	{
-		step(dest,board);
-
+		step(dest, board);
+		
 		tmp = board;
 		board = dest;
-		dest = tmp;
+	    dest = tmp;
 		
 		display(board);
 		usleep(speed*1000);
@@ -77,7 +75,7 @@ void usage(char** argv)
 	printf("\t-k, --water-shattering=shattering ]0;1]\tWater shattering 1 means no shatteing\n");
 }
 
-void init_from_args(int argc, char **argv, int *speed, float *tree_density, float *water_density, float *water_shattering)
+void init_from_args(int argc, char **argv, int *speed, gen_params_t *params)
 {
 	int opt;
 	static struct option long_options[] =
@@ -95,16 +93,16 @@ void init_from_args(int argc, char **argv, int *speed, float *tree_density, floa
 		switch(opt)
 		{
 		case 's':
-			*speed = atoi(optarg);
+		    *speed = atoi(optarg);
 			break;
 		case 't':
-			*tree_density = atof(optarg);
+			params->tree_density = atof(optarg);
 			break;
 		case 'w':
-			*water_density = atof(optarg);
+			params->water_density = atof(optarg);
 			break;
 		case 'k':
-			*water_shattering = atof(optarg);
+			params->water_shatter_factor = atof(optarg);
 			break;
 		case 'h':
 			usage(argv);
