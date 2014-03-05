@@ -51,7 +51,8 @@ endef
 
 $(foreach b,$(BINS),$(eval $(call BIN_template,$(b))))
 
-.PHONY: all clean $(ALL_CLEANS)
-clean: $(ALL_CLEANS)
+.PHONY: all clean $(ALL_CLEANS) custom_clean
+clean: $(ALL_CLEANS) custom_clean
 	$(foreach d,$(sort $(dir ,$(ALL_OBJS))),$(shell rmdir -p $(d) 2> /dev/null))
 	@rmdir -p $(BINDIR)/ 2>/dev/null || true
+custom_clean:
