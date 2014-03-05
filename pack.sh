@@ -21,5 +21,5 @@ for i; do
     height=$(convert -trim -format "%h" "$i" info:)
     width=$(convert -trim -format "%w" "$i" info:)
     printf "ADD_IN_TEXTURE(%-20s %s, %4d, %4d, %4d, %4d)\n" "$texid," "$outid" 0 $offset $width $height
-    offset=$(($offset + $height + 1))
+    offset=$(($offset + $height))
 done
