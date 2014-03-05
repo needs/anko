@@ -39,12 +39,16 @@ int main(void)
 	double last_frame = 0;
 	map_t *map;
 
-	gen_params_t gen_params = { .tree_density = 0.4, .water_density = 0.1, .water_shatter_factor = 0.4 };
+	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.2, .water_shatter_factor = 0.4 };
 	
 	if (!init())
 		goto err_init;
+	
+	last_frame = glfwGetTime();
 	if ((board = generate(BOARD_WIDTH, BOARD_HEIGHT, gen_params)) == NULL)
 		goto err_board;
+	printf("board generated in %lfms\n", 1000*(glfwGetTime()-last_frame));
+	
 	if ((dest = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
 		goto err_dest;
 	if ((map = create_map(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)

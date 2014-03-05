@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "simulator.h"
+#include <stdio.h>
 
 int is_burning(void* data)
 {
@@ -32,7 +33,7 @@ void step(board_t* dest, board_t* src)
 				// Replace next line with should_burn with more parameters like humidity etc ?
 				if( src->cells[j][i].data.tree.life == 100)
 				{
-					if( ((float)random() / RAND_MAX ) < (float)nb/2.5)
+					if( ((float)random() / RAND_MAX ) < (float)nb/4)
 						dest->cells[j][i].data.tree.life = 99; // FLAME UP THIS TREE
 					else
 						dest->cells[j][i].data.tree.life = 100;
