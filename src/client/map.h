@@ -11,7 +11,7 @@
 
 typedef struct mapcell_t {
 	mat4x4 model;
-    int seed;
+	int seed;
 } mapcell_t;
 
 typedef struct map_t {
