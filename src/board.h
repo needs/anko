@@ -1,6 +1,10 @@
 #ifndef _BOARD_H_
 #define _BOARD_H_
 
+
+#define IS_OUT_OF_BOUNDS(b ,x , y) ((x) < 0 || (x) >= (b)->width || (y) < 0 || (y) >= (b)->height)
+
+
 typedef enum cell_type_t
 {
 	CT_GRASS = 0,
@@ -33,9 +37,9 @@ typedef struct cell_t
 	} data;
 } cell_t;
 
-typedef struct
+typedef struct board_t
 {
-	cell_t** cells;
+	cell_t **cells;
 	int width;
 	int height;
 } board_t;
@@ -44,6 +48,5 @@ void free_board(board_t *board);
 board_t* alloc_board(int width, int height);
 int get_neighbors_count(int x, int y, board_t* board, cell_type_t type, int(*predicate)(void*));
 
-#define IS_OUT_OF_BOUNDS(b,x,y) (x < 0 || x >= b->width || y < 0 || y >= b->height)
 
 #endif /* _BOARD_H_ */

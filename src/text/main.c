@@ -17,13 +17,13 @@ void usage(char** argv);
 
 int is_running;
 
+
 void handler(int sig)
 {
 	if(sig == SIGINT)
-	{
 		is_running = 0;
-	}
 }
+
 
 int main(int argc, char **argv)
 {
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 		
 		tmp = board;
 		board = dest;
-	    dest = tmp;
+		dest = tmp;
 		
 		display(board);
 		usleep(speed*1000);

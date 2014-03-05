@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <time.h>
 #include <unistd.h>
 #include <GLFW/glfw3.h>
@@ -26,7 +27,8 @@ static int  init(void);
 static void terminate(void);
 static void update_fps(void);
 static void wait_fps(void);
-static void try_simulate(void);
+static void try_simulate(board_t *old, board_t *current);
+static void swap(void **p1, void **p2);
 
 static const float STEP_TIMER_RESET = 1; // Each second we simulate
 static const int BOARD_WIDTH = 100;
@@ -35,22 +37,18 @@ static const int BOARD_HEIGHT = 100;
 
 int main(void)
 {
-	board_t *board;
-	
-	double last_frame = 0;
+	board_t *current, *old;
 	map_t *map;
-
 	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.2, .water_shatter_factor = 0.4 };
+	double last_frame = 0;
 	
 	if (!init())
 		goto err_init;
-
-	last_frame = glfwGetTime();
-	if(!init_simulator(&board, BOARD_WIDTH, BOARD_HEIGHT, gen_params))
-		goto err_simulator;				
-	printf("board generated in %lfms\n", 1000*(glfwGetTime()-last_frame));
-	
-	if ((map = create_map(board)) == NULL)
+	if ((current = generate(BOARD_WIDTH, BOARD_HEIGHT, gen_params)) == NULL)
+		goto err_current;
+	if ((old = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
+		goto err_old;
+	if ((map = create_map(current)) == NULL)
 		goto err_map;
 
 	glClearColor(0, 0, 0, 1);
@@ -60,43 +58,44 @@ int main(void)
 		process_events(deltatime);
 		
 		update_fps();
-		
-		//simulate();
-		try_simulate();
-		
+		try_simulate(old, current);
+		swap((void**)&current, (void**)&old);
+
 		glClear(GL_COLOR_BUFFER_BIT);
-		render_map(map, board);
+		render_map(map, current);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
 		wait_fps(); // Limiting frame per second 
 	}
 	
-	terminate();
-	terminate_simulator();
+	free_board(old);
+	free_board(current);
 	free_map(map);
+	terminate();
 
 	return EXIT_SUCCESS;
 
-
 err_map:
-	terminate_simulator();
-err_simulator:
+	free_board(old);
+err_old:
+	free_board(current);
+err_current:
 	terminate();
 err_init:
 	return EXIT_FAILURE;
 }
 
-static void try_simulate(void)
+
+static void try_simulate(board_t *old, board_t *current)
 {
-	if(step_timer < deltatime)
-	{
-		simulate();
+	if (step_timer < deltatime) {
+		step(old, current);
 		step_timer = STEP_TIMER_RESET;
-	}
-	else
+	} else
 		step_timer -= deltatime;
 }
+
 
 static void update_fps(void)
 {
@@ -168,3 +167,14 @@ static void wait_fps(void)
 	}
 }
 
+
+static void swap(void **p1, void **p2)
+{
+	void *tmp;
+
+	assert(p1 != NULL);
+	assert(p2 != NULL);
+	tmp = *p1;
+	*p1 = *p2;
+	*p1 = tmp;
+}

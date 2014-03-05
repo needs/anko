@@ -3,10 +3,12 @@
 #include <assert.h>
 #include <stdio.h>
 
+
 board_t* alloc_board(int width, int height)
 {
 	int i;
 	board_t *board;
+
 	assert(width > 0);
 	assert(height > 0);
 
@@ -14,9 +16,6 @@ board_t* alloc_board(int width, int height)
 		perror("malloc(board)");
 		goto err_board;
 	}
-	board->width = width;
-	board->height = height;
-
 	if ((board->cells = malloc(height * sizeof(*board->cells))) == NULL) {
 		perror("malloc(board->cells)");
 		goto err_height;
@@ -29,6 +28,9 @@ board_t* alloc_board(int width, int height)
 		}
 	}
 
+	board->width = width;
+	board->height = height;
+
 	return board;
 
 err_width:
@@ -40,6 +42,7 @@ err_height:
 err_board:
 	return NULL;
 }
+
 
 void free_board(board_t *board)
 {
