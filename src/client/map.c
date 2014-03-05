@@ -1,24 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL/gl.h>
+
 #include "textures.h"
 #include "map.h"
+#include "shader.h"
+#include "renderer.h"
+#include "../board.h"
 
 
-static void seed_map(map_t *map);
+typedef struct mapcell_t {
+	mat4x4 model;
+	int seed;
+} mapcell_t;
+
+typedef struct map_t {
+	GLuint vbo_floor, vao_floor;
+	GLuint vbo_entity, vao_entity;
+
+	int width, height;
+	mapcell_t **cells;
+} map_t;
+
+
+static void create_vao(GLuint *vao, GLuint *vbo);
+static void seed_map(map_t *map, board_t *board);
 static map_t* alloc_map(int width, int height);
+static tex_t get_floor_tex(cell_t *c);
+static tex_t get_entity_tex(cell_t *c);
 
 
-map_t* create_map(int width, int height)
+map_t* create_map(board_t *board)
 {
 	map_t *map;
 
-	assert(width > 0);
-	assert(height > 0);
+	assert(board != NULL);
 
-	if ((map = alloc_map(width, height)) == NULL)
+	if ((map = alloc_map(board->width, board->height)) == NULL)
 		return NULL;
-	seed_map(map);
+	seed_map(map, board);
 
 	return map;
 }
@@ -32,6 +56,10 @@ void free_map(map_t *map)
 
 	for (i = 0; i < map->height; i++)
 		free(map->cells[i]);
+	glDeleteBuffers(1, &map->vbo_floor);
+	glDeleteBuffers(1, &map->vbo_entity);
+	glDeleteVertexArrays(1, &map->vao_floor);
+	glDeleteVertexArrays(1, &map->vao_entity);
 	free(map->cells);
 	free(map);
 }
@@ -62,8 +90,17 @@ static map_t* alloc_map(int width, int height)
 		}
 	}
 
-	map->width = width;
+	map->width  = width;
 	map->height = height;
+
+	/* Create vbo, vao, and shader attrib */
+	create_vao(&map->vao_floor, &map->vbo_floor);
+	create_vao(&map->vao_entity, &map->vbo_entity);
+
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_DYNAMIC_DRAW);
 
 	return map;
 
@@ -78,93 +115,109 @@ err_map:
 }
 
 
-/* Introduit de la variation dans les textures
- * Précalcule les coordonnées des cases. */
-static void seed_map(map_t *map)
+static void create_vao(GLuint *vao, GLuint *vbo)
 {
-	int i, j;//, k;
+	assert(vbo != NULL);
+	assert(vao != NULL);
 
-	assert(map != NULL);
+	glGenVertexArrays(1, vao);
+	glBindVertexArray(*vao);
 
-	for (i = 0; i < map->height; i++) {
-		for (j = 0; j < map->width; j++) {
-			//int seed = random();
+	glGenBuffers(1, vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
-			mat4x4_translate(map->cells[i][j].model, j*-TILE_WIDTH/2 + i*TILE_WIDTH/2, i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2, 0);
-/*
-			for (k = 0; k < CT_TOTAL; k++) {
-				// Floor
-				if (k == CT_WATER)
-					map->cells[i][j].floor[k] = TEX_WATER;
-				else
-					map->cells[i][j].floor[k] = TEX_GRASS;
-				
-				// Entity 
-				switch (k) {
-				case CT_TREE:
-					if (seed % 50 == 0) {
-						map->cells[i][j].entity[k] = TEX_TREE2;
-					}
-					else if (seed % 50 > 0 && seed % 50 < 15) {
-						map->cells[i][j].entity[k] = TEX_TREE3;
-					}
-					else {
-						map->cells[i][j].entity[k] = TEX_TREE;
-					}
-					break;
-				default:
-					map->cells[i][j].entity[k] = TEX_NONE;
-				}
-			}*/
-		}
-	}
+	GLint position = glGetAttribLocation(program, "position");
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glEnableVertexAttribArray(position);
+
+	GLint tex_coord = glGetAttribLocation(program, "tex_coord");
+	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glEnableVertexAttribArray(tex_coord);
+
+	glBindVertexArray(0);
 }
 
 
-static tex_t get_entity_tex(cell_t c)
+/* Introduit de la variation dans les textures
+ * Précalcule les coordonnées des cases. */
+static void seed_map(map_t *map, board_t *board)
 {
-	switch(c.type)
-	{
+	int i, j;
+	float *buf;
+
+	assert(map != NULL);
+
+	/* VBOs are mapped to avoid a lot of call to glBufferSubData */
+
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
+	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	for (i = 0; i < map->height; i++) {
+		for (j = 0; j < map->width; j++) {
+			get_ctexture(buf + ((i * map->height + j) * 16),
+				     get_floor_tex(&board->cells[i][j]),
+				     j*-TILE_WIDTH/2 + i*TILE_WIDTH/2,
+				     i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2);
+		}
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
+	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	for (i = 0; i < map->height; i++) {
+		for (j = 0; j < map->width; j++) {
+			get_ctexture(buf + ((i * map->height + j) * 16),
+				     get_entity_tex(&board->cells[i][j]),
+				     j*-TILE_WIDTH/2 + i*TILE_WIDTH/2,
+				     i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2);
+		}
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+
+static tex_t get_floor_tex(cell_t *c)
+{
+	assert(c != NULL);
+
+	if (c->type == CT_WATER)
+		return TEX_TILES_WATER;
+	else
+		return TEX_TILES_GRASS;
+}
+
+
+static tex_t get_entity_tex(cell_t *c)
+{
+	assert(c != NULL);
+
+	switch (c->type) {
 	case CT_TREE:
-		if(c.data.tree.life == 100)
-			return TEX_TREE;
-		else if (c.data.tree.life)
-			return TEX_BURNING_TREE;
+		if (c->data.tree.life == 100)
+			return TEX_ENTITIES_TREE;
+		else if (c->data.tree.life)
+			return TEX_ENTITIES_BURNING_TREE;
 		else
-			return TEX_BURNED_TREE;
+			return TEX_ENTITIES_BURNED_TREE;
 	default:
 		return TEX_NONE;
 	}
 }
 
+
 void render_map(map_t *map, board_t *board)
 {
-	int i, j;
+	mat4x4 identity;
 
 	assert(map != NULL);
 	assert(board != NULL);
 
-	/* For now, split the floor rendering and the entity rendering to
-	 * avoid textures switching (HACK) */
+	mat4x4_identity(identity);
 
-	for (i = 0; i < map->height; i++) {
-		for (j = 0; j < map->width; j++) {
-			mapcell_t *cell = &map->cells[i][j];
-			//tex_t floor  = cell->floor[board->cells[i][j]];
-			tex_t floor = board->cells[i][j].type == CT_WATER ? TEX_WATER : TEX_GRASS;
-				
-			if (floor != TEX_NONE)
-				render_texture(cell->model, floor);
-		}
-	}
+	glBindVertexArray(map->vao_floor);
+	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
+	render_model(identity, 0, map->height * map->width * 4);
 
-	for (i = 0; i < map->height; i++) {
-		for (j = 0; j < map->width; j++) {
-			mapcell_t *cell = &map->cells[i][j];
-			//tex_t entity = cell->entity[board->cells[i][j]];
-			tex_t entity = get_entity_tex(board->cells[i][j]);
-			if (entity != TEX_NONE)
-				render_texture(cell->model, entity);
-		}
-	}
+	glBindVertexArray(map->vao_entity);
+	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
+	render_model(identity, 0, map->height * map->width * 4);
 }

@@ -1,40 +1,22 @@
 #include <assert.h>
+#include <string.h>
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "linmath.h"
 #include "textures.h"
-#include "renderer.h"
+#include "linmath.h"
 #include "stb_image.h"
-#include "shader.h"
-
-
-/* This VBO contains the vertex of every textures. */
-static GLuint vbo_tex;
-static const size_t tex_size = 16 * sizeof(float);
-
-/* VAO for linking shader to vbo_tex */
-static GLuint vao_tex;
-
-
-#define ADD_TEXTURE(name, path) "data/"path,
-#define ADD_IN_TEXTURE(...)
-static const char tex_path[][32] = {
-#include "textures.def"
-};
-#undef ADD_IN_TEXTURE
-#undef ADD_TEXTURE
 
 
 typedef struct texture_t {
-	GLuint tex;
-	size_t offset;
-	int width, height;
+	GLuint tex;		/* OpenGL texture */
+	float data[16];		/* Vertices and coordinates */
+	int   width, height;	/* Size of the texture */
+	float ox, oy;		/* Position of the center */
 } texture_t;
-static texture_t textures[TEX_TOTAL];
+static texture_t textures[TEX_TOTAL] = {{.tex = 0, .data = {0}, .width = 0, .height = 0, .ox = 0, .oy = 0}};
 
 
-static void init_textures();
 static int  load_from_file(texture_t *tex, const char *path);
 static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float w, float h, float ox, float oy);
 
@@ -42,8 +24,6 @@ static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float 
 int load_textures(void)
 {
 	int i;
-
-	init_textures();
 
 	/* Init to INVALID for error handling (see err_tex) */
 	for (i = 0; i < TEX_TOTAL; i++)
@@ -56,7 +36,7 @@ int load_textures(void)
 		goto err_tex;						\
 	ref_texture(&textures[TEX_##name], &textures[TEX_##name], 0, 0, textures[TEX_##name].width, textures[TEX_##name].height, 0, 0);
 #define ADD_IN_TEXTURE(name, from, x, y, w, h, ox, oy)			\
-	ref_texture(&textures[TEX_##name], &textures[TEX_##from], x, y, w, h, ox, oy);
+	ref_texture(&textures[TEX_##from##_##name], &textures[TEX_##from], x, y, w, h, ox, oy);
 #include "textures.def"
 #undef ADD_IN_TEXTURE
 #undef ADD_TEXTURE
@@ -67,8 +47,6 @@ err_tex:
 	for (i = 0; i < TEX_TOTAL; i++)
 		if (textures[i].tex != GL_INVALID_VALUE)
 			glDeleteTextures(1, &textures[i].tex);
-	glDeleteBuffers(1, &vbo_tex);
-	glDeleteVertexArrays(1, &vao_tex);
 	return 0;
 }
 
@@ -78,44 +56,6 @@ void unload_textures(void)
 	int i;
 	for (i = 0; i < TEX_TOTAL; i++)
 		glDeleteTextures(1, &textures[i].tex);
-	glDeleteBuffers(1, &vbo_tex);
-	glDeleteVertexArrays(1, &vao_tex);
-}
-
-
-void render_texture(mat4x4 model, tex_t tex)
-{
-	assert(tex > TEX_NONE);
-	assert(tex < TEX_TOTAL);
-
-	static texture_t *current = NULL;
-	if (current == NULL || current != textures + tex) {
-		glBindTexture(GL_TEXTURE_2D, textures[tex].tex);
-		current = textures + tex;
-	}
-
-	render_model(model, textures[tex].offset);
-}
-
-
-static void init_textures(void)
-{
-	glGenVertexArrays(1, &vao_tex);
-	glBindVertexArray(vao_tex);
-
-	glGenBuffers(1, &vbo_tex);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
-	glBufferData(GL_ARRAY_BUFFER, tex_size * TEX_TOTAL, NULL, GL_STATIC_DRAW);
-
-	/* Format of the vertices for the shader */
-
-	GLint position = glGetAttribLocation(program, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
-	glEnableVertexAttribArray(position);
-
-	GLint tex_coord = glGetAttribLocation(program, "tex_coord");
-	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
-	glEnableVertexAttribArray(tex_coord);
 }
 
 
@@ -136,7 +76,7 @@ static int load_from_file(texture_t *tex, const char *path)
 
 	/* Use MipMap, Note: The filtering method might not be apropriate */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
 	/* Note: force 4 channels because the shader only process 4 channels */
 	data = stbi_load(path, &tex->width, &tex->height, NULL, 4);
@@ -159,17 +99,42 @@ static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float 
 	assert(tex != NULL);
 	assert(ref != NULL);
 
-	tex->tex = ref->tex;
-	tex->offset = 4 * (tex - textures);
-	printf("offset = %ld\n", tex - textures);
-
-	float vertices[16] = {
-		-ox, -oy, x / ref->width,       y / ref->height,
-		-ox + w, -oy, (x + w) / ref->width, y / ref->height,
-		-ox + w, -oy + h, (x + w) / ref->width, (y + h) / ref->height,
-		-ox, -oy + h, x / ref->width,       (y + h) / ref->height,
+	float tmp[16] = {
+		0, 0, x / ref->width,       y / ref->height,
+		w, 0, (x + w) / ref->width, y / ref->height,
+		w, h, (x + w) / ref->width, (y + h) / ref->height,
+		0, h, x / ref->width,       (y + h) / ref->height
 	};
 
-	/* And send them to the graphic card */
-	glBufferSubData(GL_ARRAY_BUFFER, (tex - textures) * tex_size, tex_size, vertices);
+	tex->tex = ref->tex;
+	tex->ox = ox;
+	tex->oy = oy;
+	memcpy(tex->data, tmp, sizeof(tmp));
+}
+
+
+void get_texture(float *data, tex_t tex, float x, float y)
+{
+	assert(data != NULL);
+
+	float *ref = textures[tex].data;
+	float tmp[16] = {
+		ref[0]  + x, ref[1]  + y, ref[2],  ref[3],
+		ref[4]  + x, ref[5]  + y, ref[6],  ref[7],
+		ref[8]  + x, ref[9]  + y, ref[10], ref[11],
+		ref[12] + x, ref[13] + y, ref[14], ref[15],
+	};
+	memcpy(data, tmp, sizeof(tmp));
+}
+
+
+void get_ctexture(float *data, tex_t tex, float x, float y)
+{
+	get_texture(data, tex, x - textures[tex].ox, y - textures[tex].oy);
+}
+
+
+GLuint get_texid(tex_t tex)
+{
+	return textures[tex].tex;
 }

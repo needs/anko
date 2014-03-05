@@ -50,7 +50,7 @@ int main(void)
 		goto err_simulator;				
 	printf("board generated in %lfms\n", 1000*(glfwGetTime()-last_frame));
 	
-	if ((map = create_map(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
+	if ((map = create_map(board)) == NULL)
 		goto err_map;
 
 	glClearColor(0, 0, 0, 1);

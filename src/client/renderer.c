@@ -40,7 +40,7 @@ void close_rendering(void)
 }
 
 
-void render_model(mat4x4 model, GLint offset)
+void render_model(mat4x4 model, GLint first, GLint count)
 {
 	glActiveTexture(GL_TEXTURE0);
 
@@ -53,5 +53,5 @@ void render_model(mat4x4 model, GLint offset)
 			   1, GL_FALSE, (GLfloat*)camera);
 
 	/* And render them */
-	glDrawArrays(GL_QUADS, offset, 4);
+	glDrawArrays(GL_QUADS, first, count);
 }
