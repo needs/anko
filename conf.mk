@@ -26,11 +26,11 @@ src/client/textures.def: src/client/textures_pack.def
 
 src/client/textures_pack.def: data/tiles.png data/entities.png
 
-data/tiles.png: $(wildcard data/tiles/*.png)
-	@./pack.sh $@ $^ >> src/client/textures_pack.def
+data/tiles.png: pack.sh $(wildcard data/tiles/*.png)
+	@./pack.sh $@ $(wordlist 2, $(words $^), $^) >> src/client/textures_pack.def
 
-data/entities.png: $(wildcard data/entities/*.png)
-	@./pack.sh $@ $^ >> src/client/textures_pack.def
+data/entities.png: pack.sh $(wildcard data/entities/*.png)
+	@./pack.sh $@ $(wordlist 2, $(words $^), $^) >> src/client/textures_pack.def
 
 custom_clean:
 	@rm -f data/tiles.png data/entities.png src/client/textures_pack.def
