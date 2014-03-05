@@ -39,7 +39,7 @@ int main(void)
 	double last_frame = 0;
 	map_t *map;
 
-	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.1, .water_shatter_factor = 0.4 };
+	gen_params_t gen_params = { .tree_density = 0.4, .water_density = 0.1, .water_shatter_factor = 0.4 };
 	
 	if (!init())
 		goto err_init;

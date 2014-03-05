@@ -11,7 +11,7 @@
 
 typedef struct mapcell_t {
 	mat4x4 model;
-	tex_t floor[TEX_TOTAL], entity[TEX_TOTAL];
+    int seed;
 } mapcell_t;
 
 typedef struct map_t {

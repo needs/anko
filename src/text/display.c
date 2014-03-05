@@ -18,7 +18,28 @@ void display(board_t *board)
 	reset_screen();
 	for (i = 0; i < board->height; i++) {
 		for (j = 0; j < board->width; j++) {
-			printf(statemap[board->cells[i][j]]);
+			switch(board->cells[i][j].type)
+			{
+			case CT_GRASS:
+				printf(statemap[0]);
+				break;
+			case CT_WATER:
+				printf(statemap[1]);
+				break;
+			case CT_ROCK:
+				printf(statemap[2]);
+				break;
+			case CT_TREE:
+				if(board->cells[i][j].data.tree.life == 100)
+					printf(statemap[3]);
+				else if(board->cells[i][j].data.tree.life)
+					printf(statemap[4]);
+				else
+					printf(statemap[5]);
+				break;
+			default:
+				break;
+			}
 		}
 		putchar('\n');
 	}

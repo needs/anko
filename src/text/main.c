@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
 	signal(SIGINT,&handler);
 	
-	if ((board = generate(WIDTH, HEIGHT,gen_params)) == NULL)
+	if ((board = generate(WIDTH, HEIGHT, gen_params)) == NULL)
 		return EXIT_FAILURE;
 	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
 		return EXIT_FAILURE;
@@ -48,11 +48,11 @@ int main(int argc, char **argv)
 	
 	while(is_running)
 	{
-		step(dest,board);
-
+		step(dest, board);
+		
 		tmp = board;
 		board = dest;
-		dest = tmp;
+	    dest = tmp;
 		
 		display(board);
 		usleep(speed*1000);
