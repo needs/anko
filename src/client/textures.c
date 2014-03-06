@@ -27,14 +27,14 @@ int load_textures(void)
 
 	/* Init to INVALID for error handling (see err_tex) */
 	for (i = 0; i < TEX_TOTAL; i++)
-		textures[i].tex = GL_INVALID_VALUE;
+		textures[i].tex = 0;
 
 	/* Try to load all textures, it's a bit complicated since we must
 	 * mix normal textures with packed one. */
 #define ADD_TEXTURE(name, path)						\
 	if (!load_from_file(&textures[TEX_##name], path))		\
 		goto err_tex;						\
-	ref_texture(&textures[TEX_##name], &textures[TEX_##name], 0, 0, textures[TEX_##name].width, textures[TEX_##name].height, 0, 0);
+	ref_texture(&textures[TEX_##name], &textures[TEX_##name], 0, 0, textures[TEX_##name].width, textures[TEX_##name].height, textures[TEX_##name].width/2, textures[TEX_##name].height/2);
 #define ADD_IN_TEXTURE(name, from, x, y, w, h, ox, oy)			\
 	ref_texture(&textures[TEX_##from##_##name], &textures[TEX_##from], x, y, w, h, ox, oy);
 #include "textures.def"
@@ -45,7 +45,7 @@ int load_textures(void)
 
 err_tex:
 	for (i = 0; i < TEX_TOTAL; i++)
-		if (textures[i].tex != GL_INVALID_VALUE)
+		if (textures[i].tex != 0)
 			glDeleteTextures(1, &textures[i].tex);
 	return 0;
 }

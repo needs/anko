@@ -27,7 +27,7 @@ typedef struct map_t {
 
 
 static void create_vao(GLuint *vao, GLuint *vbo);
-static void seed_map(map_t *map, board_t *board);
+static int seed_map(map_t *map, board_t *board);
 static map_t* alloc_map(int width, int height);
 static tex_t get_floor_tex(cell_t *c);
 static tex_t get_entity_tex(cell_t *c);
@@ -41,7 +41,8 @@ map_t* create_map(board_t *board)
 
 	if ((map = alloc_map(board->width, board->height)) == NULL)
 		return NULL;
-	seed_map(map, board);
+	if (!seed_map(map, board))
+		return NULL;
 
 	return map;
 }
@@ -64,9 +65,10 @@ void free_map(map_t *map)
 }
 
 
+/* Allocate needed memory and initialise width, height, x, and y. */
 static map_t* alloc_map(int width, int height)
 {
-	int i;
+	int i, j;
 	map_t *map;
 
 	assert(width > 0);
@@ -87,6 +89,11 @@ static map_t* alloc_map(int width, int height)
 			perror("malloc(map->cells[i])");
 			goto err_width;
 		}
+
+		for (j = 0; j < width; j++) {
+			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
+			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
+		}
 	}
 
 	map->width  = width;
@@ -94,12 +101,6 @@ static map_t* alloc_map(int width, int height)
 
 	create_vao(&map->vao_floor, &map->vbo_floor);
 	create_vao(&map->vao_entity, &map->vbo_entity);
-
-	/* Allocate memory for VBO */
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
-	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
-	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_DYNAMIC_DRAW);
 
 	return map;
 
@@ -140,40 +141,53 @@ static void create_vao(GLuint *vao, GLuint *vbo)
 
 /* Introduce variations for map tiles/entities.
  * Also used to precomputes coordinate of each tiles/entities. */
-static void seed_map(map_t *map, board_t *board)
+static int seed_map(map_t *map, board_t *board)
 {
 	int i, j;
 	float *buf;
 
 	assert(map != NULL);
+	assert(board != NULL);
+	assert(board->width == map->width);
+	assert(board->height == map->height);
 
 	/* VBOs are mapped to avoid a lot of call to glBufferSubData */
+	/* Note: we loop until glUnmapBuffer works, we do that because normally
+	 * the only error case is when the buffer gets corrupted, which is
+	 * pretty rare. */
 
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
-	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-	for (i = 0; i < map->height; i++) {
-		for (j = 0; j < map->width; j++) {
-			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
-			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
-			get_ctexture(buf + ((i * map->height + j) * 16),
-				     get_floor_tex(&board->cells[i][j]),
-				     map->cells[i][j].x,
-				     map->cells[i][j].y);
+	do {
+		glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_STATIC_DRAW);
+		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)) == NULL)
+			return 0;
+		for (i = 0; i < map->height; i++) {
+			for (j = 0; j < map->width; j++) {
+				get_ctexture(buf + ((i * map->height + j) * 16),
+					     get_floor_tex(&board->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y);
+			}
 		}
-	}
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	} while (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE);
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
-	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-	for (i = 0; i < map->height; i++) {
-		for (j = 0; j < map->width; j++) {
-			get_ctexture(buf + ((i * map->height + j) * 16),
-				     get_entity_tex(&board->cells[i][j]),
-				     map->cells[i][j].x,
-				     map->cells[i][j].y);
+	do {
+		glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_DYNAMIC_DRAW);
+		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)) == NULL)
+			return 0;
+		for (i = 0; i < map->height; i++) {
+			for (j = 0; j < map->width; j++) {
+				get_ctexture(buf + ((i * map->height + j) * 16),
+					     get_entity_tex(&board->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y);
+			}
 		}
-	}
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	} while (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE);
+
+	return 1;
 }
 
 
