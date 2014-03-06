@@ -50,6 +50,8 @@ board_t* generate(int width, int height, gen_params_t params)
 	int pos[2] = { random()%board->height, random()%board->width };
 	board->cells[pos[0]][pos[1]].type = CT_TREE;
 	board->cells[pos[0]][pos[1]].data.tree.life = 99;
+	board->cells[pos[0]][pos[1]].data.tree.specie = TS_APPLE;
+
 	return board;
 }
 
@@ -101,6 +103,7 @@ static void spread_forest(board_t *board, int x, int y, int *count, int size)
 	{
 		board->cells[y][x].type = CT_TREE;
 		board->cells[y][x].data.tree.life = 100;
+		board->cells[y][x].data.tree.specie = TS_APPLE;
 		
 		*count = *count+1;
 		spread_forest(board, x+1, y, count, size);

@@ -191,14 +191,35 @@ static tex_t get_entity_tex(cell_t *c)
 {
 	assert(c != NULL);
 
+	static tex_t tree[TS_TOTAL] = {
+		TEX_ENTITIES_TREE,
+		TEX_ENTITIES_TREE2,
+		TEX_ENTITIES_TREE3,
+		TEX_ENTITIES_TREE,
+	};
+
+	static tex_t burning[TS_TOTAL] = {
+		TEX_ENTITIES_BURNING_TREE,
+		TEX_ENTITIES_BURNING_TREE2,
+		TEX_ENTITIES_BURNING_TREE3,
+		TEX_ENTITIES_BURNING_TREE,
+	};
+
+	static tex_t burned[TS_TOTAL] = {
+		TEX_ENTITIES_BURNED_TREE,
+		TEX_ENTITIES_BURNED_TREE2,
+		TEX_ENTITIES_BURNED_TREE3,
+		TEX_ENTITIES_BURNED_TREE,
+	};
+
 	switch (c->type) {
 	case CT_TREE:
 		if (c->data.tree.life == 100)
-			return TEX_ENTITIES_TREE;
+			return tree[c->data.tree.specie];
 		else if (c->data.tree.life)
-			return TEX_ENTITIES_BURNING_TREE;
+			return burning[c->data.tree.specie];
 		else
-			return TEX_ENTITIES_BURNED_TREE;
+			return burned[c->data.tree.specie];
 	default:
 		return TEX_NONE;
 	}

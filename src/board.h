@@ -19,7 +19,8 @@ enum tree_specie_t
 	TS_OAK,
 	TS_APPLE,
 	TS_BIRCH,
-	TS_PINE
+	TS_PINE,
+	TS_TOTAL,
 };
 
 typedef struct tree_data_t
