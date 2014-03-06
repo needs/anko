@@ -33,7 +33,6 @@ int init_rendering(void)
 
 	init_rtt();
 	mat4x4_ortho(projection, 0, config.screen_width, config.screen_height, 0, -1, 1);
-	set_camera(0, 0, 1);
 	return 1;
 
 err_shaders:
@@ -50,8 +49,7 @@ void close_rendering(void)
     unload_shaders();
 }
 
-
-void render_model(mat4x4 model, GLint first, GLint count)
+void render_model(mat4x4 view, mat4x4 model, GLint first, GLint count)
 {
 	glActiveTexture(GL_TEXTURE0);
 
@@ -61,29 +59,10 @@ void render_model(mat4x4 model, GLint first, GLint count)
 	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
 			   1, GL_FALSE, (GLfloat*)projection);
 	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
-			   1, GL_FALSE, (GLfloat*)camera);
+			   1, GL_FALSE, (GLfloat*)view);
 
 	/* And render them */
 	glDrawArrays(GL_QUADS, first, count);
-}
-
-void render_on_top(mat4x4 model, GLint offset)
-{
-	glActiveTexture(GL_TEXTURE0);
-
-	mat4x4 id;
-	mat4x4_identity(id);
-	
-	glUniform1i(glGetUniformLocation(standard, "tex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(standard, "model"),
-					   1, GL_FALSE, (GLfloat*)model);
-	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
-					   1, GL_FALSE, (GLfloat*)projection);
-	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
-					   1, GL_FALSE, (GLfloat*)id);
-
-	/* And render them */
-	glDrawArrays(GL_QUADS, offset, 4);
 }
 
 void rtt_start()

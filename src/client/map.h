@@ -3,7 +3,7 @@
 
 #include "linmath.h"
 #include "../board.h"
-
+#include "camera.h"
 
 #define TILE_WIDTH  68
 #define TILE_HEIGHT 34
@@ -18,7 +18,6 @@ void free_map(map_t *map);
 void update_map(map_t *map, board_t *current, board_t *old);
 
 /* Just draw the map, nothing is computed here. */
-void render_map(map_t *map);
-
+void render_map(map_t *map, camera_t *camera);
 
 #endif /* _MAP_H_ */

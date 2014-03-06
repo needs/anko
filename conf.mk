@@ -15,7 +15,7 @@ SRCS_anko_text = src/*.c src/text/*.c
 LDFLAGS_anko_text =
 CFLAGS_anko_text = $(CFLAGS)
 
-SRCS_anko = src/*.c src/client/*.c
+SRCS_anko = src/*.c src/client/*.c src/client/ui/*.c
 LDFLAGS_anko = -lglfw -lGL -lm -lGLEW
 CFLAGS_anko = $(CFLAGS)
 
