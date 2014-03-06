@@ -129,9 +129,9 @@ static void create_vao(GLuint *vao, GLuint *vbo)
 	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
 
-	GLint tex_coord = glGetAttribLocation(standard, "tex_coord");
-	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
-	glEnableVertexAttribArray(tex_coord);
+	GLint uv = glGetAttribLocation(standard, "UV");
+	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glEnableVertexAttribArray(uv);
 
 	glBindVertexArray(0);
 }

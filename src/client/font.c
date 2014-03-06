@@ -56,9 +56,9 @@ int load_font()
 	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
 
-	GLint tex_coord = glGetAttribLocation(standard, "tex_coord");
-	glVertexAttribPointer(tex_coord, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
-	glEnableVertexAttribArray(tex_coord);
+	GLint uv = glGetAttribLocation(standard, "UV");
+	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glEnableVertexAttribArray(uv);
 
 	// Fill the vbo
 	for(i = 0; i < (FONT_HEIGHT / GLYPH_DIM); i++)
@@ -116,7 +116,6 @@ void render_text(char * str, float x, float y, float scale)
 	float cur_x = x, cur_y = y;
 	
 	glUseProgram(standard);
-	glBindBuffer(GL_ARRAY_BUFFER, font_vbo);
 	glBindVertexArray(font_vao);
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_FONT_DROID));
 

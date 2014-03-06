@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include "camera.h"
+#include "renderer.h"
 
 // -Wall compile with unused parameters . . .
 #define UNUSED(x) (void)(x)
@@ -66,6 +67,17 @@ void process_events(float deltatime)
 	glfwGetCursorPos(current_window, last_mouse_pos, last_mouse_pos+1);
 }
 
+void on_key(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+	UNUSED(window);
+	UNUSED(scancode);
+	UNUSED(mods);
+	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	{
+		rtt_effect = (rtt_effect+1) % 6; // SO HARDCODED OMG SHITTY C++ PROGRAMERS
+	}
+}
+
 void on_mouse_button(GLFWwindow *window, int button, int action, int mods)
 {
 	UNUSED(window);
@@ -87,4 +99,5 @@ void init_events(GLFWwindow *window)
 	current_window = window;
 	glfwSetScrollCallback(window, on_mouse_scroll);
 	glfwSetMouseButtonCallback(window, on_mouse_button);
+	glfwSetKeyCallback(window, on_key);
 }

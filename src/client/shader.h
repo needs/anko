@@ -4,6 +4,7 @@
 #include <GL/gl.h>
 
 extern GLuint standard;
+extern GLuint fx;
 
 int load_shaders();
 void unload_shaders();

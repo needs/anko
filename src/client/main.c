@@ -63,7 +63,12 @@ int main(void)
 		try_simulate(map, &old, &current);
 
 		glClear(GL_COLOR_BUFFER_BIT);
+		rtt_start();
+		glClear(GL_COLOR_BUFFER_BIT);
 		render_map(map);
+		rtt_stop();
+		rtt_draw();
+		
 		draw_fps(10,10,0.5);
 		glfwSwapBuffers(window);
 		

@@ -9,7 +9,7 @@
 #define MAX_SHADERS 2
 
 GLuint standard;
-
+GLuint fx;
 
 static GLuint get_shader(const char * filename, GLenum type);
 static GLuint load_program (const char * vertex_filename, const char * fragment_filename);
@@ -20,9 +20,14 @@ int load_shaders()
 	standard = load_program("data/shaders/default.vs", "data/shaders/default.fs");
 	if(!standard)
 		goto err_standard;
+	fx = load_program("data/shaders/fx.vs", "data/shaders/fx.fs");
+	if(!fx)
+		goto err_fx;
 	
 	return 1;
 	
+err_fx:
+	destroy_program(standard);
 err_standard:
 	return 0;
 }
@@ -82,6 +87,8 @@ static GLuint get_shader(const char * filename, GLenum type)
 			printf("compile info: %s\n", info_msg);
 			free(info_msg);
 		}
+		glDeleteShader(shader);
+		return GL_FALSE;
 	}
 	else
 		printf("shader successfully compiled.\n");
@@ -154,7 +161,7 @@ static GLuint load_program(const char * vertex_filename, const char * fragment_f
 		}
 	}
 	else
-		printf("program successfully linked.\n");
+		printf("program successfully linked.\n\n");
 	
 	return program;
 	
