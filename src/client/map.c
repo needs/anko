@@ -226,7 +226,7 @@ static tex_t get_entity_tex(cell_t *c)
 }
 
 
-void render_map(map_t *map)
+void render_map(map_t *map, camera_t *camera)
 {
 	mat4x4 identity;
 
@@ -237,11 +237,11 @@ void render_map(map_t *map)
 
 	glBindVertexArray(map->vao_floor);
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
-	render_model(identity, 0, map->height * map->width * 4);
+	render_model(camera->matrix, identity, 0, map->height * map->width * 4);
 
 	glBindVertexArray(map->vao_entity);
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
-	render_model(identity, 0, map->height * map->width * 4);
+	render_model(camera->matrix, identity, 0, map->height * map->width * 4);
 }
 
 

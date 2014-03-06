@@ -3,7 +3,7 @@
 
 #include "linmath.h"
 #include "../board.h"
-
+#include "camera.h"
 
 #define TILE_WIDTH  68
 #define TILE_HEIGHT 34
@@ -13,7 +13,6 @@ typedef struct map_t map_t;
 map_t* create_map(board_t *board);
 void free_map(map_t *map);
 void update_map(map_t *map, board_t *current, board_t *old);
-void render_map(map_t *map);
-
+void render_map(map_t *map, camera_t *camera);
 
 #endif /* _MAP_H_ */

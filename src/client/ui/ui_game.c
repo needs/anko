@@ -18,6 +18,7 @@
 typedef struct ui_game_data_t
 {
 	map_t *map;
+	camera_t camera;
     int camx;
 	int camy;
 } ui_game_data_t;
@@ -29,7 +30,7 @@ void draw_game(ui_frame_t *frame)
 	ui_game_data_t *data = frame->data;
 	rtt_start();
 	glClear(GL_COLOR_BUFFER_BIT);
-	render_map(data->map);
+	render_map(data->map, &data->camera);
 	rtt_stop();
 	rtt_draw();
 	render_text("We are in game ui", 10, 40, 0.6);
@@ -40,14 +41,14 @@ void ui_game_update(ui_frame_t* frame, float deltatime)
 	ui_game_data_t *data = frame->data;
 
 	if(data->camy > 0)
-		move_camera(0, CAMERA_SPEED*deltatime);
+		move_camera(&data->camera, 0, CAMERA_SPEED*deltatime);
 	else if(data->camy < 0)
-		move_camera(0, -CAMERA_SPEED*deltatime);
+		move_camera(&data->camera, 0, -CAMERA_SPEED*deltatime);
 
 	if(data->camx > 0)
-		move_camera(CAMERA_SPEED*deltatime, 0);
+		move_camera(&data->camera, CAMERA_SPEED*deltatime, 0);
 	else if(data->camx < 0)
-		move_camera(-CAMERA_SPEED*deltatime, 0);
+		move_camera(&data->camera, -CAMERA_SPEED*deltatime, 0);
 }
 
 int ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mods)
@@ -84,6 +85,7 @@ ui_frame_t* init_ui_game(map_t *map)
 		data->map = map;
 		data->camx = 0;
 		data->camy = 0;
+		set_camera(&data->camera, 0,0,1);
 		
 		frame->data = data;
 		frame->draw = &draw_game;

@@ -125,9 +125,11 @@ void render_text(char * str, float x, float y, float scale)
 	{
 		if(*c >= 32 && *c < 127)
 		{
+			mat4x4 id;
+			mat4x4_identity(id);
 			mat4x4_translate(start, cur_x, cur_y,0);
 			mat4x4_scale_aniso(start, start, scale, scale, 0);
-			render_on_top(start, (*c-32)*sizeof(float));
+			render_model(id, start, (*c-32)*sizeof(float), 4);
 			cur_x += (droid.width[(int)*c])*scale;
 		}
 		else if(*c == '\n')
