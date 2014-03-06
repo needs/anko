@@ -19,11 +19,8 @@ int init_rendering(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	/* Load shaders and make them active */
-	if (!load_shaders("data/shaders/default.vs", "data/shaders/default.fs"))
+	if (!load_shaders())
 		goto err_shaders;
-	glBindFragDataLocation(program, 0, "outColor");
-	glLinkProgram(program);
-	glUseProgram(program);
 
 	mat4x4_ortho(projection, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
 	set_camera(0, 0, 1);
@@ -36,7 +33,7 @@ err_shaders:
 
 void close_rendering(void)
 {
-	destroy_shaders(program);
+    unload_shaders();
 }
 
 
@@ -44,12 +41,12 @@ void render_model(mat4x4 model, GLint first, GLint count)
 {
 	glActiveTexture(GL_TEXTURE0);
 
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(program, "model"),
+	glUniform1i(glGetUniformLocation(standard, "tex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(standard, "model"),
 			   1, GL_FALSE, (GLfloat*)model);
-	glUniformMatrix4fv(glGetUniformLocation(program, "projection"),
+	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
 			   1, GL_FALSE, (GLfloat*)projection);
-	glUniformMatrix4fv(glGetUniformLocation(program, "view"),
+	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
 			   1, GL_FALSE, (GLfloat*)camera);
 
 	/* And render them */
@@ -63,12 +60,12 @@ void render_on_top(mat4x4 model, GLint offset)
 	mat4x4 id;
 	mat4x4_identity(id);
 	
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(program, "model"),
+	glUniform1i(glGetUniformLocation(standard, "tex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(standard, "model"),
 					   1, GL_FALSE, (GLfloat*)model);
-	glUniformMatrix4fv(glGetUniformLocation(program, "projection"),
+	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
 					   1, GL_FALSE, (GLfloat*)projection);
-	glUniformMatrix4fv(glGetUniformLocation(program, "view"),
+	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
 					   1, GL_FALSE, (GLfloat*)id);
 
 	/* And render them */

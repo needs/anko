@@ -1,11 +1,11 @@
 #version 130
 
 in vec2 Tex_coord;
-out vec4 outColor;
+out vec4 color;
 
 uniform sampler2D tex;
 
 void main()
 {
-	outColor = texture(tex, Tex_coord);
+	color = texture(tex, Tex_coord);
 }
