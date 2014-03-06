@@ -248,6 +248,7 @@ void render_map(map_t *map)
 void update_map(map_t *map, board_t *current, board_t *old)
 {
 	int i, j;
+	float *buf;
 
 	assert(map != NULL);
 	assert(current != NULL);
@@ -257,18 +258,16 @@ void update_map(map_t *map, board_t *current, board_t *old)
 
 	/* Only entities may change */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
+	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {
-				float data[16];
-				get_ctexture(data,
+				get_ctexture(buf + ((i * map->height + j) * 16),
 					     get_entity_tex(&current->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
-				glBufferSubData(GL_ARRAY_BUFFER,
-						(i * map->height + j) * sizeof(data),
-						sizeof(data), data);
 			}
 		}
 	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
 }
