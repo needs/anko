@@ -111,7 +111,6 @@ static void update_fps(void)
 {
 	if (glfwGetTime() - last_fps > 1) {
 		last_fps+=1;
-		printf("FPS: %i\n", frames);
 		fps = frames;
 		frames = 0;
 	}
