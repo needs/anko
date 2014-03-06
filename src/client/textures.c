@@ -116,6 +116,8 @@ static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float 
 void get_texture(float *data, tex_t tex, float x, float y)
 {
 	assert(data != NULL);
+	assert(tex >= TEX_NONE);
+	assert(tex <  TEX_TOTAL);
 
 	float *ref = textures[tex].data;
 	float tmp[16] = {
