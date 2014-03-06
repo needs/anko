@@ -2,3 +2,4 @@
 #include "textures_pack.def"
 
 /* Other textures goes here */
+ADD_TEXTURE(FONT_DROID, "data/fonts/droid.png")

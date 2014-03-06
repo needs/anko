@@ -9,6 +9,7 @@
 #include "textures.h"
 #include "event.h"
 #include "map.h"
+#include "font.h"
 #include "../board.h"
 #include "../generator.h"
 #include "../simulator.h"
@@ -22,13 +23,14 @@ static int frames = 0;
 static double last_fps = 0;
 static float deltatime = 0;
 static float step_timer;
-
+static int fps = 0;
 static int  init(void);
 static void terminate(void);
 static void update_fps(void);
 static void wait_fps(void);
 static void try_simulate(map_t *map, board_t **old, board_t **current);
 static void swap(void **p1, void **p2);
+static void draw_fps(float x, float y, float scale);
 
 static const float STEP_TIMER_RESET = 1; // Each second we simulate
 static const int BOARD_WIDTH = 100;
@@ -62,6 +64,7 @@ int main(void)
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		render_map(map);
+		draw_fps(10,10,0.5);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
@@ -97,12 +100,19 @@ static void try_simulate(map_t *map, board_t **old, board_t **current)
 		step_timer -= deltatime;
 }
 
+static void draw_fps(float x, float y, float scale)
+{
+	char message[16];
+	snprintf(message, 16, "FPS: %i", fps);
+	render_text(message, x, y, scale);
+}
 
 static void update_fps(void)
 {
 	if (glfwGetTime() - last_fps > 1) {
 		last_fps+=1;
 		printf("FPS: %i\n", frames);
+		fps = frames;
 		frames = 0;
 	}
 	else
@@ -135,10 +145,15 @@ static int init(void)
 	if (!load_textures())
 		goto err_texture;
 	init_events(window);
-
+  
+	if(!load_font())
+		goto err_font;
+		
 	step_timer = STEP_TIMER_RESET;
 	return 1;
 
+err_font:
+	unload_textures();
 err_texture:
 	close_rendering();
 err_rendering:
@@ -152,6 +167,7 @@ err_glfw:
 
 static void terminate(void)
 {
+	unload_font();
 	unload_textures();
 	close_rendering();
 	glfwDestroyWindow(window);
