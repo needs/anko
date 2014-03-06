@@ -148,7 +148,7 @@ static int seed_map(map_t *map, board_t *board)
 
 	assert(map != NULL);
 	assert(board != NULL);
-	assert(board->width == map->width);
+	assert(board->width  == map->width);
 	assert(board->height == map->height);
 
 	/* VBOs are mapped to avoid a lot of call to glBufferSubData */
@@ -251,10 +251,12 @@ void render_map(map_t *map)
 	mat4x4_identity(identity);
 
 	glBindVertexArray(map->vao_floor);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
 	render_model(identity, 0, map->height * map->width * 4);
 
 	glBindVertexArray(map->vao_entity);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
 	render_model(identity, 0, map->height * map->width * 4);
 }
