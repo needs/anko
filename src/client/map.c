@@ -161,11 +161,11 @@ static int seed_map(map_t *map, board_t *board)
 			return 0;
 		for (i = 0; i < map->height; i++) {
 			for (j = 0; j < map->width; j++) {
-				get_ctexture(buf + ((i * map->height + j) * 16),
+				get_ctexture(buf + ((i * map->width + j) * 16),
 					     get_floor_tex(&board->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
-				get_ctexture(buf + map->vsize + ((i * map->height + j) * 16),
+				get_ctexture(buf + map->vsize + ((i * map->width + j) * 16),
 					     get_entity_tex(&board->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
@@ -233,11 +233,11 @@ void render_map(map_t *map)
 
 	assert(map != NULL);
 	glUseProgram(standard);
-	
+
 	mat4x4_identity(identity);
 
-	glBindVertexArray(map->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
+	glBindVertexArray(map->vao);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
 	render_model(identity, 0, map->vsize / 4);
@@ -255,8 +255,8 @@ void update_map(map_t *map, board_t *current, board_t *old)
 	assert(map != NULL);
 	assert(current != NULL);
 	assert(old != NULL);
-	assert(old->width == current->width);
-	assert(old->height == current->height);
+	assert(old->width == current->width && old->width == map->width);
+	assert(old->height == current->height && old->height == map->height);
 
 	/* Only entities may change */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
@@ -264,7 +264,7 @@ void update_map(map_t *map, board_t *current, board_t *old)
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {
-				get_ctexture(buf + ((i * map->height + j) * 16),
+				get_ctexture(buf + ((i * map->width + j) * 16),
 					     get_entity_tex(&current->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
