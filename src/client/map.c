@@ -241,11 +241,8 @@ void render_map(map_t *map, camera_t *camera)
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
 	render_model(camera->matrix, identity, 0, map->vsize / 4);
-		   
-	//render_model(camera->matrix, identity, 0, map->height * map->width * 4);
-	
+
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
-	
 	render_model(camera->matrix, identity, map->vsize / 4, map->vsize / 4);
 }
 

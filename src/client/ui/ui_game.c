@@ -24,6 +24,7 @@ typedef struct ui_game_data_t
 } ui_game_data_t;
 
 void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int action, int mods);
+void destroy_ui_game(ui_frame_t* frame);
 
 void draw_game(ui_frame_t *frame)
 {
@@ -91,6 +92,7 @@ ui_frame_t* init_ui_game(map_t *map)
 		frame->draw = &draw_game;
 		frame->on_key = &ui_game_on_key;
 		frame->update = &ui_game_update;
+		frame->destroy = &destroy_ui_game;
 	}
 	return frame;
 }

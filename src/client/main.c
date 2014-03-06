@@ -84,7 +84,8 @@ int main(int argc, char **argv)
 		wait_fps(); // Limiting frame per second
 
 	}
-	
+
+	destroy_ui(current_ui);
 	free_board(old);
 	free_board(current);
 	free_map(map);
