@@ -239,7 +239,6 @@ void update_map(map_t *map, board_t *current, board_t *old)
 		for (j = 0; j < map->width; j++) {
 			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {
 				float data[16];
-				printf("Différence at %d %d\n", i, j);
 				get_ctexture(data,
 					     get_entity_tex(&current->cells[i][j]),
 					     map->cells[i][j].x,
