@@ -10,7 +10,6 @@
 #include "event.h"
 #include "map.h"
 #include "font.h"
-#include "window.h"
 #include "config.h"
 #include "../board.h"
 #include "../generator.h"

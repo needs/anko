@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "camera.h"
-#include "window.h"
 
 static void update_camera()
 {

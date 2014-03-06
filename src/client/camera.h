@@ -2,7 +2,6 @@
 #define _CAMERA_H_
 
 #include "linmath.h"
-#include "window.h"
 
 #define ZOOM_MIN 1
 #define ZOOM_MAX 3

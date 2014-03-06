@@ -3,7 +3,6 @@
 
 #include "linmath.h"
 #include "textures.h"
-#include "window.h"
 
 int  init_rendering(void);
 void close_rendering(void);
