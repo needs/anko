@@ -92,10 +92,10 @@ static map_t* alloc_map(int width, int height)
 	map->width  = width;
 	map->height = height;
 
-	/* Create vbo, vao, and shader attrib */
 	create_vao(&map->vao_floor, &map->vbo_floor);
 	create_vao(&map->vao_entity, &map->vbo_entity);
 
+	/* Allocate memory for VBO */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
 	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
@@ -114,6 +114,7 @@ err_map:
 }
 
 
+/* Create VAO and her associated VBO, the VBO is not allocated. */
 static void create_vao(GLuint *vao, GLuint *vbo)
 {
 	assert(vbo != NULL);
@@ -137,8 +138,8 @@ static void create_vao(GLuint *vao, GLuint *vbo)
 }
 
 
-/* Introduit de la variation dans les textures
- * Précalcule les coordonnées des cases. */
+/* Introduce variations for map tiles/entities.
+ * Also used to precomputes coordinate of each tiles/entities. */
 static void seed_map(map_t *map, board_t *board)
 {
 	int i, j;
