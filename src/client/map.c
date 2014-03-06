@@ -18,8 +18,8 @@ typedef struct mapcell_t {
 } mapcell_t;
 
 typedef struct map_t {
-	GLuint vbo_floor, vao_floor;
-	GLuint vbo_entity, vao_entity;
+	GLuint vbo, vao;
+	long vsize;		/* Size for floor/entity VBO */
 
 	int width, height;
 	mapcell_t **cells;
@@ -56,10 +56,8 @@ void free_map(map_t *map)
 
 	for (i = 0; i < map->height; i++)
 		free(map->cells[i]);
-	glDeleteBuffers(1, &map->vbo_floor);
-	glDeleteBuffers(1, &map->vbo_entity);
-	glDeleteVertexArrays(1, &map->vao_floor);
-	glDeleteVertexArrays(1, &map->vao_entity);
+	glDeleteBuffers(1, &map->vbo);
+	glDeleteVertexArrays(1, &map->vao);
 	free(map->cells);
 	free(map);
 }
@@ -98,9 +96,9 @@ static map_t* alloc_map(int width, int height)
 
 	map->width  = width;
 	map->height = height;
+	map->vsize = 16 * map->width * map->height;
 
-	create_vao(&map->vao_floor, &map->vbo_floor);
-	create_vao(&map->vao_entity, &map->vbo_entity);
+	create_vao(&map->vao, &map->vbo);
 
 	return map;
 
@@ -151,15 +149,15 @@ static int seed_map(map_t *map, board_t *board)
 	assert(board->width  == map->width);
 	assert(board->height == map->height);
 
-	/* VBOs are mapped to avoid a lot of call to glBufferSubData */
+	/* VBO is mapped to avoid a lot of call to glBufferSubData */
 	/* Note: we loop until glUnmapBuffer works, we do that because normally
 	 * the only error case is when the buffer gets corrupted, which is
 	 * pretty rare. */
 
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	do {
-		glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_STATIC_DRAW);
-		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)) == NULL)
+		glBufferData(GL_ARRAY_BUFFER, 2 * map->vsize * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)) == NULL)
 			return 0;
 		for (i = 0; i < map->height; i++) {
 			for (j = 0; j < map->width; j++) {
@@ -167,19 +165,7 @@ static int seed_map(map_t *map, board_t *board)
 					     get_floor_tex(&board->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
-			}
-		}
-	} while (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE);
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
-	do {
-		glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_DYNAMIC_DRAW);
-		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)) == NULL)
-			return 0;
-		for (i = 0; i < map->height; i++) {
-			for (j = 0; j < map->width; j++) {
-				get_ctexture(buf + ((i * map->height + j) * 16),
+				get_ctexture(buf + map->vsize + ((i * map->height + j) * 16),
 					     get_entity_tex(&board->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
@@ -250,15 +236,14 @@ void render_map(map_t *map)
 	
 	mat4x4_identity(identity);
 
-	glBindVertexArray(map->vao_floor);
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
-	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
-	render_model(identity, 0, map->height * map->width * 4);
+	glBindVertexArray(map->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 
-	glBindVertexArray(map->vao_entity);
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
+	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
+	render_model(identity, 0, map->vsize / 4);
+
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
-	render_model(identity, 0, map->height * map->width * 4);
+	render_model(identity, map->vsize / 4, map->vsize / 4);
 }
 
 
@@ -274,8 +259,8 @@ void update_map(map_t *map, board_t *current, board_t *old)
 	assert(old->height == current->height);
 
 	/* Only entities may change */
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
-	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
+	buf = glMapBufferRange(GL_ARRAY_BUFFER, map->vsize * sizeof(float), map->vsize * sizeof(float), GL_MAP_WRITE_BIT);
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {
