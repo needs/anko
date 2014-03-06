@@ -55,3 +55,22 @@ void render_model(mat4x4 model, GLint first, GLint count)
 	/* And render them */
 	glDrawArrays(GL_QUADS, first, count);
 }
+
+void render_on_top(mat4x4 model, GLint offset)
+{
+	glActiveTexture(GL_TEXTURE0);
+
+	mat4x4 id;
+	mat4x4_identity(id);
+	
+	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(program, "model"),
+					   1, GL_FALSE, (GLfloat*)model);
+	glUniformMatrix4fv(glGetUniformLocation(program, "projection"),
+					   1, GL_FALSE, (GLfloat*)projection);
+	glUniformMatrix4fv(glGetUniformLocation(program, "view"),
+					   1, GL_FALSE, (GLfloat*)id);
+
+	/* And render them */
+	glDrawArrays(GL_QUADS, offset, 4);
+}
