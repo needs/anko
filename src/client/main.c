@@ -10,10 +10,11 @@
 #include "event.h"
 #include "map.h"
 #include "font.h"
+#include "window.h"
+#include "config.h"
 #include "../board.h"
 #include "../generator.h"
 #include "../simulator.h"
-#include "window.h"
 
 
 #define MAX_FPS 150
@@ -24,6 +25,7 @@ static double last_fps = 0;
 static float deltatime = 0;
 static float step_timer;
 static int fps = 0;
+
 static int  init(void);
 static void terminate(void);
 static void update_fps(void);
@@ -32,23 +34,23 @@ static void try_simulate(map_t *map, board_t **old, board_t **current);
 static void swap(void **p1, void **p2);
 static void draw_fps(float x, float y, float scale);
 
-static const float STEP_TIMER_RESET = 1; // Each second we simulate
-static const int BOARD_WIDTH = 100;
-static const int BOARD_HEIGHT = 100;
 
-
-int main(void)
+int main(int argc, char **argv)
 {
 	board_t *current, *old;
 	map_t *map;
-	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.2, .water_shatter_factor = 0.4 };
 	double last_frame = 0;
 	
+	if (config_from_file("anko.cfg", 0) == 2)
+		return EXIT_FAILURE;
+	if (config_from_args(argc, argv))
+		return EXIT_FAILURE;
+
 	if (!init())
 		goto err_init;
-	if ((current = generate(BOARD_WIDTH, BOARD_HEIGHT, gen_params)) == NULL)
+	if ((current = generate(config.board_width, config.board_height, config.gen_params)) == NULL)
 		goto err_current;
-	if ((old = alloc_board(BOARD_WIDTH, BOARD_HEIGHT)) == NULL)
+	if ((old = alloc_board(config.board_width, config.board_height)) == NULL)
 		goto err_old;
 	if ((map = create_map(current)) == NULL)
 		goto err_map;
@@ -95,7 +97,7 @@ static void try_simulate(map_t *map, board_t **old, board_t **current)
 		step(*old, *current);
 		swap((void**)current, (void**)old);
 		update_map(map, *current, *old);
-		step_timer = STEP_TIMER_RESET;
+		step_timer = config.sim_speed;
 	} else
 		step_timer -= deltatime;
 }
@@ -130,7 +132,7 @@ static int init(void)
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Anko", NULL, NULL);
+	window = glfwCreateWindow(config.screen_width, config.screen_height, "Anko", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		goto err_window;
@@ -148,7 +150,7 @@ static int init(void)
 	if(!load_font())
 		goto err_font;
 		
-	step_timer = STEP_TIMER_RESET;
+	step_timer = config.sim_speed;
 	return 1;
 
 err_font:

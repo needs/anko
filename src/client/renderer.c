@@ -7,6 +7,7 @@
 #include "textures.h"
 #include "linmath.h"
 #include "camera.h"
+#include "config.h"
 
 static mat4x4 projection;
 
@@ -25,7 +26,7 @@ int init_rendering(void)
 	glLinkProgram(program);
 	glUseProgram(program);
 
-	mat4x4_ortho(projection, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
+	mat4x4_ortho(projection, 0, config.screen_width, config.screen_height, 0, -1, 1);
 	set_camera(0, 0, 1);
 	return 1;
 
