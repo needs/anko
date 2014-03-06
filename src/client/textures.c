@@ -120,13 +120,13 @@ void get_texture(float *data, tex_t tex, float x, float y)
 	assert(tex <  TEX_TOTAL);
 
 	float *ref = textures[tex].data;
-	float tmp[16] = {
-		ref[0]  + x, ref[1]  + y, ref[2],  ref[3],
-		ref[4]  + x, ref[5]  + y, ref[6],  ref[7],
-		ref[8]  + x, ref[9]  + y, ref[10], ref[11],
-		ref[12] + x, ref[13] + y, ref[14], ref[15],
-	};
-	memcpy(data, tmp, sizeof(tmp));
+
+	/* Do assignement by hand to be sure that we are just writing to data,
+	 * and not reading at it. */
+	data[0]  = ref[0]  + x; data[1]  = ref[1]  + y; data[2]  = ref[2];  data[3]  = ref[3];
+	data[4]  = ref[4]  + x; data[5]  = ref[5]  + y; data[6]  = ref[6];  data[7]  = ref[7];
+	data[8]  = ref[8]  + x; data[9]  = ref[9]  + y; data[10] = ref[10]; data[11] = ref[11];
+	data[12] = ref[12] + x; data[12] = ref[13] + y; data[14] = ref[14]; data[15] = ref[15];
 }
 
 

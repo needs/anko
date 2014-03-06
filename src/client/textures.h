@@ -30,6 +30,7 @@ void unload_textures(void);
 
 /*
  * Put in data the informations of texture tex.
+ * data must be at least 16 float wide. data is only writed.
  * Each set of 4 float describe one vertex and one tex. coord.
  * Return 4 sets.
  */
