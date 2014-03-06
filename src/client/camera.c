@@ -20,7 +20,7 @@ void set_camera(float x, float y, float scale)
 
 void move_camera(float x, float y)
 {
-	camera_pos[0] += x;
+	camera_pos[0] -= x;
 	camera_pos[1] += y;
 	update_camera();
 }

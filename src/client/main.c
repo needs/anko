@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <GLFW/glfw3.h>
 
+#include "context.h"
 #include "renderer.h"
 #include "textures.h"
 #include "event.h"
@@ -14,9 +15,11 @@
 #include "../board.h"
 #include "../generator.h"
 #include "../simulator.h"
+#include "ui/ui_frame.h"
+#include "ui/ui_game.h"
 
 
-#define MAX_FPS 150
+#define MAX_FPS 3000
 
 static GLFWwindow* window;
 static int frames = 0;
@@ -24,6 +27,7 @@ static double last_fps = 0;
 static float deltatime = 0;
 static float step_timer;
 static int fps = 0;
+static ui_frame_t *current_ui;
 
 static int  init(void);
 static void terminate(void);
@@ -53,28 +57,32 @@ int main(int argc, char **argv)
 		goto err_old;
 	if ((map = create_map(current)) == NULL)
 		goto err_map;
+	if((current_ui = init_ui_game(map)) == NULL)
+		goto err_ui;
 
+	events_link_frame(&current_ui);
 	glClearColor(0, 0, 0, 1);
 	
 	while(!glfwWindowShouldClose(window)) {
 		last_frame = glfwGetTime();
-		process_events(deltatime);
-		
+		glfwPollEvents();
+
+		// Update
+		update_ui(current_ui, deltatime);
 		update_fps();
 		try_simulate(map, &old, &current);
+		if(should_quit)
+			glfwSetWindowShouldClose(window, GL_TRUE);
 
+		// Rendering
 		glClear(GL_COLOR_BUFFER_BIT);
-		rtt_start();
-		glClear(GL_COLOR_BUFFER_BIT);
-		render_map(map);
-		rtt_stop();
-		rtt_draw();
-		
+		draw_ui(current_ui);
 		draw_fps(10,10,0.5);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
-		wait_fps(); // Limiting frame per second 
+		wait_fps(); // Limiting frame per second
+
 	}
 	
 	free_board(old);
@@ -83,7 +91,8 @@ int main(int argc, char **argv)
 	terminate();
 
 	return EXIT_SUCCESS;
-
+err_ui:
+	free_map(map);
 err_map:
 	free_board(old);
 err_old:
@@ -135,7 +144,7 @@ static int init(void)
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
+	glfwWindowHint(GLFW_SAMPLES, 16);
 	window = glfwCreateWindow(config.screen_width, config.screen_height, "Anko", NULL, NULL);
 	if (!window) {
 		glfwTerminate();

@@ -1,11 +1,10 @@
 #ifndef _EVENT_H_
 #define _EVENT_H_
 
+#include "ui/ui_frame.h"
 #include <GLFW/glfw3.h>
 
-#define IS_KEY_PRESSED(w, k) glfwGetKey(w, k) == GLFW_PRESS
-
 void init_events(GLFWwindow *window);
-void process_events(float deltatime);
+void events_link_frame(ui_frame_t **frame);
 
 #endif /* _EVENT_H_ */
