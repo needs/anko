@@ -18,8 +18,8 @@ typedef struct mapcell_t {
 } mapcell_t;
 
 typedef struct map_t {
-	GLuint vbo_floor, vao_floor;
-	GLuint vbo_entity, vao_entity;
+	GLuint vbo, vao;
+	long vsize;		/* Size for floor/entity VBO */
 
 	int width, height;
 	mapcell_t **cells;
@@ -27,7 +27,7 @@ typedef struct map_t {
 
 
 static void create_vao(GLuint *vao, GLuint *vbo);
-static void seed_map(map_t *map, board_t *board);
+static int seed_map(map_t *map, board_t *board);
 static map_t* alloc_map(int width, int height);
 static tex_t get_floor_tex(cell_t *c);
 static tex_t get_entity_tex(cell_t *c);
@@ -41,7 +41,8 @@ map_t* create_map(board_t *board)
 
 	if ((map = alloc_map(board->width, board->height)) == NULL)
 		return NULL;
-	seed_map(map, board);
+	if (!seed_map(map, board))
+		return NULL;
 
 	return map;
 }
@@ -55,18 +56,17 @@ void free_map(map_t *map)
 
 	for (i = 0; i < map->height; i++)
 		free(map->cells[i]);
-	glDeleteBuffers(1, &map->vbo_floor);
-	glDeleteBuffers(1, &map->vbo_entity);
-	glDeleteVertexArrays(1, &map->vao_floor);
-	glDeleteVertexArrays(1, &map->vao_entity);
+	glDeleteBuffers(1, &map->vbo);
+	glDeleteVertexArrays(1, &map->vao);
 	free(map->cells);
 	free(map);
 }
 
 
+/* Allocate needed memory and initialise width, height, x, and y. */
 static map_t* alloc_map(int width, int height)
 {
-	int i;
+	int i, j;
 	map_t *map;
 
 	assert(width > 0);
@@ -87,19 +87,18 @@ static map_t* alloc_map(int width, int height)
 			perror("malloc(map->cells[i])");
 			goto err_width;
 		}
+
+		for (j = 0; j < width; j++) {
+			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
+			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
+		}
 	}
 
 	map->width  = width;
 	map->height = height;
+	map->vsize = 16 * map->width * map->height;
 
-	/* Create vbo, vao, and shader attrib */
-	create_vao(&map->vao_floor, &map->vbo_floor);
-	create_vao(&map->vao_entity, &map->vbo_entity);
-
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
-	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
-	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * map->width * map->height, NULL, GL_DYNAMIC_DRAW);
+	create_vao(&map->vao, &map->vbo);
 
 	return map;
 
@@ -114,6 +113,7 @@ err_map:
 }
 
 
+/* Create VAO and her associated VBO, the VBO is not allocated. */
 static void create_vao(GLuint *vao, GLuint *vbo)
 {
 	assert(vbo != NULL);
@@ -137,42 +137,43 @@ static void create_vao(GLuint *vao, GLuint *vbo)
 }
 
 
-/* Introduit de la variation dans les textures
- * Précalcule les coordonnées des cases. */
-static void seed_map(map_t *map, board_t *board)
+/* Introduce variations for map tiles/entities.
+ * Also used to precomputes coordinate of each tiles/entities. */
+static int seed_map(map_t *map, board_t *board)
 {
 	int i, j;
 	float *buf;
 
 	assert(map != NULL);
+	assert(board != NULL);
+	assert(board->width  == map->width);
+	assert(board->height == map->height);
 
-	/* VBOs are mapped to avoid a lot of call to glBufferSubData */
+	/* VBO is mapped to avoid a lot of call to glBufferSubData */
+	/* Note: we loop until glUnmapBuffer works, we do that because normally
+	 * the only error case is when the buffer gets corrupted, which is
+	 * pretty rare. */
 
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_floor);
-	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-	for (i = 0; i < map->height; i++) {
-		for (j = 0; j < map->width; j++) {
-			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
-			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
-			get_ctexture(buf + ((i * map->height + j) * 16),
-				     get_floor_tex(&board->cells[i][j]),
-				     map->cells[i][j].x,
-				     map->cells[i][j].y);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
+	do {
+		glBufferData(GL_ARRAY_BUFFER, 2 * map->vsize * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)) == NULL)
+			return 0;
+		for (i = 0; i < map->height; i++) {
+			for (j = 0; j < map->width; j++) {
+				get_ctexture(buf + ((i * map->height + j) * 16),
+					     get_floor_tex(&board->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y);
+				get_ctexture(buf + map->vsize + ((i * map->height + j) * 16),
+					     get_entity_tex(&board->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y);
+			}
 		}
-	}
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	} while (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE);
 
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
-	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-	for (i = 0; i < map->height; i++) {
-		for (j = 0; j < map->width; j++) {
-			get_ctexture(buf + ((i * map->height + j) * 16),
-				     get_entity_tex(&board->cells[i][j]),
-				     map->cells[i][j].x,
-				     map->cells[i][j].y);
-		}
-	}
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	return 1;
 }
 
 
@@ -235,13 +236,17 @@ void render_map(map_t *map, camera_t *camera)
 	
 	mat4x4_identity(identity);
 
-	glBindVertexArray(map->vao_floor);
-	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
-	render_model(camera->matrix, identity, 0, map->height * map->width * 4);
+	glBindVertexArray(map->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 
-	glBindVertexArray(map->vao_entity);
+	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
+	render_model(camera->matrix, identity, 0, map->vsize / 4);
+		   
+	//render_model(camera->matrix, identity, 0, map->height * map->width * 4);
+	
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
-	render_model(camera->matrix, identity, 0, map->height * map->width * 4);
+	
+	render_model(camera->matrix, identity, map->vsize / 4, map->vsize / 4);
 }
 
 
@@ -257,8 +262,8 @@ void update_map(map_t *map, board_t *current, board_t *old)
 	assert(old->height == current->height);
 
 	/* Only entities may change */
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
-	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
+	buf = glMapBufferRange(GL_ARRAY_BUFFER, map->vsize * sizeof(float), map->vsize * sizeof(float), GL_MAP_WRITE_BIT);
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {

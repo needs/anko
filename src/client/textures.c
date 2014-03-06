@@ -27,14 +27,14 @@ int load_textures(void)
 
 	/* Init to INVALID for error handling (see err_tex) */
 	for (i = 0; i < TEX_TOTAL; i++)
-		textures[i].tex = GL_INVALID_VALUE;
+		textures[i].tex = 0;
 
 	/* Try to load all textures, it's a bit complicated since we must
 	 * mix normal textures with packed one. */
 #define ADD_TEXTURE(name, path)						\
 	if (!load_from_file(&textures[TEX_##name], path))		\
 		goto err_tex;						\
-	ref_texture(&textures[TEX_##name], &textures[TEX_##name], 0, 0, textures[TEX_##name].width, textures[TEX_##name].height, 0, 0);
+	ref_texture(&textures[TEX_##name], &textures[TEX_##name], 0, 0, textures[TEX_##name].width, textures[TEX_##name].height, textures[TEX_##name].width/2, textures[TEX_##name].height/2);
 #define ADD_IN_TEXTURE(name, from, x, y, w, h, ox, oy)			\
 	ref_texture(&textures[TEX_##from##_##name], &textures[TEX_##from], x, y, w, h, ox, oy);
 #include "textures.def"
@@ -45,7 +45,7 @@ int load_textures(void)
 
 err_tex:
 	for (i = 0; i < TEX_TOTAL; i++)
-		if (textures[i].tex != GL_INVALID_VALUE)
+		if (textures[i].tex != 0)
 			glDeleteTextures(1, &textures[i].tex);
 	return 0;
 }
@@ -120,13 +120,13 @@ void get_texture(float *data, tex_t tex, float x, float y)
 	assert(tex <  TEX_TOTAL);
 
 	float *ref = textures[tex].data;
-	float tmp[16] = {
-		ref[0]  + x, ref[1]  + y, ref[2],  ref[3],
-		ref[4]  + x, ref[5]  + y, ref[6],  ref[7],
-		ref[8]  + x, ref[9]  + y, ref[10], ref[11],
-		ref[12] + x, ref[13] + y, ref[14], ref[15],
-	};
-	memcpy(data, tmp, sizeof(tmp));
+
+	/* Do assignement by hand to be sure that we are just writing to data,
+	 * and not reading at it. */
+	data[0]  = ref[0]  + x; data[1]  = ref[1]  + y; data[2]  = ref[2];  data[3]  = ref[3];
+	data[4]  = ref[4]  + x; data[5]  = ref[5]  + y; data[6]  = ref[6];  data[7]  = ref[7];
+	data[8]  = ref[8]  + x; data[9]  = ref[9]  + y; data[10] = ref[10]; data[11] = ref[11];
+	data[12] = ref[12] + x; data[13] = ref[13] + y; data[14] = ref[14]; data[15] = ref[15];
 }
 
 
