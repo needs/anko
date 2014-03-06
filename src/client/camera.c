@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "camera.h"
+#include "config.h"
+
 
 static void update_camera()
 {
@@ -11,8 +13,8 @@ static void update_camera()
 void set_camera(float x, float y, float scale)
 {
 	camera_scale = scale;
-	camera_pos[0] = x;
-	camera_pos[1] = y;
+	camera_pos[0] = x + config.screen_width/2;
+	camera_pos[1] = y + config.screen_height/2;
 	update_camera();
 }
 
