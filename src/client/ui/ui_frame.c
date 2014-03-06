@@ -12,6 +12,7 @@ ui_frame_t *create_ui()
 		frame->y = 0;
 		frame->width = 0;
 		frame->height = 0;
+		frame->destroy = NULL;
 		frame->update = NULL;
 		frame->draw = NULL;
 		frame->on_mouse_move = NULL;
@@ -58,4 +59,10 @@ void ui_on_key(ui_frame_t* frame, int key, int scancode, int action, int mods)
 {
 	if(frame->on_key)
 		frame->on_key(frame,key,scancode,action,mods);
+}
+
+void destroy_ui(ui_frame_t *frame)
+{
+	if(frame->destroy)
+		frame->destroy(frame);
 }
