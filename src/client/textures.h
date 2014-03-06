@@ -30,7 +30,8 @@ void unload_textures(void);
 
 /*
  * Put in data the informations of texture tex.
- * Each pack of 4 float describe one vertex and one tex. coord.
+ * Each set of 4 float describe one vertex and one tex. coord.
+ * Return 4 sets.
  */
 void get_texture(float *data, tex_t tex, float x, float y);
 

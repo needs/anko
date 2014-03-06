@@ -72,3 +72,17 @@ int get_neighbors_count(int x, int y, board_t* board, cell_type_t type, int(*pre
 				count++;
 	return count;
 }
+
+
+int cmp_cell(cell_t *c1, cell_t *c2)
+{
+	assert(c1 != NULL);
+	assert(c2 != NULL);
+
+	if (c1->type != c2->type)
+		return 0;
+	if (c1->type == CT_TREE)
+		return c1->data.tree.life == c2->data.tree.life;
+	else
+		return 1;
+}

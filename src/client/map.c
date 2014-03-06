@@ -14,8 +14,7 @@
 
 
 typedef struct mapcell_t {
-	mat4x4 model;
-	int seed;
+	int x, y;
 } mapcell_t;
 
 typedef struct map_t {
@@ -153,10 +152,12 @@ static void seed_map(map_t *map, board_t *board)
 	buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
+			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
+			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
 			get_ctexture(buf + ((i * map->height + j) * 16),
 				     get_floor_tex(&board->cells[i][j]),
-				     j*-TILE_WIDTH/2 + i*TILE_WIDTH/2,
-				     i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2);
+				     map->cells[i][j].x,
+				     map->cells[i][j].y);
 		}
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -167,8 +168,8 @@ static void seed_map(map_t *map, board_t *board)
 		for (j = 0; j < map->width; j++) {
 			get_ctexture(buf + ((i * map->height + j) * 16),
 				     get_entity_tex(&board->cells[i][j]),
-				     j*-TILE_WIDTH/2 + i*TILE_WIDTH/2,
-				     i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2);
+				     map->cells[i][j].x,
+				     map->cells[i][j].y);
 		}
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -204,12 +205,11 @@ static tex_t get_entity_tex(cell_t *c)
 }
 
 
-void render_map(map_t *map, board_t *board)
+void render_map(map_t *map)
 {
 	mat4x4 identity;
 
 	assert(map != NULL);
-	assert(board != NULL);
 
 	mat4x4_identity(identity);
 
@@ -220,4 +220,34 @@ void render_map(map_t *map, board_t *board)
 	glBindVertexArray(map->vao_entity);
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
 	render_model(identity, 0, map->height * map->width * 4);
+}
+
+
+void update_map(map_t *map, board_t *current, board_t *old)
+{
+	int i, j;
+
+	assert(map != NULL);
+	assert(current != NULL);
+	assert(old != NULL);
+	assert(old->width == current->width);
+	assert(old->height == current->height);
+
+	/* Only entities may change */
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo_entity);
+	for (i = 0; i < map->height; i++) {
+		for (j = 0; j < map->width; j++) {
+			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {
+				float data[16];
+				printf("Différence at %d %d\n", i, j);
+				get_ctexture(data,
+					     get_entity_tex(&current->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y);
+				glBufferSubData(GL_ARRAY_BUFFER,
+						(i * map->height + j) * sizeof(data),
+						sizeof(data), data);
+			}
+		}
+	}
 }

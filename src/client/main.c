@@ -27,7 +27,7 @@ static int  init(void);
 static void terminate(void);
 static void update_fps(void);
 static void wait_fps(void);
-static void try_simulate(board_t *old, board_t *current);
+static void try_simulate(map_t *map, board_t **old, board_t **current);
 static void swap(void **p1, void **p2);
 
 static const float STEP_TIMER_RESET = 1; // Each second we simulate
@@ -58,11 +58,10 @@ int main(void)
 		process_events(deltatime);
 		
 		update_fps();
-		try_simulate(old, current);
-		swap((void**)&current, (void**)&old);
+		try_simulate(map, &old, &current);
 
 		glClear(GL_COLOR_BUFFER_BIT);
-		render_map(map, current);
+		render_map(map);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
@@ -87,10 +86,12 @@ err_init:
 }
 
 
-static void try_simulate(board_t *old, board_t *current)
+static void try_simulate(map_t *map, board_t **old, board_t **current)
 {
 	if (step_timer < deltatime) {
-		step(old, current);
+		step(*old, *current);
+		swap((void**)current, (void**)old);
+		update_map(map, *current, *old);
 		step_timer = STEP_TIMER_RESET;
 	} else
 		step_timer -= deltatime;
@@ -176,5 +177,5 @@ static void swap(void **p1, void **p2)
 	assert(p2 != NULL);
 	tmp = *p1;
 	*p1 = *p2;
-	*p1 = tmp;
+	*p2 = tmp;
 }
