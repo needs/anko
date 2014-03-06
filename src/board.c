@@ -62,13 +62,13 @@ void free_board(board_t *board)
 int get_neighbors_count(int x, int y, board_t* board, cell_type_t type, int(*predicate)(void*))
 {
 	int count = 0;
-	int i,j;
-	for(j = -1; j <=1; j++)
-		for(i = -1; i <= 1; i++)
-			if((i || j)
-			   && !IS_OUT_OF_BOUNDS(board,x+i,y+j)
-			   && board->cells[y+j][x+i].type == type
-			   && (predicate == NULL || predicate(&board->cells[y+j][x+i].data)) )
+	int i, j;
+	for (j = -1; j <= 1; j++)
+		for (i = -1; i <= 1; i++)
+			if ((i || j)
+			    && !IS_OUT_OF_BOUNDS(board,x+i,y+j)
+			    && board->cells[y+j][x+i].type == type
+			    && (predicate == NULL || predicate(&board->cells[y+j][x+i].data)) )
 				count++;
 	return count;
 }

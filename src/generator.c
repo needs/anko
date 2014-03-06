@@ -37,7 +37,7 @@ board_t* generate(int width, int height, gen_params_t params)
 	
 	while(should_spawn(CT_TREE, board, params.tree_density))
 	{
-		spawn_spot(&spread_forest, board, params.water_density, 0.5);
+		spawn_spot(&spread_forest, board, params.tree_density, 0.5);
 	}
 	
 	while(should_spawn(CT_WATER, board, params.water_density))
