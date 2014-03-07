@@ -11,7 +11,7 @@
 #include "config.h"
 
 
-static mat4x4 projection;
+mat4x4 projection;
 
 static GLuint rtt_fbo;
 static GLuint rtt_tex;
@@ -90,6 +90,7 @@ void rtt_draw()
 	glUniform1f(glGetUniformLocation(fx, "time"), glfwGetTime());
 	glUniform1i(glGetUniformLocation(fx, "effect"), rtt_effect);
 	glBindVertexArray(rtt_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, rtt_vbo);
 	glDrawArrays(GL_QUADS, 0, 4);
 }
 

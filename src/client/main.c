@@ -3,13 +3,17 @@
 #include <assert.h>
 #include <time.h>
 #include <unistd.h>
+
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
 #include "context.h"
 #include "renderer.h"
 #include "textures.h"
 #include "event.h"
-#include "map.h"
+#include "world.h"
 #include "font.h"
 #include "config.h"
 #include "../board.h"
@@ -33,7 +37,7 @@ static int  init(void);
 static void terminate(void);
 static void update_fps(void);
 static void wait_fps(void);
-static void try_simulate(map_t *map, board_t **old, board_t **current);
+static void try_simulate(world_t *world, board_t **old, board_t **current);
 static void swap(void **p1, void **p2);
 static void draw_fps(float x, float y, float scale);
 
@@ -41,7 +45,7 @@ static void draw_fps(float x, float y, float scale);
 int main(int argc, char **argv)
 {
 	board_t *current, *old;
-	map_t *map;
+	world_t *world;
 	double last_frame = 0;
 	
 	if (config_from_file("anko.cfg", 0) == 2)
@@ -55,9 +59,9 @@ int main(int argc, char **argv)
 		goto err_current;
 	if ((old = alloc_board(config.board_width, config.board_height)) == NULL)
 		goto err_old;
-	if ((map = create_map(current)) == NULL)
-		goto err_map;
-	if((current_ui = init_ui_game(map)) == NULL)
+	if ((world = create_world(current)) == NULL)
+		goto err_world;
+	if ((current_ui = init_ui_game(world)) == NULL)
 		goto err_ui;
 
 	events_link_frame(&current_ui);
@@ -70,7 +74,7 @@ int main(int argc, char **argv)
 		// Update
 		update_ui(current_ui, deltatime);
 		update_fps();
-		try_simulate(map, &old, &current);
+		try_simulate(world, &old, &current);
 		if(should_quit)
 			glfwSetWindowShouldClose(window, GL_TRUE);
 
@@ -88,13 +92,13 @@ int main(int argc, char **argv)
 	destroy_ui(current_ui);
 	free_board(old);
 	free_board(current);
-	free_map(map);
+	end_of_the_world(world);
 	terminate();
 
 	return EXIT_SUCCESS;
 err_ui:
-	free_map(map);
-err_map:
+	end_of_the_world(world);
+err_world:
 	free_board(old);
 err_old:
 	free_board(current);
@@ -105,12 +109,12 @@ err_init:
 }
 
 
-static void try_simulate(map_t *map, board_t **old, board_t **current)
+static void try_simulate(world_t *world, board_t **old, board_t **current)
 {
 	if (step_timer < deltatime) {
 		step(*old, *current);
 		swap((void**)current, (void**)old);
-		update_map(map, *current, *old);
+		update_world(world, *current, *old);
 		step_timer = config.sim_speed;
 	} else
 		step_timer -= deltatime;

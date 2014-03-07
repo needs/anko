@@ -1,8 +1,14 @@
 #ifndef _RENDERER_H_
 #define _RENDERER_H_
 
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL/gl.h>
+
 #include "linmath.h"
 #include "textures.h"
+
+extern mat4x4 projection;
 
 int init_rendering(void);
 void close_rendering(void);

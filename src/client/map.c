@@ -157,8 +157,10 @@ static int seed_map(map_t *map, board_t *board)
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	do {
 		glBufferData(GL_ARRAY_BUFFER, 2 * map->vsize * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)) == NULL)
+		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)) == NULL) {
+			fprintf(stderr, "seeding map: Can't map the VBO.\n");
 			return 0;
+		}
 		for (i = 0; i < map->height; i++) {
 			for (j = 0; j < map->width; j++) {
 				get_ctexture(buf + ((i * map->width + j) * 16),
@@ -171,6 +173,7 @@ static int seed_map(map_t *map, board_t *board)
 					     map->cells[i][j].y);
 			}
 		}
+		glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	} while (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE);
 
 	return 1;
@@ -247,15 +250,16 @@ void render_map(map_t *map, camera_t *camera)
 }
 
 
-void update_map(map_t *map, board_t *current, board_t *old)
+void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 {
 	int i, j;
 	float *buf;
 
 	assert(map != NULL);
+	assert(gen != NULL);
 	assert(current != NULL);
 	assert(old != NULL);
-	assert(old->width == current->width && old->width == map->width);
+	assert(old->width  == current->width &&  old->width  == map->width);
 	assert(old->height == current->height && old->height == map->height);
 
 	/* Only entities may change */
@@ -268,8 +272,12 @@ void update_map(map_t *map, board_t *current, board_t *old)
 					     get_entity_tex(&current->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
+				spawn_particles(gen, 1, TEX_PARTICLES_FIRE1, map->cells[i][j].x, map->cells[i][j].y);
 			}
 		}
 	}
+	/* Rebind the buffer because other function might bind something else
+	 * to GL_BUFFER_ARRAY */
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 }

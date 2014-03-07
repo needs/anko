@@ -1,8 +1,13 @@
-#include "event.h"
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include <GLFW/glfw3.h>
+
 #include <stdio.h>
+#include "event.h"
 #include "camera.h"
 #include "renderer.h"
+
 
 static GLFWwindow *current_window;
 

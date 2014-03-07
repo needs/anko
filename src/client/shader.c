@@ -10,6 +10,7 @@
 
 GLuint standard;
 GLuint fx;
+GLuint sh_particles;
 
 static GLuint get_shader(const char * filename, GLenum type);
 static GLuint load_program (const char * vertex_filename, const char * fragment_filename);
@@ -23,9 +24,14 @@ int load_shaders()
 	fx = load_program("data/shaders/fx.vs", "data/shaders/fx.fs");
 	if(!fx)
 		goto err_fx;
+	sh_particles = load_program("data/shaders/particles.vs", "data/shaders/particles.fs");
+	if(!sh_particles)
+		goto err_particles;
 	
 	return 1;
 	
+err_particles:
+	destroy_program(fx);
 err_fx:
 	destroy_program(standard);
 err_standard:

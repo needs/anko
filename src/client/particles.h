@@ -1,11 +1,8 @@
 #ifndef _PARTICLES_H_
 #define _PARTICLES_H_
 
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include <GL/gl.h> 
-
 #include "textures.h"
+#include "camera.h"
 
 
 /* Maybe made the limit configurable ? */
@@ -15,7 +12,7 @@ typedef struct partgen_t partgen_t;
 
 partgen_t* init_particles(void);
 void spawn_particles(partgen_t *gen, int n, tex_t tex, float x, float y);
-void render_particles(partgen_t *gen, mat4x4 *view, mat4x4 *projection);
+void render_particles(partgen_t *gen, camera_t *camera);
 void free_particles(partgen_t *gen);
 
 

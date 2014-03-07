@@ -1,14 +1,14 @@
+#include <stdlib.h>
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include "ui_game.h"
 #include "../context.h"
-#include "../map.h"
+#include "../world.h"
 #include "../font.h"
 #include "../renderer.h"
 #include "../camera.h"
-#include <stdlib.h>
 #include "../linmath.h"
 
 #define CAMERA_SPEED 500 // px/s
@@ -17,9 +17,9 @@
 
 typedef struct ui_game_data_t
 {
-	map_t *map;
+	world_t *world;
 	camera_t camera;
-    int camx;
+	int camx;
 	int camy;
 } ui_game_data_t;
 
@@ -31,7 +31,7 @@ void draw_game(ui_frame_t *frame)
 	ui_game_data_t *data = frame->data;
 	rtt_start();
 	glClear(GL_COLOR_BUFFER_BIT);
-	render_map(data->map, &data->camera);
+	render_world(data->world, &data->camera);
 	rtt_stop();
 	rtt_draw();
 	render_text("We are in game ui", 10, 40, 0.6);
@@ -77,13 +77,13 @@ void destroy_ui_game(ui_frame_t* frame)
 	free(frame);
 }
 
-ui_frame_t* init_ui_game(map_t *map)
+ui_frame_t* init_ui_game(world_t *world)
 {
 	ui_frame_t *frame = create_ui();
 	if(frame)
 	{
 		ui_game_data_t *data = malloc(sizeof(ui_game_data_t));
-		data->map = map;
+		data->world = world;
 		data->camx = 0;
 		data->camy = 0;
 		set_camera(&data->camera, 0,0,1);
