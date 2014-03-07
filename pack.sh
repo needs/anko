@@ -11,7 +11,7 @@
 out="$1"; shift
 offset=0
 
-convert -background none -trim -append "$@" "$out"
+convert -background transparent -trim -append "$@" "$out"
 outid=$(identify -format "%t" "$out" | tr '[:lower:]' '[:upper:]')
 echo "ADD_TEXTURE($outid, \"$out\")"
 

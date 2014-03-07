@@ -100,10 +100,10 @@ static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float 
 	assert(ref != NULL);
 
 	float tmp[16] = {
-		0, 0, x / ref->width,       y / ref->height,
-		w, 0, (x + w) / ref->width, y / ref->height,
-		w, h, (x + w) / ref->width, (y + h) / ref->height,
-		0, h, x / ref->width,       (y + h) / ref->height
+		0, 0, x / ref->width,           y / ref->height,
+		w, 0, (x + w - 1) / ref->width, y / ref->height,
+		w, h, (x + w - 1) / ref->width, (y + h - 1) / ref->height,
+		0, h, x / ref->width,           (y + h - 1) / ref->height
 	};
 
 	tex->tex = ref->tex;

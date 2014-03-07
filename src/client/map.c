@@ -14,7 +14,7 @@
 
 
 typedef struct mapcell_t {
-	int x, y;
+	float x, y;
 } mapcell_t;
 
 typedef struct map_t {
