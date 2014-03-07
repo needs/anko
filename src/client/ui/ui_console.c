@@ -34,6 +34,7 @@ void destroy_ui_console(ui_frame_t *frame)
 void draw_console(ui_frame_t *frame)
 {
 	wchar_t message[255];
+	wchar_t prompt[2] = {0x5f,0};
 	ui_console_data_t *data = frame->data;
 	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : frame->is_hovered ? 0.5 : 0.4;
 	float color[] = {0.05,0.05,0.05, opacity};
@@ -44,66 +45,32 @@ void draw_console(ui_frame_t *frame)
 	glUniform4fv(glGetUniformLocation(gui, "color"), 1, color);
 	mat4x4 id;
 	mat4x4_identity(id);
-	render_model(gui,id,id,0,8);
-	set_font_color(1,1,1,1);
+	mat4x4 model;
+	mat4x4_translate(model, frame->x, frame->y, 0);
+	render_model(gui, id, model, 0, 8);
+	set_font_color(1, 1, 1, 1);
 
 	wcscat(message, data->buffer);
 
 	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
-		wcscat(message, L"|");
+		wcscat(message, prompt);
 	
 		render_text(message ,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
 }
 
-void update_rendering(ui_frame_t *frame)
-{
-	ui_console_data_t *data = frame->data;
-	
-	float vertices[] = {
-		frame->x, frame->y, 0, 0,
-		frame->x+frame->width, frame->y, 0, 0,
-		frame->x+frame->width, frame->y+(frame->height*TEXT_BOX_SIZE), 0, 0,
-		frame->x, frame->y+(frame->height*TEXT_BOX_SIZE), 0, 0,
 
-		frame->x, frame->y+(frame->height*TEXT_BOX_SIZE)+10, 0, 0,
-		frame->x+frame->width, frame->y+(frame->height*TEXT_BOX_SIZE)+10, 0, 0,
-		frame->x+frame->width, frame->y+frame->height , 0, 0,
-		frame->x, frame->y+frame->height, 0, 0,
-	};
-	
-	glBindVertexArray(data->vao);
-	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-}
-
-
-void ui_console_on_mouse_move(ui_frame_t *frame, double x, double y)
-{
-	(void)x;
-	(void)y;
-	if(frame->is_dragging)
-		update_rendering(frame);
-}
-
-void update_console(ui_frame_t *frame, float deltatime)
-{
-	(void)frame;
-	(void)deltatime;
-}
-
-void init_console_rendering(ui_console_data_t *data, float x, float y, float w, float h)
+void init_console_rendering(ui_console_data_t *data, float w, float h)
 {
 	float vertices[] = {
-		x, y, 0, 0,
-		x+w, y, 0, 0,
-		x+w, y+(h*TEXT_BOX_SIZE), 0, 0,
-		x, y+(h*TEXT_BOX_SIZE), 0, 0,
+		0, 0, 0, 0,
+		w, 0, 0, 0,
+		w, (h*TEXT_BOX_SIZE)+5, 0, 0,
+		0, (h*TEXT_BOX_SIZE)+5, 0, 0,
 
-		x, y+(h*TEXT_BOX_SIZE)+10, 0, 0,
-		x+w, y+(h*TEXT_BOX_SIZE)+10, 0, 0,
-		x+w, y+h , 0, 0,
-		x, y+h, 0, 0,
+		0, (h*TEXT_BOX_SIZE)+10, 0, 0,
+		w, (h*TEXT_BOX_SIZE)+10, 0, 0,
+		w, h , 0, 0,
+		0, h, 0, 0,
 	};
 	
 	glGenVertexArrays(1, &data->vao);
@@ -172,9 +139,6 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		frame->data = data;
 		frame->destroy = &destroy_ui_console;
 		frame->draw = &draw_console;
-		frame->update = &update_console;
-		frame->on_mouse_move = &ui_console_on_mouse_move;
-		frame->on_mouse_button = NULL;
 		frame->on_key = &ui_console_on_key;
 		frame->on_char = &ui_console_on_char;
 		frame->x = x;
@@ -183,7 +147,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		frame->height = h;
 		frame->parent = parent;
 		frame->movable = 1;
-		init_console_rendering(frame->data, x, y, w, h);
+		init_console_rendering(frame->data, w, h);
 		return frame;
 	err_data:
 		return NULL;

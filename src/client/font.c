@@ -52,7 +52,7 @@ int load_font()
 	
 	glGenBuffers(1, &font_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, font_vbo);
-	glBufferData(GL_ARRAY_BUFFER, BUFFER_MAX_SIZE*glyph_data_size, NULL, GL_DYNAMIC_DRAW );
+	glBufferData(GL_ARRAY_BUFFER, BUFFER_MAX_SIZE*glyph_data_size, NULL, GL_STREAM_DRAW );
 	
 	GLint position = glGetAttribLocation(gui, "position");
 	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);

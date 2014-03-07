@@ -12,6 +12,7 @@
 #include "../linmath.h"
 #include "../config.h"
 #include "ui_console.h"
+#include "ui_debug.h"
 #include <assert.h>
 #include <stdio.h>
 
@@ -175,6 +176,7 @@ void destroy_ui_game(ui_frame_t* frame)
 
 ui_frame_t* init_ui_game(world_t *world)
 {
+	const int children_count = 2;
 	ui_frame_t *frame = create_ui();
 	if(frame)
 	{
@@ -197,12 +199,13 @@ ui_frame_t* init_ui_game(world_t *world)
 		frame->destroy = &destroy_ui_game;
 		frame->on_char = &ui_game_on_char;
 
-		frame->childs = malloc(sizeof(ui_frame_t *)*2);
+		frame->childs = malloc(sizeof(ui_frame_t *)*(children_count+1));
 		if(!frame->childs)
 			goto err_childs;
 		
 		frame->childs[0] = init_ui_console(frame, 10, config.screen_height - 215,400,200);
-		frame->childs[1] = NULL;
+		frame->childs[1] = init_ui_debug(frame, 10,10,250,100);
+		frame->childs[2] = NULL;
 		
 		return frame;
 
