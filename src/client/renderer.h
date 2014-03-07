@@ -3,10 +3,11 @@
 
 #include "linmath.h"
 #include "textures.h"
+#include <GL/gl.h>
 
 int init_rendering(void);
 void close_rendering(void);
-void render_model(mat4x4 view, mat4x4 model, GLint first, GLint count);
+void render_model(GLuint program, mat4x4 view, mat4x4 model, GLint first, GLint count);
 
 extern int rtt_effect;
 

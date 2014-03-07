@@ -26,6 +26,7 @@ typedef struct font_data
 
 static font_data_t droid;
 
+float color[] = {1,1,1,1};
 
 int load_font()
 {
@@ -52,11 +53,11 @@ int load_font()
 	glBindBuffer(GL_ARRAY_BUFFER, font_vbo);
 	glBufferData(GL_ARRAY_BUFFER, data_size, NULL, GL_STATIC_DRAW );
 	
-	GLint position = glGetAttribLocation(standard, "position");
+	GLint position = glGetAttribLocation(gui, "position");
 	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
 
-	GLint uv = glGetAttribLocation(standard, "UV");
+	GLint uv = glGetAttribLocation(gui, "UV");
 	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(uv);
 
@@ -110,15 +111,25 @@ void get_text_dim(char * str, float *w, float *h, float scale)
 		*h = max_height;
 }
 
+void set_font_color(float r, float g, float b, float alpha)
+{
+	color[0] = r;
+	color[1] = g;
+	color[2] = b;
+	color[3] = alpha;
+}
+
 void render_text(char * str, float x, float y, float scale)
 {
 	char * c = (char *)str;
 	float cur_x = x, cur_y = y;
-	
-	glUseProgram(standard);
+		
+	glUseProgram(gui);
 	glBindVertexArray(font_vao);
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_FONT_DROID));
-
+	glUniform1i(glGetUniformLocation(gui, "has_texture"), 1);
+	glUniform4fv(glGetUniformLocation(gui, "color"), 1,  color);
+	
 	mat4x4 start;
 	
 	while(*c)
@@ -129,7 +140,7 @@ void render_text(char * str, float x, float y, float scale)
 			mat4x4_identity(id);
 			mat4x4_translate(start, cur_x, cur_y,0);
 			mat4x4_scale_aniso(start, start, scale, scale, 0);
-			render_model(id, start, (*c-32)*sizeof(float), 4);
+			render_model(gui, id, start, (*c-32)*sizeof(float), 4);
 			cur_x += (droid.width[(int)*c])*scale;
 		}
 		else if(*c == '\n')

@@ -5,6 +5,7 @@
 
 extern GLuint standard;
 extern GLuint fx;
+extern GLuint gui;
 
 int load_shaders();
 void unload_shaders();

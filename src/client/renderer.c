@@ -49,16 +49,16 @@ void close_rendering(void)
     unload_shaders();
 }
 
-void render_model(mat4x4 view, mat4x4 model, GLint first, GLint count)
+void render_model(GLuint program, mat4x4 view, mat4x4 model, GLint first, GLint count)
 {
 	glActiveTexture(GL_TEXTURE0);
 
-	glUniform1i(glGetUniformLocation(standard, "tex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(standard, "model"),
+	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(program, "model"),
 			   1, GL_FALSE, (GLfloat*)model);
-	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
+	glUniformMatrix4fv(glGetUniformLocation(program, "projection"),
 			   1, GL_FALSE, (GLfloat*)projection);
-	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
+	glUniformMatrix4fv(glGetUniformLocation(program, "view"),
 			   1, GL_FALSE, (GLfloat*)view);
 
 	/* And render them */

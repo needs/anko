@@ -41,10 +41,19 @@ void on_mouse_move(GLFWwindow *window, double x, double y)
 		ui_on_mouse_move(*linked_frame, x, y);
 }
 
+void on_char(GLFWwindow *window, unsigned int c)
+{
+	(void)window;
+	if(linked_frame)
+		ui_on_char(*linked_frame, c);
+}
+
 void init_events(GLFWwindow *window)
 {
 	current_window = window;
 	glfwSetScrollCallback(window, on_mouse_scroll);
 	glfwSetMouseButtonCallback(window, on_mouse_button);
 	glfwSetKeyCallback(window, on_key);
+	glfwSetCursorPosCallback(window, on_mouse_move);
+	glfwSetCharCallback(window, on_char);
 }
