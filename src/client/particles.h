@@ -6,7 +6,7 @@
 
 
 /* Maybe made the limit configurable/dynamique ? */
-#define MAX_PARTICLES 1
+#define MAX_PARTICLES 16384
 
 typedef struct partgen_t partgen_t;
 
