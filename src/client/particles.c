@@ -1,10 +1,11 @@
-#include <assert.h> 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <GL/gl.h> 
+#include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
 #include "particles.h"
@@ -14,14 +15,15 @@
 #include "renderer.h"
 
 
-typedef struct particle_t {
-	int lifetime;
-} particle_t;
+#define PARTICLE_SIZE 4 * 5 * sizeof(float)
+
 
 typedef struct partgen_t {
-	particle_t particles[MAX_PARTICLES];
+	float particles[2 * MAX_PARTICLES]; /* Lifetimes */
 	GLuint vbo, vao;
-	int count;
+
+	int count;		/* Number of particles */
+	long offset;		/* Offset of the first particle */
 } partgen_t;
 
 
@@ -34,20 +36,27 @@ partgen_t* init_particles(void)
 		return NULL;
 	}
 
+	gen->count = 0;
+	gen->offset = 0;
+
 	glGenVertexArrays(1, &gen->vao);
 	glBindVertexArray(gen->vao);
 
 	glGenBuffers(1, &gen->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, gen->vbo);
-	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float) * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 2 * PARTICLE_SIZE * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
 
 	GLint position = glGetAttribLocation(sh_particles, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
 
 	GLint uv = glGetAttribLocation(sh_particles, "UV");
-	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(uv);
+
+	GLint lifetime = glGetAttribLocation(sh_particles, "lifetime");
+	glVertexAttribPointer(lifetime, 1, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(4*sizeof(float)));
+	glEnableVertexAttribArray(lifetime);
 
 	glBindVertexArray(0);
 
@@ -55,34 +64,83 @@ partgen_t* init_particles(void)
 }
 
 
-void spawn_particles(partgen_t *gen, int n, tex_t tex, float x, float y)
+void spawn_particles(partgen_t *gen, int n, tex_t tex, float x, float y, float lifetime)
 {
-	int i;
+	int i, j;
+	GLint old_bind;
 	float *buf;
+	float curtime = glfwGetTime();
 
 	assert(gen != NULL);
 	assert(n > 0);
+	assert(lifetime > 0);
 
-	if (gen->count + n >= MAX_PARTICLES) {
-		fprintf(stderr, "particles: Maximum number of particles reached (%d).\n", MAX_PARTICLES);
+	if (gen->count + n > MAX_PARTICLES)
 		return;
-	}
 
 	/* TODO: The ranged mapping may be slower than glBufferSubData() */
+	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &old_bind);
 	glBindBuffer(GL_ARRAY_BUFFER, gen->vbo);
-	if ((buf = glMapBufferRange(GL_ARRAY_BUFFER, 16 * sizeof(float) * gen->count, 16 * sizeof(float) * n, GL_MAP_WRITE_BIT)) == NULL) {
+	if ((buf = glMapBufferRange(GL_ARRAY_BUFFER, PARTICLE_SIZE * (gen->count + gen->offset), PARTICLE_SIZE * n, GL_MAP_WRITE_BIT)) == NULL) {
 		fprintf(stderr, "particles: Can't map the VBO.\n");
 		return;
 	}
 
-	/* Write the VBO sequentialy, not in reverse order. */
-	for (i = 0; i < n; i++)
-		get_ctexture(buf + (i * 16), tex, x, y);
+	for (i = 0; i < n; i++) {
+		float data[20];
+		get_ctexture(data, tex, x, y);
 
-	glBindBuffer(GL_ARRAY_BUFFER, gen->vbo); /* Avoid stupid errors. */
+		for (j = 0; j < 4; j++) {
+			buf[(i * 20) + j * 5]     = data[j * 4];
+			buf[(i * 20) + j * 5 + 1] = data[j * 4 + 1];
+			buf[(i * 20) + j * 5 + 2] = data[j * 4 + 2];
+			buf[(i * 20) + j * 5 + 3] = data[j * 4 + 3];
+			buf[(i * 20) + j * 5 + 4] = curtime + lifetime;
+		}
+
+		gen->particles[gen->offset + gen->count + i] = curtime + lifetime;
+	}
+
 	if (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE)
 		fprintf(stderr, "particles: Error when unmapping the VBO.\n");
+	glBindBuffer(GL_ARRAY_BUFFER, old_bind); /* Avoid stupid errors. */
+
 	gen->count += n;
+}
+
+
+void update_particles(partgen_t *gen)
+{
+	float *buf;
+	float curtime = glfwGetTime();
+
+	assert(gen != NULL);
+
+	/* Move offset forward until we reach a living particle. */
+	while (gen->count > 0 && gen->particles[gen->offset] < curtime) {
+		gen->offset++;
+		gen->count--;
+	}
+
+	/* When the offset reach the begining of the second half of the VBO,
+	 * rewind it. */
+	if (gen->offset < MAX_PARTICLES)
+		return;
+	else if (gen->count > 0) {
+		glBindBuffer(GL_ARRAY_BUFFER, gen->vbo);
+		if ((buf = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)) == NULL) {
+			fprintf(stderr, "update-particles: Can't map the VBO.\n");
+			return;
+		}
+
+		memcpy(buf, buf + (20 * gen->offset), gen->count * PARTICLE_SIZE);
+
+		if (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE)
+			fprintf(stderr, "update-particles: Error when unmapping the VBO.\n");
+	}
+
+	memcpy(gen->particles, gen->particles + gen->offset, gen->count * sizeof(float));
+	gen->offset = 0;
 }
 
 
@@ -110,7 +168,7 @@ void render_particles(partgen_t *gen, camera_t *camera)
 			   1, GL_FALSE, (GLfloat*)camera->matrix);
 
 	/* Draw the whole VBO */
-	glDrawArrays(GL_QUADS, 0, gen->count * 4);
+	glDrawArrays(GL_QUADS, gen->offset * 4, gen->count * 4);
 }
 
 

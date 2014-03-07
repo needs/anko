@@ -272,7 +272,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 					     get_entity_tex(&current->cells[i][j]),
 					     map->cells[i][j].x,
 					     map->cells[i][j].y);
-				spawn_particles(gen, 1, TEX_PARTICLES_FIRE1, map->cells[i][j].x, map->cells[i][j].y);
+				spawn_particles(gen, 1, TEX_PARTICLES_FIRE1, map->cells[i][j].x, map->cells[i][j].y, 3);
 			}
 		}
 	}

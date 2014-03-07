@@ -40,6 +40,7 @@ void update_world(world_t *world, board_t *current, board_t *old)
 	assert(old != NULL);
 
 	update_map(world->map, world->gen, current, old);
+	update_particles(world->gen);
 }
 
 
