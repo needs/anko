@@ -4,12 +4,13 @@
 #define FONT_WIDTH 512
 #define FONT_HEIGHT FONT_WIDTH
 #define GLYPH_DIM 48
+#define BUFFER_MAX_SIZE 255
 
 int load_font();
 void set_font_color(float r, float g, float b, float alpha);
-void render_text(char * str, float x, float y, float scale);
+void render_text(char * str, float x, float y, float size);
 void unload_font();
-void get_text_dim(char * str, float *w, float *h, float scale);
+void get_text_dim(char * str, float *w, float *h, float size);
 
 #endif /* _FONT_H_ */
 

@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../event.h"
+#include <string.h>
+#include <math.h>
 
 #define INPUT_BOX_SIZE ((float)1/6)
 #define TEXT_BOX_SIZE (1-INPUT_BOX_SIZE)
@@ -21,7 +23,7 @@ typedef struct ui_console_data_t
 	int is_dragging;
 	float last_mouse[2];
 	char buffer[255];
-	int cur;
+	int size;
 } ui_console_data_t;
 
 void destroy_ui_console(ui_frame_t *frame)
@@ -32,8 +34,10 @@ void destroy_ui_console(ui_frame_t *frame)
 
 void draw_console(ui_frame_t *frame)
 {
-    ui_console_data_t *data = frame->data;
-	float color[] = {0.05,0.05,0.05, data->is_hovered ? 0.5 : 0.4};
+	char message[255];
+	ui_console_data_t *data = frame->data;
+	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : data->is_hovered ? 0.5 : 0.4;
+	float color[] = {0.05,0.05,0.05, opacity};
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
 	
@@ -43,7 +47,13 @@ void draw_console(ui_frame_t *frame)
 	mat4x4_identity(id);
 	render_model(gui,id,id,0,8);
 	set_font_color(1,1,1,1);
-	render_text(data->buffer,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 0.4);
+
+	strcat(message, data->buffer);
+
+	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
+		strcat(message, "|");
+	
+	render_text(message,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
 }
 
 void update_rendering(ui_frame_t *frame)
@@ -143,18 +153,18 @@ void ui_console_on_key(ui_frame_t* frame, int key, int scancode, int action, int
 		if(frame->parent->keyboard_owner == frame)
 		{
 			frame->parent->keyboard_owner = NULL;
-			data->cur = 0;
-			data->buffer[data->cur] = 0;
+			data->size = 0;
+			data->buffer[data->size] = 0;
 		}
 		else
 			frame->parent->keyboard_owner = frame->parent->keyboard_owner == frame ? NULL : frame;
 	}
 	if(key == GLFW_KEY_BACKSPACE && (action == GLFW_PRESS || action == GLFW_REPEAT))
 	{
-		if(data->cur > 0)
+		if(data->size > 0)
 		{
-			data->cur--;
-			data->buffer[data->cur] = 0;
+			data->size--;
+			data->buffer[data->size] = 0;
 		}
 	}
 }
@@ -164,11 +174,11 @@ void ui_console_on_char(ui_frame_t *frame, unsigned int c)
 	ui_console_data_t *data = frame->data;
 	if(frame->parent->keyboard_owner == frame)
 	{
-		if(data->cur < 255)
+		if(data->size < 255)
 		{
-			data->buffer[data->cur] = c;
-			data->cur++;
-			data->buffer[data->cur] = 0;
+			data->buffer[data->size] = c;
+			data->size++;
+			data->buffer[data->size] = 0;
 		}
 	}
 }
@@ -184,7 +194,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		data->is_hovered = 0;
 		data->is_dragging = 0;
 		data->buffer[0] = 0;
-		data->cur = 0;
+		data->size = 0;
 		
 		frame->data = data;
 		frame->destroy = &destroy_ui_console;

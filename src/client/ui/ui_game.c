@@ -25,6 +25,8 @@ typedef struct ui_game_data_t
 	camera_t camera;
 	int camx;
 	int camy;
+
+	int was_focused;
 } ui_game_data_t;
 
 void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int action, int mods);
@@ -54,7 +56,7 @@ void ui_game_update(ui_frame_t* frame, float deltatime)
 {
 	ui_game_data_t *data = frame->data;
 	int i;
-	
+
 	if(data->camy > 0)
 		move_camera(&data->camera, 0, CAMERA_SPEED*deltatime);
 	else if(data->camy < 0)
@@ -64,7 +66,7 @@ void ui_game_update(ui_frame_t* frame, float deltatime)
 		move_camera(&data->camera, CAMERA_SPEED*deltatime, 0);
 	else if(data->camx < 0)
 		move_camera(&data->camera, -CAMERA_SPEED*deltatime, 0);
-
+	
 	if(!frame->childs)
 		return;
 	
@@ -91,6 +93,9 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 
 	if(frame->keyboard_owner)
 	{
+		data->camx = 0;
+		data->camy = 0;
+		data->was_focused = 0;
 		ui_on_key(frame->keyboard_owner, key, scancode, action, mods);
 		return;
 	}
@@ -180,6 +185,7 @@ ui_frame_t* init_ui_game(map_t *map)
 		data->map = map;
 		data->camx = 0;
 		data->camy = 0;
+		data->was_focused = 1;
 		set_camera(&data->camera, 0,0,1);
 		
 		frame->data = data;
@@ -212,35 +218,46 @@ void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int actio
 {
 	(void)scancode;
 	(void)mods;
-	if(key == GLFW_KEY_UP)
+
+	// We don't deal with repeated key
+	if(action == GLFW_REPEAT)
+		return;
+	
+	if(key == GLFW_KEY_UP || key == GLFW_KEY_W)
 	{
 		if(action == GLFW_PRESS)
 			data->camy += 1;
-		else if(action == GLFW_RELEASE)
+		else if(action == GLFW_RELEASE && data->was_focused)
 			data->camy -= 1;
+		data->was_focused = 1;
 	}
 
-	if(key == GLFW_KEY_DOWN)
+	if(key == GLFW_KEY_DOWN || key == GLFW_KEY_S)
 	{
 		if(action == GLFW_PRESS)
 			data->camy -= 1;
-		else if(action == GLFW_RELEASE)
+		else if(action == GLFW_RELEASE && data->was_focused)
 			data->camy += 1;
+		data->was_focused = 1;
 	}
 
-	if(key == GLFW_KEY_RIGHT)
+	if(key == GLFW_KEY_RIGHT || key == GLFW_KEY_D)
 	{
 		if(action == GLFW_PRESS)
 			data->camx += 1;
-		else if(action == GLFW_RELEASE)
+		else if(action == GLFW_RELEASE && data->was_focused)
 			data->camx -= 1;
+		data->was_focused = 1;
 	}
 
-	if(key == GLFW_KEY_LEFT)
+	if(key == GLFW_KEY_LEFT || key == GLFW_KEY_A)
 	{
 		if(action == GLFW_PRESS)
 			data->camx -= 1;
-		else if(action == GLFW_RELEASE)
+		else if(action == GLFW_RELEASE && data->was_focused)
 			data->camx += 1;
+		data->was_focused = 1;
 	}
+	
+
 }

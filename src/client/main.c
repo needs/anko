@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 		// Rendering
 		glClear(GL_COLOR_BUFFER_BIT);
 		draw_ui(current_ui);
-		draw_fps(10,10,0.5);
+		draw_fps(10, 10, 24);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;

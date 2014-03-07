@@ -12,22 +12,24 @@ GLuint standard;
 GLuint fx;
 GLuint gui;
 
-static GLuint get_shader(const char * filename, GLenum type);
-static GLuint load_program (const char * vertex_filename, const char * fragment_filename);
+static GLuint get_shader(const char * filename, GLenum type, int quiet);
+static GLuint load_program (const char * vertex_filename, const char * fragment_filename, int quiet);
 static void destroy_program(GLuint program);
 
 int load_shaders()
 {
-	standard = load_program("data/shaders/default.vs", "data/shaders/default.fs");
+	standard = load_program("data/shaders/default.vs", "data/shaders/default.fs", GL_TRUE);
 	if(!standard)
 		goto err_standard;
-	fx = load_program("data/shaders/fx.vs", "data/shaders/fx.fs");
+	fx = load_program("data/shaders/fx.vs", "data/shaders/fx.fs", GL_TRUE);
 	if(!fx)
 		goto err_fx;
 
-	gui = load_program("data/shaders/gui.vs", "data/shaders/gui.fs");
+	gui = load_program("data/shaders/gui.vs", "data/shaders/gui.fs", GL_TRUE);
 	if(!gui)
 		goto err_gui;
+
+	printf("Shaders loaded\n");
 	
 	return 1;
 
@@ -44,7 +46,7 @@ void unload_shaders()
 	destroy_program(standard);
 }
 
-static GLuint get_shader(const char * filename, GLenum type)
+static GLuint get_shader(const char * filename, GLenum type, int quiet)
 {
 	GLuint shader;
 	GLint info_result;
@@ -73,8 +75,9 @@ static GLuint get_shader(const char * filename, GLenum type)
 		goto err_alloc;
 	fread(buffer,sizeof(char),len,f);
 	buffer[len] = 0;
-	
-	printf("compiling %s ...\n", filename);
+
+	if(!quiet)
+		printf("compiling %s ...\n", filename);
 	
 	glShaderSource(shader, 1, (const char**)&buffer, NULL);
 	glCompileShader(shader);
@@ -98,7 +101,8 @@ static GLuint get_shader(const char * filename, GLenum type)
 		return GL_FALSE;
 	}
 	else
-		printf("shader successfully compiled.\n");
+		if(!quiet)
+			printf("shader successfully compiled.\n");
 	
 	free(buffer);
 	fclose(f);
@@ -129,16 +133,16 @@ static void destroy_program(GLuint program)
 	glDeleteProgram(program);
 }
 
-static GLuint load_program(const char * vertex_filename, const char * fragment_filename)
+static GLuint load_program(const char * vertex_filename, const char * fragment_filename, int quiet)
 {
 	GLuint program;
 	GLint info_result;
 	
-	GLuint vertex_shader = get_shader(vertex_filename, GL_VERTEX_SHADER);
+	GLuint vertex_shader = get_shader(vertex_filename, GL_VERTEX_SHADER, quiet);
 	if(!vertex_shader)
 		goto err_vertex;
 	
-	GLuint fragment_shader = get_shader(fragment_filename, GL_FRAGMENT_SHADER);
+	GLuint fragment_shader = get_shader(fragment_filename, GL_FRAGMENT_SHADER, quiet);
 	if(!fragment_shader)
 		goto err_fragment;
 	
@@ -146,7 +150,8 @@ static GLuint load_program(const char * vertex_filename, const char * fragment_f
 	if(!program)
 		goto err_program;
 
-	printf("linking program ...\n");
+	if(!quiet)
+		printf("linking program ...\n");
 	glAttachShader(program, vertex_shader);
 	glAttachShader(program, fragment_shader);
 	glLinkProgram(program);
@@ -168,7 +173,8 @@ static GLuint load_program(const char * vertex_filename, const char * fragment_f
 		}
 	}
 	else
-		printf("program successfully linked.\n\n");
+		if(!quiet)
+			printf("program successfully linked.\n\n");
 	
 	return program;
 	
