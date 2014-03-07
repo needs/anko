@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "config.h"
 
+
 static mat4x4 projection;
 
 static GLuint rtt_fbo;
@@ -18,6 +19,7 @@ static GLuint rtt_vbo;
 static GLuint rtt_vao;
 int rtt_effect = 0; // will use an enum later
 static void init_rtt();
+
 
 int init_rendering(void)
 {

@@ -24,13 +24,17 @@ $(shell test -f src/client/textures_pack.def || touch src/client/textures_pack.d
 
 src/client/textures.def: src/client/textures_pack.def
 
-src/client/textures_pack.def: data/tiles.png data/entities.png
+src/client/textures_pack.def: data/tiles.def data/entities.def data/particles.def
+	@cat $^ > $@
 
-data/tiles.png: pack.sh $(wildcard data/tiles/*.png)
-	@./pack.sh $@ $(wordlist 2, $(words $^), $^) >> src/client/textures_pack.def
+data/tiles.def: pack.sh $(wildcard data/tiles/*.png)
+	@./pack.sh data/tiles.png $(wordlist 2, $(words $^), $^) > $@
 
-data/entities.png: pack.sh $(wildcard data/entities/*.png)
-	@./pack.sh $@ $(wordlist 2, $(words $^), $^) >> src/client/textures_pack.def
+data/entities.def: pack.sh $(wildcard data/entities/*.png)
+	@./pack.sh data/entities.png $(wordlist 2, $(words $^), $^) > $@
+
+data/particles.def: pack.sh $(wildcard data/particles/*.png)
+	@./pack.sh data/particles.png $(wordlist 2, $(words $^), $^) > $@
 
 custom_clean:
-	@rm -f data/tiles.png data/entities.png src/client/textures_pack.def
+	@rm -f data/tiles.{png,def} data/entities.{png,def} data/particles.{png,def} src/client/textures_pack.def
