@@ -7,19 +7,22 @@ typedef struct ui_frame ui_frame_t;
 typedef void(*update_func)(ui_frame_t*,float);
 typedef void(*destroy_func)(ui_frame_t*);
 typedef void(*draw_func)(ui_frame_t*);
-typedef int(*mouse_move_func)(ui_frame_t*,double,double);
-typedef int(*mouse_button_func)(ui_frame_t*,int,int,int);
-typedef int(*mouse_scroll_func)(ui_frame_t*,double,double);
-typedef int(*key_func)(ui_frame_t*,int,int,int,int);
+typedef void(*mouse_move_func)(ui_frame_t*,double,double);
+typedef void(*mouse_button_func)(ui_frame_t*,int,int,int);
+typedef void(*mouse_scroll_func)(ui_frame_t*,double,double);
+typedef void(*key_func)(ui_frame_t*,int,int,int,int);
+typedef void(*char_func)(ui_frame_t*,unsigned int);
 
 struct ui_frame
 {
-	int movable;
 	int hidden;
 	float x;
 	float y;
 	float width;
 	float height;
+
+	ui_frame_t* keyboard_owner;
+	ui_frame_t* mouse_owner;
 
 	destroy_func destroy;
 	update_func update;
@@ -28,8 +31,10 @@ struct ui_frame
 	mouse_button_func on_mouse_button;
 	mouse_scroll_func on_mouse_scroll;
 	key_func on_key;
+	char_func on_char;
 	
-	ui_frame_t *childs;
+	ui_frame_t *parent;
+	ui_frame_t **childs;
 	void * data; // rlly ?
 	
 };
@@ -43,5 +48,6 @@ void ui_on_mouse_move(ui_frame_t* frame, double x, double y);
 void ui_on_mouse_button(ui_frame_t* frame, int button, int action, int mods);
 void ui_on_mouse_scroll(ui_frame_t* frame, double sx, double sy);
 void ui_on_key(ui_frame_t* frame, int key, int scancode, int action, int mods);
+void ui_on_char(ui_frame_t* frame, unsigned int c);
 
 #endif /*  _UI_FRAME_H_ */

@@ -243,10 +243,10 @@ void render_map(map_t *map, camera_t *camera)
 	glBindVertexArray(map->vao);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
-	render_model(camera->matrix, identity, 0, map->vsize / 4);
+	render_model(standard, camera->matrix, identity, 0, map->vsize / 4);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
-	render_model(camera->matrix, identity, map->vsize / 4, map->vsize / 4);
+	render_model(standard, camera->matrix, identity, map->vsize / 4, map->vsize / 4);
 }
 
 

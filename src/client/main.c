@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 		// Rendering
 		glClear(GL_COLOR_BUFFER_BIT);
 		draw_ui(current_ui);
-		draw_fps(10,10,0.5);
+		draw_fps(10, 10, 24);
 		glfwSwapBuffers(window);
 		
 		deltatime = glfwGetTime() - last_frame;
@@ -124,6 +124,7 @@ static void draw_fps(float x, float y, float scale)
 {
 	char message[16];
 	snprintf(message, 16, "FPS: %i", fps);
+	set_font_color(0,0.63,1,1);
 	render_text(message, x, y, scale);
 }
 

@@ -6,7 +6,6 @@ ui_frame_t *create_ui()
 	ui_frame_t* frame = malloc(sizeof(ui_frame_t));
 	if(frame)
 	{
-		frame->movable = 0;
 		frame->hidden = 0;
 		frame->x = 0;
 		frame->y = 0;
@@ -19,8 +18,12 @@ ui_frame_t *create_ui()
 		frame->on_mouse_button = NULL;
 		frame->on_mouse_scroll = NULL;
 		frame->on_key = NULL;
+		frame->on_char = NULL;
 		frame->childs = NULL;
 		frame->data = NULL;
+		frame->keyboard_owner = NULL;
+		frame->mouse_owner = NULL;
+		frame->parent = NULL;
 	}
 	return frame;
 }
@@ -59,6 +62,12 @@ void ui_on_key(ui_frame_t* frame, int key, int scancode, int action, int mods)
 {
 	if(frame->on_key)
 		frame->on_key(frame,key,scancode,action,mods);
+}
+
+void ui_on_char(ui_frame_t* frame, unsigned int c)
+{
+	if(frame->on_char)
+		frame->on_char(frame, c);
 }
 
 void destroy_ui(ui_frame_t *frame)
