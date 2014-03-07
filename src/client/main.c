@@ -122,8 +122,11 @@ static void try_simulate(world_t *world, board_t **old, board_t **current)
 
 static void draw_fps(float x, float y, float scale)
 {
-	char message[16];
-	snprintf(message, 16, "FPS: %i", fps);
+	(void)x;
+	(void)y;
+	(void)scale;
+	wchar_t message[16];
+	swprintf(message, 16, L"FPS: %i", fps);
 	set_font_color(0,0.63,1,1);
 	render_text(message, x, y, scale);
 }

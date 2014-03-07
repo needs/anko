@@ -11,6 +11,7 @@
 #include "../event.h"
 #include <string.h>
 #include <math.h>
+#include <wchar.h>
 
 #define INPUT_BOX_SIZE ((float)1/6)
 #define TEXT_BOX_SIZE (1-INPUT_BOX_SIZE)
@@ -22,7 +23,7 @@ typedef struct ui_console_data_t
 	int is_hovered;
 	int is_dragging;
 	float last_mouse[2];
-	char buffer[255];
+    wchar_t buffer[255];
 	int size;
 } ui_console_data_t;
 
@@ -34,7 +35,7 @@ void destroy_ui_console(ui_frame_t *frame)
 
 void draw_console(ui_frame_t *frame)
 {
-	char message[255];
+	//wchar_t message[255];
 	ui_console_data_t *data = frame->data;
 	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : data->is_hovered ? 0.5 : 0.4;
 	float color[] = {0.05,0.05,0.05, opacity};
@@ -48,12 +49,12 @@ void draw_console(ui_frame_t *frame)
 	render_model(gui,id,id,0,8);
 	set_font_color(1,1,1,1);
 
-	strcat(message, data->buffer);
+	/*strcat(message, data->buffer);
 
 	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
-		strcat(message, "|");
+	strcat(message, "|");*/
 	
-	render_text(message,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
+	render_text(data->buffer ,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
 }
 
 void update_rendering(ui_frame_t *frame)
@@ -195,7 +196,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		data->is_dragging = 0;
 		data->buffer[0] = 0;
 		data->size = 0;
-		
+
 		frame->data = data;
 		frame->destroy = &destroy_ui_console;
 		frame->draw = &draw_console;

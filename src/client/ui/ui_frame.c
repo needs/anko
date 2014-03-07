@@ -36,7 +36,7 @@ void update_ui(ui_frame_t *frame, float deltatime)
 
 void draw_ui(ui_frame_t *frame)
 {
-	if(frame->draw)
+	if(frame->draw && !frame->hidden )
 		frame->draw(frame);
 }
 
