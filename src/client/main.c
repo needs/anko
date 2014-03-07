@@ -22,31 +22,31 @@
 #include "ui/ui_frame.h"
 #include "ui/ui_game.h"
 
-
-#define MAX_FPS 3000
+#define SPEED_UPDATE 0.3
+#define MAX_FPS 1000
+#define MAX_MSPF (float)1/MAX_FPS
 
 static GLFWwindow* window;
-static int frames = 0;
-static double last_fps = 0;
-static float deltatime = 0;
+static float last_speed_update = 0;
+static float speed_frames = 0;
+static float speed_time = 0;
 static float step_timer;
-static int fps = 0;
 static ui_frame_t *current_ui;
 
 static int  init(void);
 static void terminate(void);
-static void update_fps(void);
-static void wait_fps(void);
-static void try_simulate(world_t *world, board_t **old, board_t **current);
+static void update_speed(float deltatime);
+static void try_simulate(world_t *world, board_t **old, board_t **current, float deltatime);
 static void swap(void **p1, void **p2);
-static void draw_fps(float x, float y, float scale);
-
 
 int main(int argc, char **argv)
 {
 	board_t *current, *old;
 	world_t *world;
-	double last_frame = 0;
+	double last_time = 0;
+	double current_time = 0;
+	float deltatime = 0;
+	float sleep_time;
 	
 	if (config_from_file("anko.cfg", 0) == 2)
 		return EXIT_FAILURE;
@@ -64,35 +64,39 @@ int main(int argc, char **argv)
 	if ((current_ui = init_ui_game(world)) == NULL)
 		goto err_ui;
 
-	events_link_frame(&current_ui);
+	events_link_frame(&current_ui); // link window event to game ui frame
 	glClearColor(0, 0, 0, 1);
-	
+
+	last_time = 0;
 	while(!glfwWindowShouldClose(window)) {
-		last_frame = glfwGetTime();
+	    current_time = glfwGetTime();
+		deltatime = current_time - last_time;
+		update_speed(deltatime);
 		glfwPollEvents();
 
-		// Update
+		// Update 
 		update_ui(current_ui, deltatime);
-		update_fps();
-		try_simulate(world, &old, &current);
+		try_simulate(world, &old, &current, deltatime);
 		if(should_quit)
 			glfwSetWindowShouldClose(window, GL_TRUE);
-
+	
+		
 		// Rendering
 		glClear(GL_COLOR_BUFFER_BIT);
 		draw_ui(current_ui);
-		draw_fps(10, 10, 24);
 		glfwSwapBuffers(window);
-		
-		deltatime = glfwGetTime() - last_frame;
-		wait_fps(); // Limiting frame per second
 
+		// Update speed and sleep if necessary
+		last_time = current_time;
+		sleep_time = (current_time + MAX_MSPF - glfwGetTime()) * 1000 * 1000;
+		if(sleep_time > 0)
+			usleep(sleep_time);
 	}
 
 	destroy_ui(current_ui);
 	free_board(old);
 	free_board(current);
-	end_of_the_world(world);
+	end_of_the_world(world); // Tin tin tin
 	terminate();
 
 	return EXIT_SUCCESS;
@@ -109,7 +113,7 @@ err_init:
 }
 
 
-static void try_simulate(world_t *world, board_t **old, board_t **current)
+static void try_simulate(world_t *world, board_t **old, board_t **current, float deltatime)
 {
 	if (step_timer < deltatime) {
 		step(*old, *current);
@@ -120,23 +124,17 @@ static void try_simulate(world_t *world, board_t **old, board_t **current)
 		step_timer -= deltatime;
 }
 
-static void draw_fps(float x, float y, float scale)
+static void update_speed(float deltatime)
 {
-	char message[16];
-	snprintf(message, 16, "FPS: %i", fps);
-	set_font_color(0,0.63,1,1);
-	render_text(message, x, y, scale);
-}
-
-static void update_fps(void)
-{
-	if (glfwGetTime() - last_fps > 1) {
-		last_fps+=1;
-		fps = frames;
-		frames = 0;
+	speed_time += deltatime;
+	if (glfwGetTime() - last_speed_update > SPEED_UPDATE) {
+		speed = (speed_time/speed_frames)*1000;
+		last_speed_update+=SPEED_UPDATE;
+		speed_frames = 0;
+		speed_time = 0;
 	}
 	else
-		frames++;
+		speed_frames++;
 }
 
 
@@ -193,17 +191,6 @@ static void terminate(void)
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
-
-
-static void wait_fps(void)
-{
-	if (deltatime < (float)1/(MAX_FPS)) {
-		float sleep_time = ((float)1/MAX_FPS)-deltatime;
-		usleep(sleep_time * 1000 * 1000); // * inMilliSec * inMicroSec
-		deltatime += sleep_time;
-	}
-}
-
 
 static void swap(void **p1, void **p2)
 {

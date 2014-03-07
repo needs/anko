@@ -15,6 +15,7 @@ typedef void(*char_func)(ui_frame_t*,unsigned int);
 
 struct ui_frame
 {
+	int movable;
 	int hidden;
 	float x;
 	float y;
@@ -36,7 +37,9 @@ struct ui_frame
 	ui_frame_t *parent;
 	ui_frame_t **childs;
 	void * data; // rlly ?
-	
+	float last_mouse[2];
+	int is_dragging;
+	int is_hovered;
 };
 
 ui_frame_t *create_ui();
