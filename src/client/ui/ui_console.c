@@ -20,9 +20,7 @@ typedef struct ui_console_data_t
 {
 	GLuint vao;
 	GLuint vbo;
-	int is_hovered;
-	int is_dragging;
-	float last_mouse[2];
+	
     wchar_t buffer[255];
 	int size;
 } ui_console_data_t;
@@ -35,9 +33,9 @@ void destroy_ui_console(ui_frame_t *frame)
 
 void draw_console(ui_frame_t *frame)
 {
-	//wchar_t message[255];
+	wchar_t message[255];
 	ui_console_data_t *data = frame->data;
-	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : data->is_hovered ? 0.5 : 0.4;
+	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : frame->is_hovered ? 0.5 : 0.4;
 	float color[] = {0.05,0.05,0.05, opacity};
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
@@ -49,12 +47,12 @@ void draw_console(ui_frame_t *frame)
 	render_model(gui,id,id,0,8);
 	set_font_color(1,1,1,1);
 
-	/*strcat(message, data->buffer);
+	wcscat(message, data->buffer);
 
 	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
-	strcat(message, "|");*/
+		wcscat(message, L"|");
 	
-	render_text(data->buffer ,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
+		render_text(message ,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
 }
 
 void update_rendering(ui_frame_t *frame)
@@ -82,34 +80,10 @@ void update_rendering(ui_frame_t *frame)
 
 void ui_console_on_mouse_move(ui_frame_t *frame, double x, double y)
 {
-	ui_console_data_t *data = frame->data;
-	data->is_hovered =
-		x >= frame->x
-		&& x <= frame->x + frame->width
-		&& y >= frame->y
-		&& y <= frame->y+frame->height;
-	
-	if(data->is_dragging)
-	{
-		frame->x += x-data->last_mouse[0];
-		frame->y += y-data->last_mouse[1];
+	(void)x;
+	(void)y;
+	if(frame->is_dragging)
 		update_rendering(frame);
-	}
-
-	data->last_mouse[0] = x;
-	data->last_mouse[1] = y;
-}
-
-void ui_console_on_mouse_button(ui_frame_t *frame, int button, int action, int mods)
-{
-	ui_console_data_t *data = frame->data;
-
-	(void)mods;
-	
-	if(button == GLFW_MOUSE_BUTTON_LEFT && data->is_hovered)
-	{
-		data->is_dragging = action == GLFW_PRESS;
-	}
 }
 
 void update_console(ui_frame_t *frame, float deltatime)
@@ -192,8 +166,6 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		ui_console_data_t *data = malloc(sizeof(ui_console_data_t));
 		if(!data)
 			goto err_data;
-		data->is_hovered = 0;
-		data->is_dragging = 0;
 		data->buffer[0] = 0;
 		data->size = 0;
 
@@ -202,7 +174,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		frame->draw = &draw_console;
 		frame->update = &update_console;
 		frame->on_mouse_move = &ui_console_on_mouse_move;
-		frame->on_mouse_button = &ui_console_on_mouse_button;
+		frame->on_mouse_button = NULL;
 		frame->on_key = &ui_console_on_key;
 		frame->on_char = &ui_console_on_char;
 		frame->x = x;
@@ -210,6 +182,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		frame->width = w;
 		frame->height = h;
 		frame->parent = parent;
+		frame->movable = 1;
 		init_console_rendering(frame->data, x, y, w, h);
 		return frame;
 	err_data:

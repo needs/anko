@@ -7,7 +7,7 @@
 #include "textures.h"
 #include <stdio.h>
 #include <string.h>
-
+#include <assert.h>
 #include <GLFW/glfw3.h>
 
 static GLuint font_vbo;
@@ -154,6 +154,7 @@ void render_text(wchar_t * str, float x, float y, float size)
 	{
 		float *vertices = buf + buf_index * 16;
 		int cc = str[i];
+		if(cc > 256) continue; // well we don't know this char
 		int cc_w = droid.width[cc]; // current char width
 
 		if(cc == '\n')
