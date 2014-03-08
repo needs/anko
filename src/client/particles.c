@@ -64,7 +64,7 @@ partgen_t* init_particles(void)
 }
 
 
-void spawn_particles(partgen_t *gen, int n, tex_t tex, float x, float y, float lifetime)
+void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t *prop)
 {
 	int i, j;
 	GLint old_bind;
@@ -73,7 +73,9 @@ void spawn_particles(partgen_t *gen, int n, tex_t tex, float x, float y, float l
 
 	assert(gen != NULL);
 	assert(n > 0);
-	assert(lifetime > 0);
+	assert(prop != NULL);
+	assert(prop->lifetime > 0);
+	assert(prop->tex != TEX_NONE);
 
 	if (gen->count + n > MAX_PARTICLES)
 		return;
@@ -88,17 +90,17 @@ void spawn_particles(partgen_t *gen, int n, tex_t tex, float x, float y, float l
 
 	for (i = 0; i < n; i++) {
 		float data[20];
-		get_ctexture(data, tex, x, y);
+		get_ctexture(data, prop->tex, x, y);
 
 		for (j = 0; j < 4; j++) {
 			buf[(i * 20) + j * 5]     = data[j * 4];
 			buf[(i * 20) + j * 5 + 1] = data[j * 4 + 1];
 			buf[(i * 20) + j * 5 + 2] = data[j * 4 + 2];
 			buf[(i * 20) + j * 5 + 3] = data[j * 4 + 3];
-			buf[(i * 20) + j * 5 + 4] = curtime + lifetime;
+			buf[(i * 20) + j * 5 + 4] = curtime + prop->lifetime;
 		}
 
-		gen->particles[gen->offset + gen->count + i] = curtime + lifetime;
+		gen->particles[gen->offset + gen->count + i] = curtime + prop->lifetime;
 	}
 
 	if (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE)

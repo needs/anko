@@ -10,12 +10,17 @@
 
 typedef struct partgen_t partgen_t;
 
+struct partargs_t {
+	float lifetime;
+	tex_t tex;
+};
+
 /* Create a new particles generator. */
 partgen_t* init_particles(void);
 
 /* Spawn particles given the paramters.
  * If the maximum of particles is reached, the particles won't be rendered. */
-void spawn_particles(partgen_t *gen, int n, tex_t tex, float x, float y, float lifetime);
+void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t *prop);
 
 /* Filters out the dead particles.
  * This function has to be called sometimes but not at every frame. */
