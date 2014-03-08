@@ -14,6 +14,7 @@ struct config_t config = {
 	.board_width   = 50,
 	.board_height  = 50,
 	.sim_speed     = 1.0,
+	.max_fps       = 1000,
 	.gen_params = {
 		.tree_density  = 0.7,
 		.water_density = 0.2,
@@ -24,8 +25,9 @@ struct config_t config = {
 
 static struct option long_options[] = {
 	{ "help",             no_argument,       0, 'h' },
-	{ "speed",            required_argument, 0, 's' },
 	{ "include",          required_argument, 0, 'i' },
+	{ "speed",            required_argument, 0, 's' },
+	{ "max-fps",          required_argument, 0, 'f' },
 	{ "board-size",       required_argument, 0, 'b' },
 	{ "screen-res",       required_argument, 0, 'r' },
 	{ "tree-density",     required_argument, 0, 't' },
@@ -37,8 +39,9 @@ static struct option long_options[] = {
 
 static char *desc[] = {
 	"Display help",
-	"Simulation speed",
 	"Include and interpret a configuration file",
+	"Simulation speed",
+	"Maximum of Frames Per Second",
 	"Size of the board (widthxheight)",
 	"Size of window (widthxheight)",
 	"Density of tree ([0;1])",
@@ -56,7 +59,7 @@ int config_from_args(int argc, char **argv)
 	int opt;
 	optind = 0;
 
-	while ((opt = getopt_long(argc, argv, "i:s:b:r:t:w:k:h", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "i:f:s:b:r:t:w:k:h", long_options, NULL)) != -1) {
 		switch(opt) {
 		case 'i':
 			if (config_from_file(optarg, 0))
@@ -64,6 +67,9 @@ int config_from_args(int argc, char **argv)
 			break;
 		case 's':
 			config.sim_speed = atof(optarg);
+			break;
+		case 'f':
+			config.max_fps = atoi(optarg);
 			break;
 		case 'b':
 			sscanf(optarg, "%dx%d", &config.board_width, &config.board_height);

@@ -22,8 +22,7 @@
 #include "ui/ui_game.h"
 
 #define SPEED_UPDATE 0.3
-#define MAX_FPS 1000
-#define MAX_MSPF (float)1/MAX_FPS
+#define MAX_MSPF 1.0 / config.max_fps
 
 static GLFWwindow* window;
 static float last_speed_update = 0;
