@@ -147,7 +147,6 @@ static int init(void)
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	glfwWindowHint(GLFW_SAMPLES, 16);
 	window = glfwCreateWindow(config.screen_width, config.screen_height, "Anko", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
