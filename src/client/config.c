@@ -25,6 +25,7 @@ struct config_t config = {
 static struct option long_options[] = {
 	{ "help",             no_argument,       0, 'h' },
 	{ "speed",            required_argument, 0, 's' },
+	{ "include",          required_argument, 0, 'i' },
 	{ "board-size",       required_argument, 0, 'b' },
 	{ "screen-res",       required_argument, 0, 'r' },
 	{ "tree-density",     required_argument, 0, 't' },
@@ -37,6 +38,7 @@ static struct option long_options[] = {
 static char *desc[] = {
 	"Display help",
 	"Simulation speed",
+	"Include and interpret a configuration file",
 	"Size of the board (widthxheight)",
 	"Size of window (widthxheight)",
 	"Density of tree ([0;1])",
@@ -49,11 +51,17 @@ static void usage(char *name);
 
 int config_from_args(int argc, char **argv)
 {
+	/* Save context to make safe to call this when parsing options. */
+	int soptind = optind, sopterr = opterr, soptopt = optopt;
 	int opt;
 	optind = 0;
 
-	while ((opt = getopt_long(argc, argv, "s:b:r:t:w:k:h", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "i:s:b:r:t:w:k:h", long_options, NULL)) != -1) {
 		switch(opt) {
+		case 'i':
+			if (config_from_file(optarg, 0))
+				goto ret_fail;
+			break;
 		case 's':
 			config.sim_speed = atof(optarg);
 			break;
@@ -74,9 +82,9 @@ int config_from_args(int argc, char **argv)
 			break;
 		case 'h':
 			usage(argv[0]);
-			return 1;
+			goto ret_fail;
 		default:
-			return 1;
+			goto ret_fail;
 		}
 	}
 
@@ -85,11 +93,15 @@ int config_from_args(int argc, char **argv)
 		while (optind < argc)
 			fprintf(stderr, "%s ", argv[optind++]);
 		fputc('\n', stderr);
-		return 1;
+		goto ret_fail;
 	}
 
-
+	optind = soptind; opterr = sopterr; optopt = soptopt;
 	return 0;
+ret_fail:
+	optind = soptind; opterr = sopterr; optopt = soptopt;
+	return 1;
+	
 }
 
 
