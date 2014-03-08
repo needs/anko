@@ -12,15 +12,18 @@
 #include <string.h>
 #include <math.h>
 #include <wchar.h>
+#include <assert.h>
 
+#define VERTEX_DATA_SIZE 32
 #define MAX_MESSAGES_LENGTH 255
 #define MAX_MESSAGES 128
 
 #define INPUT_BOX_SIZE ((float)1/6)
 #define TEXT_BOX_SIZE (1-INPUT_BOX_SIZE)
 
-static const int rect_size = 16*sizeof(float);
+static const int rect_size = VERTEX_DATA_SIZE*sizeof(float);
 static const int rect_count = 2;
+static float color[] = {0.05, 0.05, 0.05, 1};
 
 typedef struct console_input_t
 {
@@ -186,10 +189,32 @@ static void render_messages(ui_frame_t *frame)
 	}
 }
 
+void update_console_render(ui_frame_t *frame)
+{
+	float *buf;
+	ui_console_data_t *data = frame->data;
+	float vertices[] = {
+		frame->x, frame->y, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x+frame->width, frame->y, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x+frame->width, frame->y + (frame->height*TEXT_BOX_SIZE)+5, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x, frame->y + (frame->height*TEXT_BOX_SIZE)+5, 0, 0, color[0], color[1], color[2], color[3],
+
+		frame->x, frame->y + (frame->height*TEXT_BOX_SIZE)+10, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x+frame->width, frame->y + (frame->height*TEXT_BOX_SIZE)+10, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x+frame->width, frame->y + frame->height , 0, 0, color[0], color[1], color[2], color[3],
+		frame->x, frame->y + frame->height, 0, 0, color[0], color[1], color[2], color[3]
+	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
+	buf = glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(vertices), GL_MAP_WRITE_BIT);
+	memcpy(buf, vertices, rect_count*rect_size);
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
 void draw_console(ui_frame_t *frame)
 {
 	float opacity;
-	float color[] = {0.05, 0.05, 0.05, 0};
+	
 	ui_console_data_t *data = frame->data;
 
 	if(frame->parent->keyboard_owner == frame)
@@ -201,40 +226,18 @@ void draw_console(ui_frame_t *frame)
 			opacity = 0.4;
 
 	color[3] = opacity;
-	
+
+	update_console_render(frame);
+
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
 	
 	glUniform1i(glGetUniformLocation(gui, "has_texture"),0);
-	glUniform4fv(glGetUniformLocation(gui, "color"), 1, color);
 	
 	glDrawArrays(GL_QUADS, 0, 4*rect_count);
 
 	render_input(frame);
 	render_messages(frame);
-}
-
-
-void update_console_render(ui_frame_t *frame)
-{
-	float *buf;
-	ui_console_data_t *data = frame->data;
-	float vertices[] = {
-		frame->x, frame->y, 0, 0,
-		frame->x+frame->width, frame->y, 0, 0,
-		frame->x+frame->width, frame->y + (frame->height*TEXT_BOX_SIZE)+5, 0, 0,
-		frame->x, frame->y + (frame->height*TEXT_BOX_SIZE)+5, 0, 0,
-
-		frame->x, frame->y + (frame->height*TEXT_BOX_SIZE)+10, 0, 0,
-		frame->x+frame->width, frame->y + (frame->height*TEXT_BOX_SIZE)+10, 0, 0,
-		frame->x+frame->width, frame->y + frame->height , 0, 0,
-		frame->x, frame->y + frame->height, 0, 0,
-	};
-
-	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
-	buf = glMapBufferRange(GL_ARRAY_BUFFER, 0, rect_count*rect_size, GL_MAP_WRITE_BIT);
-	memcpy(buf, vertices, rect_count*rect_size);
-	glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
 void init_console_rendering(ui_frame_t *frame)
@@ -249,8 +252,12 @@ void init_console_rendering(ui_frame_t *frame)
 	glBufferData(GL_ARRAY_BUFFER, rect_count*rect_size, NULL, GL_DYNAMIC_DRAW);
 
 	GLint position = glGetAttribLocation(gui, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
+
+    GLint col = glGetAttribLocation(gui, "Color");
+	glVertexAttribPointer(col, 4, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(4*sizeof(float)));
+	glEnableVertexAttribArray(col);
 
 	update_console_render(frame);
 }

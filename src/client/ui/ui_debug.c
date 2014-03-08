@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define VERTEX_DATA_SIZE 32
+
+static float color[] = {0.05, 0.05, 0.05, 0.5};
+
 typedef struct ui_debug_data_t
 {
 	GLuint vao;
@@ -27,7 +31,7 @@ void destroy_ui_debug(ui_frame_t *frame)
 void draw_debug(ui_frame_t *frame)
 {
 	ui_debug_data_t *data = frame->data;
-	float color[] = {0.05,0.05,0.05, 0.5};
+
 	wchar_t buf[255];
 	float th;
 	float ch=0;
@@ -35,7 +39,6 @@ void draw_debug(ui_frame_t *frame)
 	glBindVertexArray(data->vao);
 			
 	glUniform1i(glGetUniformLocation(gui, "has_texture"),0);
-	glUniform4fv(glGetUniformLocation(gui, "color"), 1, color);
 	
 	glDrawArrays(GL_QUADS, 0, 4);
 	
@@ -61,10 +64,10 @@ void update_debug_render(ui_frame_t *frame)
 	float *buf;
 	ui_debug_data_t *data = frame->data;
 	float vertices[] = {
-		frame->x, frame->y, 0, 0,
-		frame->x+frame->width, frame->y, 0, 0,
-		frame->x+frame->width, frame->y + frame->height, 0, 0,
-		frame->x, frame->y +frame->height, 0, 0,
+		frame->x, frame->y, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x+frame->width, frame->y, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x+frame->width, frame->y + frame->height, 0, 0, color[0], color[1], color[2], color[3],
+		frame->x, frame->y +frame->height, 0, 0, color[0], color[1], color[2], color[3]
 	};
 
 	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
@@ -80,12 +83,18 @@ void init_debug_rendering(ui_frame_t *frame)
 	glBindVertexArray(data->vao);
 	glGenBuffers(1, &data->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
-	glBufferData(GL_ARRAY_BUFFER, 16*sizeof(float), NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, VERTEX_DATA_SIZE*sizeof(float), NULL, GL_DYNAMIC_DRAW);
 
 	GLint position = glGetAttribLocation(gui, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
 
+
+    GLint col = glGetAttribLocation(gui, "Color");
+	glVertexAttribPointer(col, 4, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(4*sizeof(float)));
+	glEnableVertexAttribArray(col);
+	
+	
 	update_debug_render(frame);
 }
 

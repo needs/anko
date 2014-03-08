@@ -10,10 +10,12 @@
 #include <assert.h>
 #include <GLFW/glfw3.h>
 
+#define VERTEX_DATA_SIZE 32
+
 static GLuint font_vbo;
 static GLuint font_vao;
 static int vbo_index = 0;
-static size_t glyph_data_size = 16*sizeof(float);
+static const size_t glyph_data_size = VERTEX_DATA_SIZE*sizeof(float);
 
 typedef struct font_data
 {
@@ -55,13 +57,17 @@ int load_font()
 	glBufferData(GL_ARRAY_BUFFER, VBO_MAX_SIZE*glyph_data_size, NULL, GL_STREAM_DRAW );
 	
 	GLint position = glGetAttribLocation(gui, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
 
 	GLint uv = glGetAttribLocation(gui, "UV");
-	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(uv);
 
+	GLint col = glGetAttribLocation(gui, "Color");
+	glVertexAttribPointer(col, 4, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(4*sizeof(float)));
+	glEnableVertexAttribArray(col);
+	
 	// Precompute UV and char dimensions
 	for(i = 0; i < (FONT_HEIGHT / GLYPH_DIM); i++)
 	{
@@ -146,7 +152,7 @@ void render_text(wchar_t * str, float x, float y, float size)
 	buf = glMapBufferRange(GL_ARRAY_BUFFER, vbo_index*glyph_data_size, (vbo_index+len)*glyph_data_size, GL_MAP_WRITE_BIT);
 	for(i = 0; i < len; i++)
 	{
-		float *vertices = buf + buf_index * 16;
+		float *vertices = buf + buf_index * VERTEX_DATA_SIZE;
 		int cc = str[i];
 		if(cc > 256 || cc < 0) continue; // well we don't know this char
 		int cc_w = droid.width[cc]; // current char width
@@ -157,26 +163,40 @@ void render_text(wchar_t * str, float x, float y, float size)
 			cur_y += GLYPH_DIM*scale;
 			continue;
 		}
-		
+
+		/* pos */
 		vertices[0] = x+cur_x;
 		vertices[1] = y+cur_y;
+		/* uv */
 		vertices[2] = glyph_data[cc][2];
 		vertices[3] = glyph_data[cc][3];
+		/* color */
+		memcpy(&vertices[4], color, 4*sizeof(float));
 
-		vertices[4] = x+cur_x;
-		vertices[5] = y+cur_y + GLYPH_DIM*scale;
-		vertices[6] = glyph_data[cc][6];
-		vertices[7] = glyph_data[cc][7];
-
-		vertices[8] = x+cur_x + cc_w*scale;
+		/* pos */
+		vertices[8] = x+cur_x;
 		vertices[9] = y+cur_y + GLYPH_DIM*scale;
-		vertices[10] = glyph_data[cc][10];
-		vertices[11] = glyph_data[cc][11];
+		/* uv */
+		vertices[10] = glyph_data[cc][6];
+		vertices[11] = glyph_data[cc][7];
+		/* color */
+		memcpy(&vertices[12], color, 4*sizeof(float));
 
-		vertices[12] = x+cur_x + cc_w*scale;
-		vertices[13] = y+cur_y;
-		vertices[14] = glyph_data[cc][14];
-		vertices[15] = glyph_data[cc][15];
+		/* pos */
+		vertices[16] = x+cur_x + cc_w*scale;
+		vertices[17] = y+cur_y + GLYPH_DIM*scale;
+		/* uv */
+		vertices[18] = glyph_data[cc][10];
+		vertices[19] = glyph_data[cc][11];
+		/* color */
+		memcpy(&vertices[20], color, 4*sizeof(float));
+		
+		vertices[24] = x+cur_x + cc_w*scale;
+		vertices[25] = y+cur_y;
+		vertices[26] = glyph_data[cc][14];
+		vertices[27] = glyph_data[cc][15];
+		memcpy(&vertices[28], color, 4*sizeof(float));
+		
 		cur_x += cc_w*scale;
 		buf_index++; // how many data wrote
 	}
