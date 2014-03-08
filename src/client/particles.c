@@ -28,7 +28,11 @@ struct partargs_t PARTARGS_DEFAULT = {
 };
 
 
-#define PARTICLE_SIZE 4 * 6 * sizeof(float)
+#define PART_VERTEX_LEN  6
+#define PART_VERTEX_SIZE PART_VERTEX_LEN * sizeof(float)
+#define PART_NB_VERTEX   4
+#define PART_SIZE        PART_NB_VERTEX * PART_VERTEX_SIZE
+#define PART_LEN         PART_NB_VERTEX * PART_VERTEX_LEN
 
 
 typedef struct partgen_t {
@@ -43,8 +47,6 @@ typedef struct partgen_t {
 partgen_t* init_particles(void)
 {
 	partgen_t *gen;
-	static const size_t vertsize = 6*sizeof(float);
-
 
 	if ((gen = calloc(1, sizeof (*gen))) == NULL) {
 		perror("malloc(partgen)");
@@ -59,22 +61,22 @@ partgen_t* init_particles(void)
 
 	glGenBuffers(1, &gen->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, gen->vbo);
-	glBufferData(GL_ARRAY_BUFFER, 2 * PARTICLE_SIZE * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 2 * PART_SIZE * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
 
 	GLint position = glGetAttribLocation(sh_particles, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, vertsize, 0);
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, 0);
 	glEnableVertexAttribArray(position);
 
 	GLint uv = glGetAttribLocation(sh_particles, "UV");
-	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, vertsize, (void*)(2*sizeof(float)));
+	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(uv);
 
 	GLint lifetime = glGetAttribLocation(sh_particles, "lifetime");
-	glVertexAttribPointer(lifetime, 1, GL_FLOAT, GL_FALSE, vertsize, (void*)(4*sizeof(float)));
+	glVertexAttribPointer(lifetime, 1, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(4*sizeof(float)));
 	glEnableVertexAttribArray(lifetime);
 
 	GLint alpha = glGetAttribLocation(sh_particles, "alpha");
-	glVertexAttribPointer(alpha, 1, GL_FLOAT, GL_FALSE, vertsize, (void*)(5*sizeof(float)));
+	glVertexAttribPointer(alpha, 1, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(5*sizeof(float)));
 	glEnableVertexAttribArray(alpha);
 
 	glBindVertexArray(0);
@@ -102,22 +104,23 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t 
 	/* TODO: The ranged mapping may be slower than glBufferSubData() */
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &old_bind);
 	glBindBuffer(GL_ARRAY_BUFFER, gen->vbo);
-	if ((buf = glMapBufferRange(GL_ARRAY_BUFFER, PARTICLE_SIZE * (gen->count + gen->offset), PARTICLE_SIZE * n, GL_MAP_WRITE_BIT)) == NULL) {
+	if ((buf = glMapBufferRange(GL_ARRAY_BUFFER, PART_SIZE * (gen->count + gen->offset), PART_SIZE * n, GL_MAP_WRITE_BIT)) == NULL) {
 		fprintf(stderr, "particles: Can't map the VBO.\n");
 		return;
 	}
 
 	for (i = 0; i < n; i++) {
-		float data[20];
+		float data[PART_LEN];
 		get_ctexture(data, prop->tex, x, y);
 
 		for (j = 0; j < 4; j++) {
-			buf[(i * 20) + j * 6]     = data[j * 4];
-			buf[(i * 20) + j * 6 + 1] = data[j * 4 + 1];
-			buf[(i * 20) + j * 6 + 2] = data[j * 4 + 2];
-			buf[(i * 20) + j * 6 + 3] = data[j * 4 + 3];
-			buf[(i * 20) + j * 6 + 4] = curtime + prop->lifetime;
-			buf[(i * 20) + j * 6 + 5] = prop->opacity.start;
+			const unsigned partindex = (i * PART_LEN) + j * PART_VERTEX_LEN;
+			buf[partindex]     = data[j * 4];
+			buf[partindex + 1] = data[j * 4 + 1];
+			buf[partindex + 2] = data[j * 4 + 2];
+			buf[partindex + 3] = data[j * 4 + 3];
+			buf[partindex + 4] = curtime + prop->lifetime;
+			buf[partindex + 5] = prop->opacity.start;
 		}
 
 		gen->particles[gen->offset + gen->count + i] = curtime + prop->lifetime;
@@ -155,7 +158,7 @@ void update_particles(partgen_t *gen)
 			return;
 		}
 
-		memcpy(buf, buf + (24 * gen->offset), gen->count * PARTICLE_SIZE);
+		memcpy(buf, buf + (PART_LEN * gen->offset), gen->count * PART_SIZE);
 
 		if (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE)
 			fprintf(stderr, "update-particles: Error when unmapping the VBO.\n");
@@ -190,7 +193,7 @@ void render_particles(partgen_t *gen, camera_t *camera)
 			   1, GL_FALSE, (GLfloat*)camera->matrix);
 
 	/* Draw the whole VBO */
-	glDrawArrays(GL_QUADS, gen->offset * 4, gen->count * 4);
+	glDrawArrays(GL_QUADS, gen->offset * PART_NB_VERTEX, gen->count * PART_NB_VERTEX);
 }
 
 
