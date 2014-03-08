@@ -46,6 +46,16 @@ void get_texture(float *data, tex_t tex, float x, float y);
 void get_ctexture(float *data, tex_t tex, float x, float y);
 
 /*
+ * Same as above, but the vertices are scaled.
+ */
+void get_stexture(float *data, tex_t tex, float x, float y, float sx, float sy);
+
+/*
+ * Same as above, but the vertices are centered and scaled.
+ */
+void get_sctexture(float *data, tex_t tex, float x, float y, float sx, float sy);
+
+/*
  * Return the OpenGL texture ID of the texture tex.
  */
 GLuint get_texid(tex_t tex);
