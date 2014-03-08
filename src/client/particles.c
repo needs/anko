@@ -15,6 +15,19 @@
 #include "renderer.h"
 
 
+struct partargs_t PARTARGS_DEFAULT = {
+	.lifetime = 1.0,
+	.alpha = {
+		.begin = 1.0,
+		.middle = 1.0,
+		.end = 0.0,
+		.fadein = 0.0,
+		.fadeout = 0.0,
+	},
+	.tex = TEX_PARTICLES_FIRE1,
+};
+
+
 #define PARTICLE_SIZE 4 * 5 * sizeof(float)
 
 

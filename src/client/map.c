@@ -268,10 +268,9 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {
-				struct partargs_t prop = {
-					.lifetime = 1.0,
-					.tex = TEX_PARTICLES_FIRE1,
-				};
+				struct partargs_t prop = PARTARGS_DEFAULT;
+				prop.lifetime = 1.0;
+				prop.tex = TEX_PARTICLES_FIRE1;
 
 				get_ctexture(buf + ((i * map->width + j) * 16),
 					     get_entity_tex(&current->cells[i][j]),
