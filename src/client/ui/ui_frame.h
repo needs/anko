@@ -6,6 +6,7 @@ typedef struct ui_frame ui_frame_t;
 /* Function Pointers Types */
 typedef void(*update_func)(ui_frame_t*,float);
 typedef void(*destroy_func)(ui_frame_t*);
+typedef void(*update_render_func)(ui_frame_t*);
 typedef void(*draw_func)(ui_frame_t*);
 typedef void(*mouse_move_func)(ui_frame_t*,double,double);
 typedef void(*mouse_button_func)(ui_frame_t*,int,int,int);
@@ -27,6 +28,7 @@ struct ui_frame
 
 	destroy_func destroy;
 	update_func update;
+	update_render_func update_render;
 	draw_func draw;
 	mouse_move_func on_mouse_move;
 	mouse_button_func on_mouse_button;
@@ -35,7 +37,7 @@ struct ui_frame
 	char_func on_char;
 	
 	ui_frame_t *parent;
-	ui_frame_t **childs;
+	ui_frame_t **children;
 	void * data; // rlly ?
 	float last_mouse[2];
 	int is_dragging;
@@ -45,6 +47,7 @@ struct ui_frame
 ui_frame_t *create_ui();
 
 void destroy_ui(ui_frame_t *frame);
+void update_render_ui(ui_frame_t *frame);
 void draw_ui(ui_frame_t *frame);
 void update_ui(ui_frame_t *frame,float deltatime);
 void ui_on_mouse_move(ui_frame_t* frame, double x, double y);

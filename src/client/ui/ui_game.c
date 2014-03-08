@@ -7,7 +7,7 @@
 #include "../context.h"
 #include "../world.h"
 #include "../font.h"
-#include "../renderer.h"
+#include "../rtt.h"
 #include "../camera.h"
 #include "../linmath.h"
 #include "../config.h"
@@ -43,12 +43,12 @@ void draw_game(ui_frame_t *frame)
 	rtt_stop();
 	rtt_draw();
 
-	if(!frame->childs)
+	if(!frame->children)
 		return;
 	
-	while(frame->childs[i])
+	while(frame->children[i])
 	{
-		draw_ui(frame->childs[i]);
+		draw_ui(frame->children[i]);
 		i++;
 	}
 }
@@ -68,12 +68,12 @@ void ui_game_update(ui_frame_t* frame, float deltatime)
 	else if(data->camx < 0)
 		move_camera(&data->camera, -CAMERA_SPEED*deltatime, 0);
 	
-	if(!frame->childs)
+	if(!frame->children)
 		return;
 	
-	while(frame->childs[i])
+	while(frame->children[i])
 	{
-		update_ui(frame->childs[i], deltatime);
+		update_ui(frame->children[i], deltatime);
 		i++;
 	}
 }
@@ -101,12 +101,12 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 		return;
 	}
 	
-	if(frame->childs)
+	if(frame->children)
 	{
 		int i = 0;
-		while(frame->childs[i] && !frame->keyboard_owner)
+		while(frame->children[i] && !frame->keyboard_owner)
 		{
-		    ui_on_key(frame->childs[i], key, scancode, action, mods);
+		    ui_on_key(frame->children[i], key, scancode, action, mods);
 			i++;
 		}
 	}
@@ -121,12 +121,12 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 
 void ui_game_on_char(ui_frame_t* frame, unsigned int c)
 {
-	if(frame->childs)
+	if(frame->children)
 	{
 		int i = 0;
-		while(frame->childs[i])
+		while(frame->children[i])
 		{
-		    ui_on_char(frame->childs[i], c);
+		    ui_on_char(frame->children[i], c);
 			i++;
 		}
 	}
@@ -134,12 +134,12 @@ void ui_game_on_char(ui_frame_t* frame, unsigned int c)
 
 void ui_game_on_mouse_move(ui_frame_t* frame, double x, double y)
 {
-	if(frame->childs)
+	if(frame->children)
 	{
 		int i = 0;
-		while(frame->childs[i])
+		while(frame->children[i])
 		{
-			ui_on_mouse_move(frame->childs[i], x, y);
+			ui_on_mouse_move(frame->children[i], x, y);
 			i++;
 		}
 	}
@@ -147,12 +147,12 @@ void ui_game_on_mouse_move(ui_frame_t* frame, double x, double y)
 
 void ui_game_on_mouse_button(ui_frame_t* frame, int button, int action, int mods)
 {
-	if(frame->childs)
+	if(frame->children)
 	{
 		int i = 0;
-		while(frame->childs[i]) // the child can decide to stop the event
+		while(frame->children[i]) // the child can decide to stop the event
 		{
-			ui_on_mouse_button(frame->childs[i], button, action, mods);
+			ui_on_mouse_button(frame->children[i], button, action, mods);
 			i++;
 		}
 	}
@@ -160,12 +160,12 @@ void ui_game_on_mouse_button(ui_frame_t* frame, int button, int action, int mods
 
 void destroy_ui_game(ui_frame_t* frame)
 {
-	if(frame->childs)
+	if(frame->children)
 	{
 		int i = 0;
-    	while(frame->childs[i])
+    	while(frame->children[i])
 		{
-			destroy_ui(frame->childs[i]);
+			destroy_ui(frame->children[i]);
 			i++;
 		}
 	}
@@ -199,17 +199,17 @@ ui_frame_t* init_ui_game(world_t *world)
 		frame->destroy = &destroy_ui_game;
 		frame->on_char = &ui_game_on_char;
 
-		frame->childs = malloc(sizeof(ui_frame_t *)*(children_count+1));
-		if(!frame->childs)
-			goto err_childs;
+		frame->children = malloc(sizeof(ui_frame_t *)*(children_count+1));
+		if(!frame->children)
+			goto err_children;
 		
-		frame->childs[0] = init_ui_console(frame, 10, config.screen_height - 215,400,200);
-		frame->childs[1] = init_ui_debug(frame, 10,10,250,100);
-		frame->childs[2] = NULL;
-		
+		frame->children[0] = init_ui_console(frame, 10, config.screen_height - 215,400,200);
+		frame->children[1] = init_ui_debug(frame, 10,10,250,100);
+		frame->children[2] = NULL;
+		rtt_init();
 		return frame;
 
-	err_childs:
+	err_children:
 		free(data);
 	err_data:
 		return NULL;

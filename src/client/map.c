@@ -9,7 +9,7 @@
 #include "textures.h"
 #include "map.h"
 #include "shader.h"
-#include "renderer.h"
+#include "context.h"
 #include "../board.h"
 
 
@@ -232,21 +232,24 @@ static tex_t get_entity_tex(cell_t *c)
 
 void render_map(map_t *map, camera_t *camera)
 {
-	mat4x4 identity;
-
 	assert(map != NULL);
-	glUseProgram(standard);
 
-	mat4x4_identity(identity);
 
-	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	glBindVertexArray(map->vao);
+	glActiveTexture(GL_TEXTURE0);
+
+	glUseProgram(standard);
+	glUniform1i(glGetUniformLocation(standard, "tex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
+					   1, GL_FALSE, (GLfloat*)projection);
+	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
+					   1, GL_FALSE, (GLfloat*)camera->matrix);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
-	render_model(standard, camera->matrix, identity, 0, map->vsize / 4);
+	glDrawArrays(GL_QUADS, 0, map->vsize / 4);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
-	render_model(standard, camera->matrix, identity, map->vsize / 4, map->vsize / 4);
+	glDrawArrays(GL_QUADS, map->vsize / 4, map->vsize / 4);
 }
 
 

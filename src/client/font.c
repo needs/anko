@@ -2,17 +2,17 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include "shader.h"
-#include "renderer.h"
 #include "linmath.h"
 #include "textures.h"
 #include <stdio.h>
+#include "context.h"
 #include <string.h>
 #include <assert.h>
 #include <GLFW/glfw3.h>
 
 static GLuint font_vbo;
 static GLuint font_vao;
-
+static int vbo_index = 0;
 static size_t glyph_data_size = 16*sizeof(float);
 
 typedef struct font_data
@@ -52,7 +52,7 @@ int load_font()
 	
 	glGenBuffers(1, &font_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, font_vbo);
-	glBufferData(GL_ARRAY_BUFFER, BUFFER_MAX_SIZE*glyph_data_size, NULL, GL_STREAM_DRAW );
+	glBufferData(GL_ARRAY_BUFFER, VBO_MAX_SIZE*glyph_data_size, NULL, GL_STREAM_DRAW );
 	
 	GLint position = glGetAttribLocation(gui, "position");
 	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
@@ -132,24 +132,12 @@ void render_text(wchar_t * str, float x, float y, float size)
 	float cur_y = 0;
 	float *buf;
 
-	mat4x4 model;
-	mat4x4_translate(model, x, y, 0);
-	mat4x4_scale_aniso(model, model, scale, scale, 0);
-	mat4x4 id;
-	mat4x4_identity(id);
-
-	if(len > BUFFER_MAX_SIZE)
+	if(vbo_index + len > VBO_MAX_SIZE)
 		return;
 	
-	glUseProgram(gui);
-	glBindVertexArray(font_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, font_vbo);
-	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_FONT_DROID));
 	
-	glUniform1i(glGetUniformLocation(gui, "has_texture"), 1);
-	glUniform4fv(glGetUniformLocation(gui, "color"), 1,  color);
-	
-	buf = glMapBufferRange(GL_ARRAY_BUFFER, 0, len*glyph_data_size, GL_MAP_WRITE_BIT);
+	buf = glMapBufferRange(GL_ARRAY_BUFFER, vbo_index*glyph_data_size, (vbo_index+len)*glyph_data_size, GL_MAP_WRITE_BIT);
 	for(i = 0; i < len; i++)
 	{
 		float *vertices = buf + buf_index * 16;
@@ -160,38 +148,58 @@ void render_text(wchar_t * str, float x, float y, float size)
 		if(cc == '\n')
 		{
 			cur_x = 0;
-			cur_y += GLYPH_DIM;
+			cur_y += GLYPH_DIM*scale;
 			continue;
 		}
 		
-		vertices[0] = cur_x;
-		vertices[1] = cur_y;
+		vertices[0] = x+cur_x;
+		vertices[1] = y+cur_y;
 		vertices[2] = glyph_data[cc][2];
 		vertices[3] = glyph_data[cc][3];
 
-		vertices[4] = cur_x;
-		vertices[5] = cur_y + GLYPH_DIM;
+		vertices[4] = x+cur_x;
+		vertices[5] = y+cur_y + GLYPH_DIM*scale;
 		vertices[6] = glyph_data[cc][6];
 		vertices[7] = glyph_data[cc][7];
 
-		vertices[8] = cur_x + cc_w;
-		vertices[9] = cur_y + GLYPH_DIM;
+		vertices[8] = x+cur_x + cc_w*scale;
+		vertices[9] = y+cur_y + GLYPH_DIM*scale;
 		vertices[10] = glyph_data[cc][10];
 		vertices[11] = glyph_data[cc][11];
 
-		vertices[12] = cur_x + cc_w;
-		vertices[13] = cur_y;
+		vertices[12] = x+cur_x + cc_w*scale;
+		vertices[13] = y+cur_y;
 		vertices[14] = glyph_data[cc][14];
 		vertices[15] = glyph_data[cc][15];
-		cur_x += cc_w;
-		buf_index++;
+		cur_x += cc_w*scale;
+		buf_index++; // how many data wrote
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
-	render_model(gui, id, model, 0, 4*(buf_index));
+	vbo_index+=buf_index;
 }
 
 void unload_font()
 {
 	glDeleteBuffers(1,&font_vbo);
 	glDeleteVertexArrays(1, &font_vao);
+}
+
+void font_swap_buffers()
+{
+	glUseProgram(gui);
+	glBindVertexArray(font_vao);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_FONT_DROID)); // bind texture to channel
+	
+	glUniform1i(glGetUniformLocation(gui, "has_texture"), 1);
+	glUniform4fv(glGetUniformLocation(gui, "color"), 1,  color);
+
+	glUniform1i(glGetUniformLocation(gui, "tex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(gui, "projection"),
+					   1, GL_FALSE, (GLfloat*)projection);
+	
+	/* And render them */
+	glDrawArrays(GL_QUADS, 0, 4*(vbo_index));
+	vbo_index = 0;
 }

@@ -10,7 +10,6 @@
 #include <GLFW/glfw3.h>
 
 #include "context.h"
-#include "renderer.h"
 #include "textures.h"
 #include "event.h"
 #include "world.h"
@@ -84,6 +83,7 @@ int main(int argc, char **argv)
 		// Rendering
 		glClear(GL_COLOR_BUFFER_BIT);
 		draw_ui(current_ui);
+		font_swap_buffers();
 		glfwSwapBuffers(window);
 
 		// Update speed and sleep if necessary
@@ -158,8 +158,8 @@ static int init(void)
 
 	printf("OpenGL Version : %s\n\n", glGetString(GL_VERSION));
 	
-	if (!init_rendering())
-		goto err_rendering;
+	if (!init_context())
+		goto err_context;
 	if (!load_textures())
 		goto err_texture;
 	init_events(window);
@@ -173,8 +173,8 @@ static int init(void)
 err_font:
 	unload_textures();
 err_texture:
-	close_rendering();
-err_rendering:
+	close_context();
+err_context:
 	glfwDestroyWindow(window);
 err_window:
 	glfwTerminate();
@@ -187,7 +187,7 @@ static void terminate(void)
 {
 	unload_font();
 	unload_textures();
-	close_rendering();
+	close_context();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }

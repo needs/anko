@@ -5,7 +5,7 @@
 #include "ui_console.h"
 #include "../font.h"
 #include "../shader.h"
-#include "../renderer.h"
+#include "../context.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "../event.h"
@@ -15,6 +15,9 @@
 
 #define INPUT_BOX_SIZE ((float)1/6)
 #define TEXT_BOX_SIZE (1-INPUT_BOX_SIZE)
+
+static const int rect_size = 16*sizeof(float);
+static const int rect_count = 2;
 
 typedef struct ui_console_data_t
 {
@@ -38,16 +41,15 @@ void draw_console(ui_frame_t *frame)
 	ui_console_data_t *data = frame->data;
 	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : frame->is_hovered ? 0.5 : 0.4;
 	float color[] = {0.05,0.05,0.05, opacity};
+
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
 	
 	glUniform1i(glGetUniformLocation(gui, "has_texture"),0);
 	glUniform4fv(glGetUniformLocation(gui, "color"), 1, color);
-	mat4x4 id;
-	mat4x4_identity(id);
-	mat4x4 model;
-	mat4x4_translate(model, frame->x, frame->y, 0);
-	render_model(gui, id, model, 0, 8);
+	
+	glDrawArrays(GL_QUADS, 0, 4*rect_count);
+	
 	set_font_color(1, 1, 1, 1);
 
 	wcscat(message, data->buffer);
@@ -55,35 +57,50 @@ void draw_console(ui_frame_t *frame)
 	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
 		wcscat(message, prompt);
 	
-		render_text(message ,frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
+	render_text(message, frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
 }
 
 
-void init_console_rendering(ui_console_data_t *data, float w, float h)
+void update_console_render(ui_frame_t *frame)
 {
+	float *buf;
+	ui_console_data_t *data = frame->data;
 	float vertices[] = {
-		0, 0, 0, 0,
-		w, 0, 0, 0,
-		w, (h*TEXT_BOX_SIZE)+5, 0, 0,
-		0, (h*TEXT_BOX_SIZE)+5, 0, 0,
+		frame->x, frame->y, 0, 0,
+		frame->x+frame->width, frame->y, 0, 0,
+		frame->x+frame->width, frame->y + (frame->height*TEXT_BOX_SIZE)+5, 0, 0,
+		frame->x, frame->y + (frame->height*TEXT_BOX_SIZE)+5, 0, 0,
 
-		0, (h*TEXT_BOX_SIZE)+10, 0, 0,
-		w, (h*TEXT_BOX_SIZE)+10, 0, 0,
-		w, h , 0, 0,
-		0, h, 0, 0,
+		frame->x, frame->y + (frame->height*TEXT_BOX_SIZE)+10, 0, 0,
+		frame->x+frame->width, frame->y + (frame->height*TEXT_BOX_SIZE)+10, 0, 0,
+		frame->x+frame->width, frame->y + frame->height , 0, 0,
+		frame->x, frame->y + frame->height, 0, 0,
 	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
+	buf = glMapBufferRange(GL_ARRAY_BUFFER, 0, rect_count*rect_size, GL_MAP_WRITE_BIT);
+	memcpy(buf, vertices, rect_count*rect_size);
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+void init_console_rendering(ui_frame_t *frame)
+{
+
+	ui_console_data_t *data = frame->data;
 	
 	glGenVertexArrays(1, &data->vao);
 	glBindVertexArray(data->vao);
 	glGenBuffers(1, &data->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, rect_count*rect_size, NULL, GL_DYNAMIC_DRAW);
 
 	GLint position = glGetAttribLocation(gui, "position");
 	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
-}
 
+	update_console_render(frame);
+}
+	
 void ui_console_on_key(ui_frame_t* frame, int key, int scancode, int action, int mods)
 {
 	(void)scancode;
@@ -116,7 +133,7 @@ void ui_console_on_char(ui_frame_t *frame, unsigned int c)
 	ui_console_data_t *data = frame->data;
 	if(frame->parent->keyboard_owner == frame)
 	{
-		if(data->size < 255)
+		if(data->size < 254)
 		{
 			data->buffer[data->size] = c;
 			data->size++;
@@ -140,6 +157,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		frame->destroy = &destroy_ui_console;
 		frame->draw = &draw_console;
 		frame->on_key = &ui_console_on_key;
+		frame->update_render = &update_console_render;
 		frame->on_char = &ui_console_on_char;
 		frame->x = x;
 		frame->y = y;
@@ -147,7 +165,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		frame->height = h;
 		frame->parent = parent;
 		frame->movable = 1;
-		init_console_rendering(frame->data, w, h);
+		init_console_rendering(frame);
 		return frame;
 	err_data:
 		return NULL;

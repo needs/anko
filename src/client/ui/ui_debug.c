@@ -3,12 +3,12 @@
 #include "GL/gl.h"
 #include "ui_debug.h"
 #include "../shader.h"
-#include "../renderer.h"
 #include "../font.h"
 #include "../linmath.h"
 #include "../config.h"
 #include "../context.h"
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct ui_debug_data_t
 {
@@ -35,11 +35,9 @@ void draw_debug(ui_frame_t *frame)
 			
 	glUniform1i(glGetUniformLocation(gui, "has_texture"),0);
 	glUniform4fv(glGetUniformLocation(gui, "color"), 1, color);
-	mat4x4 id;
-	mat4x4_identity(id);
-	mat4x4 model;
-	mat4x4_translate(model, frame->x, frame->y, 0);
-	render_model(gui, id, model, 0, 8);
+	
+	glDrawArrays(GL_QUADS, 0, 4);
+	
 	set_font_color(1,1,1,1);
 	
 	swprintf(buf, 255, L"%i fps", (int)(1000/speed));
@@ -64,24 +62,37 @@ void draw_debug(ui_frame_t *frame)
 	ch+=th;
 }
 
-void init_debug_rendering(ui_debug_data_t *data,float w, float h)
+void update_debug_render(ui_frame_t *frame)
 {
+	float *buf;
+	ui_debug_data_t *data = frame->data;
 	float vertices[] = {
-		0, 0, 0, 0,
-		w, 0, 0, 0,
-		w, h, 0, 0,
-		0, h, 0, 0,
+		frame->x, frame->y, 0, 0,
+		frame->x+frame->width, frame->y, 0, 0,
+		frame->x+frame->width, frame->y + frame->height, 0, 0,
+		frame->x, frame->y +frame->height, 0, 0,
 	};
 
+	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
+	buf = glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(vertices), GL_MAP_WRITE_BIT);
+	memcpy(buf, vertices, sizeof(vertices));
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+void init_debug_rendering(ui_frame_t *frame)
+{
+	ui_debug_data_t *data = frame->data;
 	glGenVertexArrays(1, &data->vao);
 	glBindVertexArray(data->vao);
 	glGenBuffers(1, &data->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, data->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 16*sizeof(float), NULL, GL_DYNAMIC_DRAW);
 
 	GLint position = glGetAttribLocation(gui, "position");
 	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
 	glEnableVertexAttribArray(position);
+
+	update_debug_render(frame);
 }
 
 
@@ -97,13 +108,14 @@ ui_frame_t *init_ui_debug(ui_frame_t *parent, float x, float y, float w, float h
 		frame->data = data;
 		frame->destroy = &destroy_ui_debug;
 		frame->draw = &draw_debug;
+		frame->update_render = &update_debug_render;
 		frame->x = x;
 		frame->y = y;
 		frame->movable = 1;
 		frame->width = w;
 		frame->height = h;
 		frame->parent = parent;
-		init_debug_rendering(frame->data, w, h);
+		init_debug_rendering(frame);
 		return frame;
 	err_data:
 		return NULL;

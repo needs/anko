@@ -11,7 +11,7 @@
 #include "textures.h"
 #include "shader.h"
 #include "camera.h"
-#include "renderer.h"
+#include "context.h"
 
 
 typedef struct particle_t {

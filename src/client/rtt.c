@@ -3,69 +3,16 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
-#include "renderer.h"
+#include "rtt.h"
 #include "shader.h"
-#include "textures.h"
-#include "linmath.h"
-#include "camera.h"
 #include "config.h"
 
-
-mat4x4 projection;
 
 static GLuint rtt_fbo;
 static GLuint rtt_tex;
 static GLuint rtt_vbo;
 static GLuint rtt_vao;
 int rtt_effect = 0; // will use an enum later
-static void init_rtt();
-
-
-int init_rendering(void)
-{
-	glewExperimental = GL_TRUE;
-	glewInit();
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	/* Load shaders and make them active */
-	if (!load_shaders())
-		goto err_shaders;
-
-	init_rtt();
-	mat4x4_ortho(projection, 0, config.screen_width, config.screen_height, 0, -1, 1);
-	return 1;
-
-err_shaders:
-	return 0;
-}
-
-
-void close_rendering(void)
-{
-	glDeleteBuffers(1,&rtt_vbo);
-	glDeleteFramebuffers(1, &rtt_fbo);
-	glDeleteVertexArrays(1,&rtt_vao);
-	glDeleteTextures(1,&rtt_tex);
-    unload_shaders();
-}
-
-void render_model(GLuint program, mat4x4 view, mat4x4 model, GLint first, GLint count)
-{
-	glActiveTexture(GL_TEXTURE0);
-
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(program, "model"),
-			   1, GL_FALSE, (GLfloat*)model);
-	glUniformMatrix4fv(glGetUniformLocation(program, "projection"),
-			   1, GL_FALSE, (GLfloat*)projection);
-	glUniformMatrix4fv(glGetUniformLocation(program, "view"),
-			   1, GL_FALSE, (GLfloat*)view);
-
-	/* And render them */
-	glDrawArrays(GL_QUADS, first, count);
-}
 
 void rtt_start()
 {
@@ -94,7 +41,7 @@ void rtt_draw()
 	glDrawArrays(GL_QUADS, 0, 4);
 }
 
-void init_rtt()
+void rtt_init()
 {
 	glGenFramebuffers(1, &rtt_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, rtt_fbo);

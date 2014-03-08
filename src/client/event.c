@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include "event.h"
 #include "camera.h"
-#include "renderer.h"
 
 
 static GLFWwindow *current_window;

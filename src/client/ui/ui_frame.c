@@ -14,13 +14,14 @@ ui_frame_t *create_ui()
 		frame->height = 0;
 		frame->destroy = NULL;
 		frame->update = NULL;
+		frame->update_render = NULL;
 		frame->draw = NULL;
 		frame->on_mouse_move = NULL;
 		frame->on_mouse_button = NULL;
 		frame->on_mouse_scroll = NULL;
 		frame->on_key = NULL;
 		frame->on_char = NULL;
-		frame->childs = NULL;
+		frame->children = NULL;
 		frame->data = NULL;
 		frame->keyboard_owner = NULL;
 		frame->mouse_owner = NULL;
@@ -38,6 +39,12 @@ void update_ui(ui_frame_t *frame, float deltatime)
 {
 	if(frame->update)
 		frame->update(frame,deltatime);
+}
+
+void update_render_ui(ui_frame_t *frame)
+{
+	if(frame->update_render)
+		frame->update_render(frame);
 }
 
 void draw_ui(ui_frame_t *frame)
@@ -61,6 +68,7 @@ void ui_on_mouse_move(ui_frame_t* frame, double x, double y)
 	{
 		frame->x += x-frame->last_mouse[0];
 		frame->y += y-frame->last_mouse[1];
+		update_render_ui(frame);
 	}
 	frame->last_mouse[0] = x;
 	frame->last_mouse[1] = y;
