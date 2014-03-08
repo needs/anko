@@ -18,6 +18,8 @@
 
 #define CAMERA_SPEED 500 // px/s
 
+static const float MOUSE_SCROLL_SPEED = 0.03;
+
 #define IS_KEY_DOWN(k) (key == k &&  (action == GLFW_PRESS || action == GLFW_REPEAT))
 
 typedef struct ui_game_data_t
@@ -148,6 +150,13 @@ void ui_game_on_mouse_move(ui_frame_t* frame, double x, double y)
 	}
 }
 
+void ui_game_on_mouse_scroll(ui_frame_t *frame, double sx, double sy)
+{
+	(void)sx;
+	ui_game_data_t *data = frame->data;
+	scale_camera(&data->camera, sy*MOUSE_SCROLL_SPEED);
+}
+
 void ui_game_on_mouse_button(ui_frame_t* frame, int button, int action, int mods)
 {
 	if(frame->children)
@@ -201,6 +210,7 @@ ui_frame_t* init_ui_game(world_t *world)
 		frame->on_mouse_button = &ui_game_on_mouse_button;
 		frame->destroy = &destroy_ui_game;
 		frame->on_char = &ui_game_on_char;
+		frame->on_mouse_scroll = &ui_game_on_mouse_scroll;
 
 		frame->children = malloc(sizeof(ui_frame_t *)*(children_count+1));
 		if(!frame->children)
