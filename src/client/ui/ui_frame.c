@@ -31,6 +31,7 @@ ui_frame_t *create_ui()
 		frame->last_mouse[0] = 0;
 		frame->last_mouse[0] = 0;
 		frame->is_hovered = 0;
+		frame->focused_child = NULL;
 	}
 	return frame;
 }
@@ -79,8 +80,30 @@ void ui_on_mouse_button(ui_frame_t* frame, int button, int action, int mods)
 	if(frame->on_mouse_button)
 		frame->on_mouse_button(frame, button, action, mods);
 
-	if(button == GLFW_MOUSE_BUTTON_LEFT && frame->is_hovered)
-		frame->is_dragging = action == GLFW_PRESS;
+	if(frame->parent)
+	{
+		if(frame->parent->focused_child && frame->parent->focused_child != frame)
+		{
+			if(!frame->parent->focused_child->is_hovered)
+				frame->parent->focused_child = frame;
+		}
+		else
+			if(frame->is_hovered)
+			    frame->parent->focused_child = frame;
+	}
+
+
+
+		if(frame->parent
+		   && frame->parent->focused_child
+		   && frame->parent->focused_child == frame
+		   && button == GLFW_MOUSE_BUTTON_LEFT
+		   && frame->is_hovered)
+				frame->is_dragging = action == GLFW_PRESS;
+
+
+
+
 }
 
 void ui_on_mouse_scroll(ui_frame_t* frame, double sx, double sy)

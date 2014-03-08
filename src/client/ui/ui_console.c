@@ -54,9 +54,8 @@ void console_add_message(ui_frame_t *frame, wchar_t *msg)
 		data->messages.start = (data->messages.start+1)%MAX_MESSAGES;
 		data->messages.count--;
 	}
-
-	data->messages.count++;
 	wcsncpy(data->messages.data[(data->messages.start+data->messages.count)%MAX_MESSAGES], msg, MAX_MESSAGES_LENGTH+1);
+	data->messages.count++;
 }
 
 void destroy_ui_console(ui_frame_t *frame)
@@ -81,17 +80,85 @@ static void render_input(ui_frame_t *frame)
 	render_text(message, frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
 }
 
+static float resized_text_height(ui_frame_t *frame, wchar_t *str, float size)
+{
+	wchar_t buff[MAX_MESSAGES_LENGTH+1];
+	int is = 0, ib = 0; // index in str, index in buff
+	float tw, th; // text width, text height
+	float  ch = 0; // current width, current height
+	
+	while(str[is])
+	{
+		buff[ib] = str[is];
+		ib++;
+		buff[ib] = 0;
+
+		get_text_dim(buff, &tw, &th, size);
+		if(tw >= frame->width-10)
+		{
+			ch+=th;
+			ib = 0;
+			buff[ib] = 0;
+		}
+		is++;
+	}
+	get_text_dim(buff, &tw, &th, size);
+	return ch+th;
+}
+
+static void render_resized_text(ui_frame_t *frame, wchar_t *str, float x, float y, float size)
+{
+	wchar_t buff[MAX_MESSAGES_LENGTH+1];
+	int is = 0, ib = 0; // index in str, index in buff
+	float tw, th; // text width, text height
+	float  ch = 0; // current width, current height
+	
+	while(str[is])
+	{
+		buff[ib] = str[is];
+		ib++;
+		buff[ib] = 0;
+
+		get_text_dim(buff, &tw, &th, size);
+		if(tw >= frame->width-10)
+		{
+			render_text(buff, x, y+ch, size);
+			ch+=th;
+			ib = 0;
+			buff[ib] = 0;
+		}
+		is++;
+	}
+	if(ib)
+	{
+		render_text(buff, x, y+ch, size);
+		get_text_dim(buff, &tw, &th, size);
+	}
+}
+
 static void render_messages(ui_frame_t *frame)
 {
 	ui_console_data_t *data = frame->data;
 	wchar_t message[MAX_MESSAGES_LENGTH+1];
 	int i;
+	float y_offset = 0;
+	float th;
 	
 	set_font_color(1, 1, 1, 1);
 
-	for(i = 0; i < data->messages.count; i++)
+	i = 0;
+
+	while( i < data->messages.count && y_offset - 15  < frame->height*TEXT_BOX_SIZE)
 	{
-		wcsncpy(message, data->messages.data[i%MAX_MESSAGES], MAX_MESSAGES_LENGTH+1);
+		wcsncpy(message, data->messages.data[((data->messages.start+data->messages.count)-i-1)%MAX_MESSAGES], MAX_MESSAGES_LENGTH+1);
+		th = resized_text_height(frame, message, 19);
+		if(y_offset + th - 15 < frame->height*TEXT_BOX_SIZE)
+		{
+			render_resized_text(frame, message, frame->x+5, frame->y+(frame->height*TEXT_BOX_SIZE)-(y_offset + th), 19);
+		}
+	
+		y_offset+=th;
+		i++;
 	}
 }
 
@@ -160,11 +227,19 @@ void ui_console_on_key(ui_frame_t* frame, int key, int scancode, int action, int
 	(void)mods;
 	ui_console_data_t *data = frame->data;
 
+	if(key == GLFW_KEY_ESCAPE)
+	{
+		data->input.size = 0;
+		data->input.buffer[data->input.size] = 0;
+	}
+	
 	if(key == GLFW_KEY_ENTER && action == GLFW_PRESS)
 	{
 		if(frame->parent->keyboard_owner == frame)
 		{
 			frame->parent->keyboard_owner = NULL;
+			if(data->input.size)
+				console_add_message(frame, data->input.buffer);
 			data->input.size = 0;
 			data->input.buffer[data->input.size] = 0;
 		}

@@ -87,7 +87,10 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 	if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		if(frame->keyboard_owner)
+		{
+			ui_on_key(frame->keyboard_owner, key, scancode, action, mods);
 			frame->keyboard_owner = NULL;
+		}
 		else
 			should_quit = 1;
 	}

@@ -88,7 +88,7 @@ int load_font()
 void get_text_dim(wchar_t * str, float *w, float *h, float size)
 {
 	float scale = size / GLYPH_DIM;
-	char *c = (char*)str;
+	wchar_t *c = str;
 	float max_width = 0, max_height = size, cur_width = 0, cur_height = size;
 	while(*c)
 	{
@@ -142,7 +142,7 @@ void render_text(wchar_t * str, float x, float y, float size)
 	{
 		float *vertices = buf + buf_index * 16;
 		int cc = str[i];
-		if(cc > 256) continue; // well we don't know this char
+		if(cc > 256 || cc < 0) continue; // well we don't know this char
 		int cc_w = droid.width[cc]; // current char width
 
 		if(cc == '\n')

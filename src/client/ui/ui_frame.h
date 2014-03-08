@@ -25,6 +25,7 @@ struct ui_frame
 
 	ui_frame_t* keyboard_owner;
 	ui_frame_t* mouse_owner;
+	ui_frame_t* focused_child;
 
 	destroy_func destroy;
 	update_func update;
