@@ -2,12 +2,12 @@
 
 in vec2 position;
 in vec2 UV;
-in float lifetime;
-in float alpha;
+in vec2 lifetime;
+in vec2 alpha;
 
 out vec2  uv;
-out float Lifetime;
-out float Alpha;
+out vec2 Lifetime;
+out vec2 Alpha;
 
 uniform float time;
 uniform mat4  projection;

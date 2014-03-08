@@ -19,16 +19,13 @@ struct partargs_t PARTARGS_DEFAULT = {
 	.lifetime = 1.0,
 	.opacity = {
 		.start = 1.0,
-		.middle = 1.0,
 		.end = 0.0,
-		.fadein = 0.0,
-		.fadeout = 0.0,
 	},
 	.tex = TEX_PARTICLES_FIRE1,
 };
 
 
-#define PART_VERTEX_LEN  6
+#define PART_VERTEX_LEN  8
 #define PART_VERTEX_SIZE PART_VERTEX_LEN * sizeof(float)
 #define PART_NB_VERTEX   4
 #define PART_SIZE        PART_NB_VERTEX * PART_VERTEX_SIZE
@@ -72,11 +69,11 @@ partgen_t* init_particles(void)
 	glEnableVertexAttribArray(uv);
 
 	GLint lifetime = glGetAttribLocation(sh_particles, "lifetime");
-	glVertexAttribPointer(lifetime, 1, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(4*sizeof(float)));
+	glVertexAttribPointer(lifetime, 2, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(4*sizeof(float)));
 	glEnableVertexAttribArray(lifetime);
 
 	GLint alpha = glGetAttribLocation(sh_particles, "alpha");
-	glVertexAttribPointer(alpha, 1, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(5*sizeof(float)));
+	glVertexAttribPointer(alpha, 2, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(6*sizeof(float)));
 	glEnableVertexAttribArray(alpha);
 
 	glBindVertexArray(0);
@@ -113,14 +110,16 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t 
 		float data[PART_LEN];
 		get_ctexture(data, prop->tex, x, y);
 
-		for (j = 0; j < 4; j++) {
+		for (j = 0; j < PART_NB_VERTEX; j++) {
 			const unsigned partindex = (i * PART_LEN) + j * PART_VERTEX_LEN;
-			buf[partindex]     = data[j * 4];
+			buf[partindex + 0] = data[j * 4 + 0];
 			buf[partindex + 1] = data[j * 4 + 1];
 			buf[partindex + 2] = data[j * 4 + 2];
 			buf[partindex + 3] = data[j * 4 + 3];
-			buf[partindex + 4] = curtime + prop->lifetime;
-			buf[partindex + 5] = prop->opacity.start;
+			buf[partindex + 4] = curtime;
+			buf[partindex + 5] = prop->lifetime;
+			buf[partindex + 6] = prop->opacity.start;
+			buf[partindex + 7] = prop->opacity.end;
 		}
 
 		gen->particles[gen->offset + gen->count + i] = curtime + prop->lifetime;
