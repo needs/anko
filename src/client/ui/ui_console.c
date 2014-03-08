@@ -13,20 +13,51 @@
 #include <math.h>
 #include <wchar.h>
 
+#define MAX_MESSAGES_LENGTH 255
+#define MAX_MESSAGES 128
+
 #define INPUT_BOX_SIZE ((float)1/6)
 #define TEXT_BOX_SIZE (1-INPUT_BOX_SIZE)
 
 static const int rect_size = 16*sizeof(float);
 static const int rect_count = 2;
 
+typedef struct console_input_t
+{
+	wchar_t buffer[MAX_MESSAGES_LENGTH+1];
+	int size;
+	int pos;
+} console_input_t;
+
+typedef struct console_messages_t
+{
+	wchar_t data[MAX_MESSAGES][MAX_MESSAGES_LENGTH+1];
+	int start;
+	int count;
+} console_messages_t;
+
 typedef struct ui_console_data_t
 {
 	GLuint vao;
 	GLuint vbo;
-	
-    wchar_t buffer[255];
-	int size;
+
+	console_input_t input;
+	console_messages_t messages;
 } ui_console_data_t;
+
+void console_add_message(ui_frame_t *frame, wchar_t *msg)
+{
+	ui_console_data_t *data = frame->data;
+
+	if(data->messages.count >= MAX_MESSAGES)
+	{
+		data->messages.start = (data->messages.start+1)%MAX_MESSAGES;
+		data->messages.count--;
+	}
+
+	data->messages.count++;
+	wcsncpy(data->messages.data[(data->messages.start+data->messages.count)%MAX_MESSAGES], msg, MAX_MESSAGES_LENGTH+1);
+}
 
 void destroy_ui_console(ui_frame_t *frame)
 {
@@ -34,14 +65,42 @@ void destroy_ui_console(ui_frame_t *frame)
 	free(frame);
 }
 
-void draw_console(ui_frame_t *frame)
+static void render_input(ui_frame_t *frame)
 {
-	wchar_t message[255];
+	wchar_t message[MAX_MESSAGES_LENGTH+1];
 	wchar_t prompt[2] = {0x5f,0};
 	ui_console_data_t *data = frame->data;
+		
+	set_font_color(1, 1, 1, 1);
+
+	wcscat(message, data->input.buffer);
+
+	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
+		wcscat(message, prompt);
+	
+	render_text(message, frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
+}
+
+static void render_messages(ui_frame_t *frame)
+{
+	ui_console_data_t *data = frame->data;
+	wchar_t message[MAX_MESSAGES_LENGTH+1];
+	int i;
+	
+	set_font_color(1, 1, 1, 1);
+
+	for(i = 0; i < data->messages.count; i++)
+	{
+		wcsncpy(message, data->messages.data[i%MAX_MESSAGES], MAX_MESSAGES_LENGTH+1);
+	}
+}
+
+void draw_console(ui_frame_t *frame)
+{
 	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : frame->is_hovered ? 0.5 : 0.4;
 	float color[] = {0.05,0.05,0.05, opacity};
-
+	ui_console_data_t *data = frame->data;
+	
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
 	
@@ -49,15 +108,9 @@ void draw_console(ui_frame_t *frame)
 	glUniform4fv(glGetUniformLocation(gui, "color"), 1, color);
 	
 	glDrawArrays(GL_QUADS, 0, 4*rect_count);
-	
-	set_font_color(1, 1, 1, 1);
 
-	wcscat(message, data->buffer);
-
-	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
-		wcscat(message, prompt);
-	
-	render_text(message, frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
+	render_input(frame);
+	render_messages(frame);
 }
 
 
@@ -112,18 +165,18 @@ void ui_console_on_key(ui_frame_t* frame, int key, int scancode, int action, int
 		if(frame->parent->keyboard_owner == frame)
 		{
 			frame->parent->keyboard_owner = NULL;
-			data->size = 0;
-			data->buffer[data->size] = 0;
+			data->input.size = 0;
+			data->input.buffer[data->input.size] = 0;
 		}
 		else
 			frame->parent->keyboard_owner = frame->parent->keyboard_owner == frame ? NULL : frame;
 	}
 	if(key == GLFW_KEY_BACKSPACE && (action == GLFW_PRESS || action == GLFW_REPEAT))
 	{
-		if(data->size > 0)
+		if(data->input.size > 0)
 		{
-			data->size--;
-			data->buffer[data->size] = 0;
+			data->input.size--;
+			data->input.buffer[data->input.size] = 0;
 		}
 	}
 }
@@ -133,11 +186,11 @@ void ui_console_on_char(ui_frame_t *frame, unsigned int c)
 	ui_console_data_t *data = frame->data;
 	if(frame->parent->keyboard_owner == frame)
 	{
-		if(data->size < 254)
+		if(data->input.size < MAX_MESSAGES_LENGTH)
 		{
-			data->buffer[data->size] = c;
-			data->size++;
-			data->buffer[data->size] = 0;
+			data->input.buffer[data->input.size] = c;
+			data->input.size++;
+			data->input.buffer[data->input.size] = 0;
 		}
 	}
 }
@@ -150,8 +203,11 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 		ui_console_data_t *data = malloc(sizeof(ui_console_data_t));
 		if(!data)
 			goto err_data;
-		data->buffer[0] = 0;
-		data->size = 0;
+		data->input.buffer[0] = 0;
+		data->input.size = 0;
+
+		data->messages.start = 0;
+		data->messages.count = 0;
 
 		frame->data = data;
 		frame->destroy = &destroy_ui_console;
