@@ -26,6 +26,7 @@ struct partargs_t PARTARGS_DEFAULT = {
 		.start = { 1.0, 1.0 },
 		.end   = { 0.0, 0.0 },
 	},
+	.dir = { 0.0, -10.0 },
 	.tex = TEX_PARTICLES_FIRE1,
 };
 
@@ -118,7 +119,7 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t 
 	for (i = 0; i < n; i++) {
 		float data[PART_LEN], datat[PART_LEN];
 		get_sctexture(data, prop->tex, x, y, prop->box.start.x, prop->box.start.y);
-		get_sctexture(datat, prop->tex, x, y, prop->box.end.x, prop->box.end.y);
+		get_sctexture(datat, prop->tex, x + prop->dir.x * prop->lifetime, y + prop->dir.y * prop->lifetime, prop->box.end.x, prop->box.end.y);
 
 		for (j = 0; j < PART_NB_VERTEX; j++) {
 			const unsigned partindex = (i * PART_LEN) + j * PART_VERTEX_LEN;

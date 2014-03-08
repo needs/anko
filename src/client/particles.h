@@ -22,6 +22,10 @@ struct partargs_t {
 		struct { float x, y; } start;
 		struct { float x, y; } end;
 	} box;
+
+	struct {
+		float x, y;
+	} dir;
 };
 
 extern struct partargs_t PARTARGS_DEFAULT;
