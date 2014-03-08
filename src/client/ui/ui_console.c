@@ -188,9 +188,19 @@ static void render_messages(ui_frame_t *frame)
 
 void draw_console(ui_frame_t *frame)
 {
-	float opacity = frame->parent->keyboard_owner == frame ? 0.8 : frame->is_hovered ? 0.5 : 0.4;
-	float color[] = {0.05,0.05,0.05, opacity};
+	float opacity;
+	float color[] = {0.05, 0.05, 0.05, 0};
 	ui_console_data_t *data = frame->data;
+
+	if(frame->parent->keyboard_owner == frame)
+		opacity = 0.8;
+	else
+		if(frame->parent->focused_child == frame && frame->is_hovered)
+			opacity = 0.5;
+		else
+			opacity = 0.4;
+
+	color[3] = opacity;
 	
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
