@@ -136,6 +136,29 @@ void get_ctexture(float *data, tex_t tex, float x, float y)
 }
 
 
+void get_stexture(float *data, tex_t tex, float x, float y, float sx, float sy)
+{
+	assert(data != NULL);
+	assert(tex >= TEX_NONE);
+	assert(tex <  TEX_TOTAL);
+
+	float *ref = textures[tex].data;
+
+	/* Do assignement by hand to be sure that we are just writing to data,
+	 * and not reading at it. */
+	data[0]  = ref[0] * sx  + x; data[1]  = ref[1] * sy  + y; data[2]  = ref[2];  data[3]  = ref[3];
+	data[4]  = ref[4] * sx  + x; data[5]  = ref[5] * sy  + y; data[6]  = ref[6];  data[7]  = ref[7];
+	data[8]  = ref[8] * sx  + x; data[9]  = ref[9] * sy  + y; data[10] = ref[10]; data[11] = ref[11];
+	data[12] = ref[12] * sx + x; data[13] = ref[13] * sy + y; data[14] = ref[14]; data[15] = ref[15];
+}
+
+
+void get_sctexture(float *data, tex_t tex, float x, float y, float sx, float sy)
+{
+	get_stexture(data, tex, x - textures[tex].ox * sx, y - textures[tex].oy * sy, sx, sy);
+}
+
+
 GLuint get_texid(tex_t tex)
 {
 	return textures[tex].tex;

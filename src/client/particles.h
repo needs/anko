@@ -12,10 +12,16 @@ typedef struct partgen_t partgen_t;
 
 struct partargs_t {
 	float lifetime;
+	tex_t tex;
+
 	struct {
 		float start, end;
 	} opacity;
-	tex_t tex;
+
+	struct {
+		struct { float x, y; } start;
+		struct { float x, y; } end;
+	} box;
 };
 
 extern struct partargs_t PARTARGS_DEFAULT;
