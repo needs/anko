@@ -11,10 +11,10 @@ uniform float time;
 
 void main()
 {
-	float curtime = (time - Lifetime.x) / Lifetime.y;
+	float Curtime = (time - Lifetime.x) / Lifetime.y;
 
-	if (Lifetime.x + Lifetime.y < time)
+	if (Curtime > 1.0)
 		out_Color = vec4(0.0, 0.0, 0.0, 0.0);
 	else
-		out_Color = texture(tex, uv) * vec4(1.0, 1.0, 1.0, Alpha.x + (Alpha.y - Alpha.x) * curtime);
+		out_Color = texture(tex, uv) * vec4(1.0, 1.0, 1.0, mix(Alpha.x, Alpha.y, Curtime));
 }

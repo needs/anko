@@ -30,7 +30,7 @@ struct partargs_t PARTARGS_DEFAULT = {
 };
 
 
-#define PART_VERTEX_LEN  12
+#define PART_VERTEX_LEN  10
 #define PART_VERTEX_SIZE PART_VERTEX_LEN * sizeof(float)
 #define PART_NB_VERTEX   4
 #define PART_SIZE        PART_NB_VERTEX * PART_VERTEX_SIZE
@@ -81,9 +81,9 @@ partgen_t* init_particles(void)
 	glVertexAttribPointer(alpha, 2, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(6*sizeof(float)));
 	glEnableVertexAttribArray(alpha);
 
-	GLint box = glGetAttribLocation(sh_particles, "box");
-	glVertexAttribPointer(box, 4, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(8*sizeof(float)));
-	glEnableVertexAttribArray(box);
+	GLint target = glGetAttribLocation(sh_particles, "target");
+	glVertexAttribPointer(target, 2, GL_FLOAT, GL_FALSE, PART_VERTEX_SIZE, (void*)(8*sizeof(float)));
+	glEnableVertexAttribArray(target);
 
 	glBindVertexArray(0);
 
@@ -116,8 +116,9 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t 
 	}
 
 	for (i = 0; i < n; i++) {
-		float data[PART_LEN];
+		float data[PART_LEN], datat[PART_LEN];
 		get_sctexture(data, prop->tex, x, y, prop->box.start.x, prop->box.start.y);
+		get_sctexture(datat, prop->tex, x, y, prop->box.end.x, prop->box.end.y);
 
 		for (j = 0; j < PART_NB_VERTEX; j++) {
 			const unsigned partindex = (i * PART_LEN) + j * PART_VERTEX_LEN;
@@ -129,10 +130,8 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t 
 			buf[partindex + 5] = prop->lifetime;
 			buf[partindex + 6] = prop->opacity.start;
 			buf[partindex + 7] = prop->opacity.end;
-			buf[partindex + 8] = prop->box.start.x;
-			buf[partindex + 9] = prop->box.start.y;
-			buf[partindex + 10] = prop->box.end.x;
-			buf[partindex + 11] = prop->box.end.y;
+			buf[partindex + 8] = datat[j * 4 + 0];
+			buf[partindex + 9] = datat[j * 4 + 1];
 		}
 
 		gen->particles[gen->offset + gen->count + i] = curtime + prop->lifetime;
