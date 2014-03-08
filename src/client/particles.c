@@ -38,15 +38,6 @@ struct partargs_t PARTARGS_DEFAULT = {
 #define PART_LEN         PART_NB_VERTEX * PART_VERTEX_LEN
 
 
-typedef struct partgen_t {
-	float particles[2 * MAX_PARTICLES]; /* Lifetimes */
-	GLuint vbo, vao;
-
-	int count;		/* Number of particles */
-	long offset;		/* Offset of the first particle */
-} partgen_t;
-
-
 partgen_t* init_particles(void)
 {
 	partgen_t *gen;

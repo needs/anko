@@ -8,7 +8,15 @@
 /* Maybe made the limit configurable/dynamique ? */
 #define MAX_PARTICLES 16384
 
-typedef struct partgen_t partgen_t;
+
+typedef struct partgen_t {
+	float particles[2 * MAX_PARTICLES]; /* Lifetimes */
+	GLuint vbo, vao;
+
+	int count;		/* Number of particles */
+	long offset;		/* Offset of the first particle */
+} partgen_t;
+
 
 struct partargs_t {
 	float lifetime;
