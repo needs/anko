@@ -43,19 +43,18 @@ typedef struct ui_console_data_t
 
 	console_input_t input;
 	console_messages_t messages;
+	console_messages_t input_history;
 } ui_console_data_t;
 
-void console_add_message(ui_frame_t *frame, wchar_t *msg)
+void console_add_message(console_messages_t *messages, wchar_t *str)
 {
-	ui_console_data_t *data = frame->data;
-
-	if(data->messages.count >= MAX_MESSAGES)
+	if(messages->count >= MAX_MESSAGES)
 	{
-		data->messages.start = (data->messages.start+1)%MAX_MESSAGES;
-		data->messages.count--;
+	    messages->start = (messages->start+1)%MAX_MESSAGES;
+	    messages->count--;
 	}
-	wcsncpy(data->messages.data[(data->messages.start+data->messages.count)%MAX_MESSAGES], msg, MAX_MESSAGES_LENGTH+1);
-	data->messages.count++;
+	wcsncpy(messages->data[(messages->start+messages->count)%MAX_MESSAGES], str, MAX_MESSAGES_LENGTH+1);
+	messages->count++;
 }
 
 void destroy_ui_console(ui_frame_t *frame)
@@ -64,15 +63,40 @@ void destroy_ui_console(ui_frame_t *frame)
 	free(frame);
 }
 
+
+static void fill_resized_input(wchar_t *dest, wchar_t *src, ui_frame_t *frame, float size)
+{
+	wchar_t tmp[MAX_MESSAGES_LENGTH+1] = { 0 };
+	int index = MAX_MESSAGES_LENGTH;
+	int len = wcslen(src);
+	float tw;
+	int ss;
+	while(len > 0 && tw < frame->width-15)
+	{
+		tmp[index]  = src[len-1];
+		
+		get_text_dim(&tmp[index], &tw, NULL, size);
+		
+		index--;
+		len--;
+	}
+
+    ss = (MAX_MESSAGES_LENGTH-index);
+	memcpy(dest, &tmp[index+1], ss*sizeof(wchar_t));
+    dest[ss] = 0;
+}
+
 static void render_input(ui_frame_t *frame)
 {
 	wchar_t message[MAX_MESSAGES_LENGTH+1];
+	wchar_t tmp[MAX_MESSAGES_LENGTH+1];
 	wchar_t prompt[2] = {0x5f,0};
 	ui_console_data_t *data = frame->data;
 		
 	set_font_color(1, 1, 1, 1);
 
-	wcscat(message, data->input.buffer);
+	fill_resized_input(tmp, data->input.buffer, frame, 19);
+	wcscat(message, tmp);
 
 	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
 		wcscat(message, prompt);
@@ -94,7 +118,7 @@ static float resized_text_height(ui_frame_t *frame, wchar_t *str, float size)
 		buff[ib] = 0;
 
 		get_text_dim(buff, &tw, &th, size);
-		if(tw >= frame->width-10)
+		if(tw >= frame->width-15)
 		{
 			ch+=th;
 			ib = 0;
@@ -120,7 +144,7 @@ static void render_resized_text(ui_frame_t *frame, wchar_t *str, float x, float 
 		buff[ib] = 0;
 
 		get_text_dim(buff, &tw, &th, size);
-		if(tw >= frame->width-10)
+		if(tw >= frame->width-15)
 		{
 			render_text(buff, x, y+ch, size);
 			ch+=th;
@@ -148,11 +172,11 @@ static void render_messages(ui_frame_t *frame)
 
 	i = 0;
 
-	while( i < data->messages.count && y_offset - 15  < frame->height*TEXT_BOX_SIZE)
+	while( i < data->messages.count && y_offset < frame->height*TEXT_BOX_SIZE)
 	{
 		wcsncpy(message, data->messages.data[((data->messages.start+data->messages.count)-i-1)%MAX_MESSAGES], MAX_MESSAGES_LENGTH+1);
 		th = resized_text_height(frame, message, 19);
-		if(y_offset + th - 15 < frame->height*TEXT_BOX_SIZE)
+		if(y_offset + th < frame->height*TEXT_BOX_SIZE)
 		{
 			render_resized_text(frame, message, frame->x+5, frame->y+(frame->height*TEXT_BOX_SIZE)-(y_offset + th), 19);
 		}
@@ -239,7 +263,11 @@ void ui_console_on_key(ui_frame_t* frame, int key, int scancode, int action, int
 		{
 			frame->parent->keyboard_owner = NULL;
 			if(data->input.size)
-				console_add_message(frame, data->input.buffer);
+			{
+				console_add_message(&data->messages, data->input.buffer);
+				console_add_message(&data->input_history, data->input.buffer);
+			}
+			
 			data->input.size = 0;
 			data->input.buffer[data->input.size] = 0;
 		}
@@ -283,6 +311,8 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float
 
 		data->messages.start = 0;
 		data->messages.count = 0;
+		data->input_history.start = 0;
+		data->input_history.count = 0;
 
 		frame->data = data;
 		frame->destroy = &destroy_ui_console;

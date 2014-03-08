@@ -92,6 +92,12 @@ void get_text_dim(wchar_t * str, float *w, float *h, float size)
 	float max_width = 0, max_height = size, cur_width = 0, cur_height = size;
 	while(*c)
 	{
+		if(*c > 256 || *c < 0)
+		{
+			c++;
+			continue;
+		}
+		
 		if(*c == '\n')
 		{
 			cur_height += GLYPH_DIM*scale;

@@ -14,6 +14,7 @@ typedef struct ui_debug_data_t
 {
 	GLuint vao;
 	GLuint vbo;
+	world_t *world;
 } ui_debug_data_t;
 
 
@@ -47,6 +48,12 @@ void draw_debug(ui_frame_t *frame)
 	swprintf(buf, 255, L"b: %ix%i", config.board_width, config.board_height);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
+	swprintf(buf, 255, L"p: %i", data->world->gen->count);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
+	
 }
 
 void update_debug_render(ui_frame_t *frame)
@@ -83,7 +90,7 @@ void init_debug_rendering(ui_frame_t *frame)
 }
 
 
-ui_frame_t *init_ui_debug(ui_frame_t *parent, float x, float y, float w, float h)
+ui_frame_t *init_ui_debug(ui_frame_t *parent, world_t *world, float x, float y, float w, float h)
 {
 	ui_frame_t *frame = create_ui();
 	if(frame)
@@ -91,7 +98,8 @@ ui_frame_t *init_ui_debug(ui_frame_t *parent, float x, float y, float w, float h
 		ui_debug_data_t *data = malloc(sizeof(ui_debug_data_t));
 		if(!data)
 			goto err_data;
-
+		data->world = world;
+		
 		frame->data = data;
 		frame->destroy = &destroy_ui_debug;
 		frame->draw = &draw_debug;

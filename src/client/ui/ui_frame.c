@@ -1,38 +1,15 @@
-#include "ui_frame.h"
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include "ui_frame.h"
 
 ui_frame_t *create_ui()
 {
-	ui_frame_t* frame = malloc(sizeof(ui_frame_t));
-	if(frame)
-	{
-		frame->hidden = 0;
-		frame->x = 0;
-		frame->y = 0;
-		frame->width = 0;
-		frame->height = 0;
-		frame->destroy = NULL;
-		frame->update = NULL;
-		frame->update_render = NULL;
-		frame->draw = NULL;
-		frame->on_mouse_move = NULL;
-		frame->on_mouse_button = NULL;
-		frame->on_mouse_scroll = NULL;
-		frame->on_key = NULL;
-		frame->on_char = NULL;
-		frame->children = NULL;
-		frame->data = NULL;
-		frame->keyboard_owner = NULL;
-		frame->mouse_owner = NULL;
-		frame->parent = NULL;
-		frame->movable = 0;
-		frame->is_dragging = 0;
-		frame->last_mouse[0] = 0;
-		frame->last_mouse[0] = 0;
-		frame->is_hovered = 0;
-		frame->focused_child = NULL;
-	}
+	ui_frame_t *frame = calloc(1, sizeof(*frame));
+
+	if (frame == NULL)
+		perror("calloc(frame)");
+	
 	return frame;
 }
 

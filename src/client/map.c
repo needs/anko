@@ -278,6 +278,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				prop.box.start.y = 1.0;
 				prop.box.end.x = 4.0;
 				prop.box.end.y = 4.0;
+				prop.dir.y = -50.0;
 
 				get_ctexture(buf + ((i * map->width + j) * 16),
 					     get_entity_tex(&current->cells[i][j]),

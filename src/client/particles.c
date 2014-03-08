@@ -26,6 +26,7 @@ struct partargs_t PARTARGS_DEFAULT = {
 		.start = { 1.0, 1.0 },
 		.end   = { 0.0, 0.0 },
 	},
+	.dir = { 0.0, -10.0 },
 	.tex = TEX_PARTICLES_FIRE1,
 };
 
@@ -35,15 +36,6 @@ struct partargs_t PARTARGS_DEFAULT = {
 #define PART_NB_VERTEX   4
 #define PART_SIZE        PART_NB_VERTEX * PART_VERTEX_SIZE
 #define PART_LEN         PART_NB_VERTEX * PART_VERTEX_LEN
-
-
-typedef struct partgen_t {
-	float particles[2 * MAX_PARTICLES]; /* Lifetimes */
-	GLuint vbo, vao;
-
-	int count;		/* Number of particles */
-	long offset;		/* Offset of the first particle */
-} partgen_t;
 
 
 partgen_t* init_particles(void)
@@ -118,7 +110,7 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t 
 	for (i = 0; i < n; i++) {
 		float data[PART_LEN], datat[PART_LEN];
 		get_sctexture(data, prop->tex, x, y, prop->box.start.x, prop->box.start.y);
-		get_sctexture(datat, prop->tex, x, y, prop->box.end.x, prop->box.end.y);
+		get_sctexture(datat, prop->tex, x + prop->dir.x * prop->lifetime, y + prop->dir.y * prop->lifetime, prop->box.end.x, prop->box.end.y);
 
 		for (j = 0; j < PART_NB_VERTEX; j++) {
 			const unsigned partindex = (i * PART_LEN) + j * PART_VERTEX_LEN;
