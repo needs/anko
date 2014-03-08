@@ -13,9 +13,9 @@ typedef struct partgen_t partgen_t;
 struct partargs_t {
 	float lifetime;
 	struct {
-		float begin, middle, end;
+		float start, middle, end;
 		float fadein, fadeout;
-	} alpha;
+	} opacity;
 	tex_t tex;
 };
 

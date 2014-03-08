@@ -17,8 +17,8 @@
 
 struct partargs_t PARTARGS_DEFAULT = {
 	.lifetime = 1.0,
-	.alpha = {
-		.begin = 1.0,
+	.opacity = {
+		.start = 1.0,
 		.middle = 1.0,
 		.end = 0.0,
 		.fadein = 0.0,
@@ -28,7 +28,7 @@ struct partargs_t PARTARGS_DEFAULT = {
 };
 
 
-#define PARTICLE_SIZE 4 * 5 * sizeof(float)
+#define PARTICLE_SIZE 4 * 6 * sizeof(float)
 
 
 typedef struct partgen_t {
@@ -43,6 +43,8 @@ typedef struct partgen_t {
 partgen_t* init_particles(void)
 {
 	partgen_t *gen;
+	static const size_t vertsize = 6*sizeof(float);
+
 
 	if ((gen = calloc(1, sizeof (*gen))) == NULL) {
 		perror("malloc(partgen)");
@@ -60,16 +62,20 @@ partgen_t* init_particles(void)
 	glBufferData(GL_ARRAY_BUFFER, 2 * PARTICLE_SIZE * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
 
 	GLint position = glGetAttribLocation(sh_particles, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), 0);
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, vertsize, 0);
 	glEnableVertexAttribArray(position);
 
 	GLint uv = glGetAttribLocation(sh_particles, "UV");
-	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
+	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, vertsize, (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(uv);
 
 	GLint lifetime = glGetAttribLocation(sh_particles, "lifetime");
-	glVertexAttribPointer(lifetime, 1, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(4*sizeof(float)));
+	glVertexAttribPointer(lifetime, 1, GL_FLOAT, GL_FALSE, vertsize, (void*)(4*sizeof(float)));
 	glEnableVertexAttribArray(lifetime);
+
+	GLint alpha = glGetAttribLocation(sh_particles, "alpha");
+	glVertexAttribPointer(alpha, 1, GL_FLOAT, GL_FALSE, vertsize, (void*)(5*sizeof(float)));
+	glEnableVertexAttribArray(alpha);
 
 	glBindVertexArray(0);
 
@@ -106,11 +112,12 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, struct partargs_t 
 		get_ctexture(data, prop->tex, x, y);
 
 		for (j = 0; j < 4; j++) {
-			buf[(i * 20) + j * 5]     = data[j * 4];
-			buf[(i * 20) + j * 5 + 1] = data[j * 4 + 1];
-			buf[(i * 20) + j * 5 + 2] = data[j * 4 + 2];
-			buf[(i * 20) + j * 5 + 3] = data[j * 4 + 3];
-			buf[(i * 20) + j * 5 + 4] = curtime + prop->lifetime;
+			buf[(i * 20) + j * 6]     = data[j * 4];
+			buf[(i * 20) + j * 6 + 1] = data[j * 4 + 1];
+			buf[(i * 20) + j * 6 + 2] = data[j * 4 + 2];
+			buf[(i * 20) + j * 6 + 3] = data[j * 4 + 3];
+			buf[(i * 20) + j * 6 + 4] = curtime + prop->lifetime;
+			buf[(i * 20) + j * 6 + 5] = prop->opacity.start;
 		}
 
 		gen->particles[gen->offset + gen->count + i] = curtime + prop->lifetime;
@@ -148,7 +155,7 @@ void update_particles(partgen_t *gen)
 			return;
 		}
 
-		memcpy(buf, buf + (20 * gen->offset), gen->count * PARTICLE_SIZE);
+		memcpy(buf, buf + (24 * gen->offset), gen->count * PARTICLE_SIZE);
 
 		if (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE)
 			fprintf(stderr, "update-particles: Error when unmapping the VBO.\n");
