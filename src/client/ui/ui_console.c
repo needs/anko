@@ -72,9 +72,9 @@ static void fill_resized_input(wchar_t *dest, wchar_t *src, ui_frame_t *frame, f
 	wchar_t tmp[MAX_MESSAGES_LENGTH+1] = { 0 };
 	int index = MAX_MESSAGES_LENGTH;
 	int len = wcslen(src);
-	float tw;
+	float tw = 0;
 	int ss;
-	while(len > 0 && tw < frame->width-15)
+	while(len > 0 && tw < frame->width-5)
 	{
 		tmp[index]  = src[len-1];
 		
