@@ -22,8 +22,8 @@ board_t* generate(int width, int height, gen_params_t params)
 	
 	assert(width > 0);
 	assert(height > 0);
-	assert(params.tree_density<1);
-   	assert(params.water_density<1);
+	assert(params.tree_density <= 1);
+   	assert(params.water_density <= 1);
 	assert(params.water_shatter_factor > 0 && params.water_shatter_factor <= 1);
 	
 	if ((board = alloc_board(width, height)) == NULL) 
