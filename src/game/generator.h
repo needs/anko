@@ -1,7 +1,7 @@
 #ifndef _GENERATOR_H_
 #define _GENERATOR_H_
 
-#include "board.h"
+#include <game/board.h>
 
 typedef struct gen_params
 {

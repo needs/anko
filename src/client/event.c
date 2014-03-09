@@ -4,8 +4,8 @@
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
-#include "event.h"
-#include "camera.h"
+#include <client/event.h>
+#include <client/camera.h>
 
 
 static GLFWwindow *current_window;

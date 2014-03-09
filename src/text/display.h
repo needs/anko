@@ -1,7 +1,7 @@
 #ifndef _DISPLAY_H_
 #define _DISPLAY_H_
 
-#include "../simulator.h"
+#include <game/simulator.h>
 
 void display(board_t *board);
 void clear_screen(void);

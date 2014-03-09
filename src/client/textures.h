@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "linmath.h"
+#include <client/linmath.h>
 
 
 #define ADD_TEXTURE(name, path) TEX_##name,

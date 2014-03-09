@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "generator.h"
-#include "simulator.h"
-#include "board.h"
+#include <game/generator.h>
+#include <game/simulator.h>
+#include <game/board.h>
 
 #define RANDOM_FLOAT() ((float)random()/RAND_MAX)
 

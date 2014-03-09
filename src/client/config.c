@@ -5,7 +5,7 @@
 #include <string.h>
 #include <getopt.h>
 
-#include "config.h"
+#include <client/config.h>
 
 struct config_t config = {
 	/* Default value, might be overrided */

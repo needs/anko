@@ -1,10 +1,10 @@
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
 
-#include "linmath.h"
+#include <client/linmath.h>
 
 #define ZOOM_MIN 1
-#define ZOOM_MAX 3
+#define ZOOM_MAX 10
 
 typedef struct camera_t
 {

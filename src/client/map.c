@@ -6,11 +6,11 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "textures.h"
-#include "map.h"
-#include "shader.h"
-#include "context.h"
-#include "../board.h"
+#include <client/textures.h>
+#include <client/map.h>
+#include <client/shader.h>
+#include <client/context.h>
+#include <game/board.h>
 
 
 typedef struct mapcell_t {

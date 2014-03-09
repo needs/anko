@@ -1,21 +1,20 @@
 #
 # Configuration de la compilation
 #
-CFLAGS = -Wall -Werror -Wextra -g
+CFLAGS = -Wall -Werror -Wextra -g -Isrc
 BINDIR = .
 CC = gcc
-
 
 #
 # Binaires à construire
 #
 BINS = anko anko_text
 
-SRCS_anko_text = src/*.c src/text/*.c
+SRCS_anko_text = src/game/*.c src/text/*.c
 LDFLAGS_anko_text =
 CFLAGS_anko_text = $(CFLAGS)
 
-SRCS_anko = src/*.c src/client/*.c src/client/ui/*.c
+SRCS_anko = src/game/*.c src/client/*.c src/client/ui/*.c
 LDFLAGS_anko = -lglfw -lGL -lm -lGLEW
 CFLAGS_anko = $(CFLAGS)
 

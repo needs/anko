@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "display.h"
-#include "../generator.h"
-#include "../simulator.h"
-#include "../board.h"
+#include <text/display.h>
+#include <game/generator.h>
+#include <game/simulator.h>
+#include <game/board.h>
 #include <getopt.h>
 #include <signal.h>
 

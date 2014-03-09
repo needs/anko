@@ -3,9 +3,9 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "textures.h"
-#include "linmath.h"
-#include "stb_image.h"
+#include <client/textures.h>
+#include <client/linmath.h>
+#include <client/stb_image.h>
 
 
 typedef struct texture_t {

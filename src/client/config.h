@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#include "../generator.h"
+#include <game/generator.h>
 
 struct config_t {
 	int screen_width, screen_height;

@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "generator.h"
-#include "simulator.h"
-
+#include <game/generator.h>
+#include <game/simulator.h>
 
 static int is_burning(void *data)
 {

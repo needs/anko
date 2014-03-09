@@ -1,8 +1,8 @@
 #ifndef _PARTICLES_H_
 #define _PARTICLES_H_
 
-#include "textures.h"
-#include "camera.h"
+#include <client/textures.h>
+#include <client/camera.h>
 
 
 /* Maybe made the limit configurable/dynamique ? */

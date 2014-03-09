@@ -1,8 +1,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "display.h"
-#include "../simulator.h"
+#include <text/display.h>
+#include <game/simulator.h>
 
 static void reset_screen(void);
 

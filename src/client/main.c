@@ -9,17 +9,17 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
-#include "context.h"
-#include "textures.h"
-#include "event.h"
-#include "world.h"
-#include "font.h"
-#include "config.h"
-#include "../board.h"
-#include "../generator.h"
-#include "../simulator.h"
-#include "ui/ui_frame.h"
-#include "ui/ui_game.h"
+#include <client/context.h>
+#include <client/textures.h>
+#include <client/event.h>
+#include <client/world.h>
+#include <client/font.h>
+#include <client/config.h>
+#include <game/board.h>
+#include <game/generator.h>
+#include <game/simulator.h>
+#include <client/ui/ui_frame.h>
+#include <client/ui/ui_game.h>
 
 #define SPEED_UPDATE 0.3
 #define MAX_MSPF 1.0 / config.max_fps

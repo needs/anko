@@ -3,9 +3,9 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
-#include "rtt.h"
-#include "shader.h"
-#include "config.h"
+#include <client/rtt.h>
+#include <client/shader.h>
+#include <client/config.h>
 
 
 static GLuint rtt_fbo;

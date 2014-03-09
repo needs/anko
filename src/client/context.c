@@ -1,6 +1,6 @@
-#include "context.h"
-#include "shader.h"
-#include "config.h"
+#include <client/context.h>
+#include <client/shader.h>
+#include <client/config.h>
 
 int should_quit = 0;
 float speed = 0;

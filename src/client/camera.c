@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "camera.h"
-#include "config.h"
+#include <client/camera.h>
+#include <client/config.h>
 
 
 static void update_camera(camera_t *camera)

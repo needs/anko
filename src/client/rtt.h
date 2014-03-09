@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "linmath.h"
+#include <client/linmath.h>
 
 extern int rtt_effect;
 

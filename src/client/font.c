@@ -1,11 +1,11 @@
-#include "font.h"
+#include <client/font.h>
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include "shader.h"
-#include "linmath.h"
-#include "textures.h"
+#include <client/shader.h>
+#include <client/linmath.h>
+#include <client/textures.h>
 #include <stdio.h>
-#include "context.h"
+#include <client/context.h>
 #include <string.h>
 #include <assert.h>
 #include <GLFW/glfw3.h>

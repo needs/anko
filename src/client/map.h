@@ -1,10 +1,10 @@
 #ifndef _MAP_H_
 #define _MAP_H_
 
-#include "linmath.h"
-#include "../board.h"
-#include "camera.h"
-#include "particles.h"
+#include <client/linmath.h>
+#include <game/board.h>
+#include <client/camera.h>
+#include <client/particles.h>
 
 
 #define TILE_WIDTH  68

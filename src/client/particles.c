@@ -8,11 +8,11 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
-#include "particles.h"
-#include "textures.h"
-#include "shader.h"
-#include "camera.h"
-#include "context.h"
+#include <client/particles.h>
+#include <client/textures.h>
+#include <client/shader.h>
+#include <client/camera.h>
+#include <client/context.h>
 
 
 /* By default, a particle becomes transparent and decrese in size. */

@@ -1,7 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "ui_frame.h"
+#include <client/ui/ui_frame.h>
 
 ui_frame_t *create_ui()
 {

@@ -1,9 +1,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "world.h"
-#include "map.h"
-#include "../board.h"
+#include <client/world.h>
+#include <client/map.h>
+#include <game/board.h>
 
 
 world_t* create_world(board_t *board)

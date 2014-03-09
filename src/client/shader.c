@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "shader.h"
+#include <client/shader.h>
 
 
 #define MAX_SHADERS 2

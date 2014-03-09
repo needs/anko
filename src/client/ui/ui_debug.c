@@ -1,12 +1,12 @@
 #define GLEW_STATIC
-#include "GL/glew.h"
-#include "GL/gl.h"
-#include "ui_debug.h"
-#include "../shader.h"
-#include "../font.h"
-#include "../linmath.h"
-#include "../config.h"
-#include "../context.h"
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <client/ui/ui_debug.h>
+#include <client/shader.h>
+#include <client/font.h>
+#include <client/linmath.h>
+#include <client/config.h>
+#include <client/context.h>
 #include <stdlib.h>
 #include <string.h>
 

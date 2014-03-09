@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "linmath.h"
+#include <client/linmath.h>
 
 extern int should_quit; /* if set to 1, game will stop asap */
 extern float speed; /* in Millisecond per frame */

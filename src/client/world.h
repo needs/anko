@@ -1,10 +1,10 @@
 #ifndef _WORLD_H_
 #define _WORLD_H_
 
-#include "linmath.h"
-#include "map.h" 
-#include "particles.h"
-#include "../board.h"
+#include <client/linmath.h>
+#include <client/map.h>
+#include <client/particles.h>
+#include <game/board.h>
 
 
 typedef struct world_t {
