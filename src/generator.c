@@ -95,6 +95,8 @@ static void spread_lake(board_t *board, int x, int y, int *count, int size)
 
 static void spread_forest(board_t *board, int x, int y, int *count, int size)
 {
+	static enum tree_specie_t trees[] = { TS_OAK, TS_APPLE, TS_BIRCH, TS_PINE };
+
 	if(IS_OUT_OF_BOUNDS(board,x,y) || board->cells[y][x].type == CT_TREE)
 		return;
 
@@ -103,7 +105,7 @@ static void spread_forest(board_t *board, int x, int y, int *count, int size)
 	{
 		board->cells[y][x].type = CT_TREE;
 		board->cells[y][x].data.tree.life = 100;
-		board->cells[y][x].data.tree.specie = TS_APPLE;
+		board->cells[y][x].data.tree.specie = trees[random() % 4];
 		
 		*count = *count+1;
 		spread_forest(board, x+1, y, count, size);
