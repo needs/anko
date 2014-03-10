@@ -8,13 +8,15 @@
 
 #define RANDOM_FLOAT() ((float)random()/RAND_MAX)
 
-typedef void(*spread_func)(board_t*, int, int, int*, int);
+static enum tree_specie_t trees[] = { TS_OAK, TS_APPLE, TS_BIRCH, TS_PINE }; // pine disabled for now
+
+typedef void(*spread_func)(board_t*, int, int, int*, int, int);
 
 static int should_spawn(cell_type_t type, board_t *board, float density);
-static void spawn_spot(spread_func spread, board_t *board, float density, float shatter_factor);
+static void spawn_spot(spread_func spread, board_t *board, float density, float shatter_factor, int meta);
 static void correct_water(board_t *board);
-static void spread_lake(board_t *board, int x, int y, int *count, int size);
-static void spread_forest(board_t *board, int x, int y, int *count, int size);
+static void spread_lake(board_t *board, int x, int y, int *count, int size, int meta);
+static void spread_forest(board_t *board, int x, int y, int *count, int size, int meta);
 static void gen_stats(board_t *board);
 
 board_t* generate(int width, int height, gen_params_t *params)
@@ -39,12 +41,12 @@ board_t* generate(int width, int height, gen_params_t *params)
 	
 	while(should_spawn(CT_TREE, board, params->tree_density))
 	{
-		spawn_spot(&spread_forest, board, params->tree_density, 0.5);
+		spawn_spot(&spread_forest, board, params->tree_density, 0.2, trees[random() % TS_TOTAL]);
 	}
 	
 	while(should_spawn(CT_WATER, board, params->water_density))
 	{
-		spawn_spot(&spread_lake, board, params->water_density, params->water_shatter_factor);
+		spawn_spot(&spread_lake, board, params->water_density, params->water_shatter_factor, 0);
 	}
 
 	correct_water(board);
@@ -104,7 +106,7 @@ static int should_spawn(cell_type_t type, board_t *board, float density)
 	return (float)count/(board->width*board->height) < density;
 }
 
-static void spread_lake(board_t *board, int x, int y, int *count, int size)
+static void spread_lake(board_t *board, int x, int y, int *count, int size, int meta)
 {
 	if(IS_OUT_OF_BOUNDS(board,x,y) || board->cells[y][x].type == CT_WATER)
 		return;
@@ -114,39 +116,40 @@ static void spread_lake(board_t *board, int x, int y, int *count, int size)
 	{
 		board->cells[y][x].type = CT_WATER;
 		*count = *count+1;
-	    spread_lake(board, x+1, y, count, size);
-	    spread_lake(board, x-1, y, count, size);
-	    spread_lake(board, x, y+1, count, size);
-		spread_lake(board, x, y-1, count, size);
+	    spread_lake(board, x+1, y, count, size, meta);
+	    spread_lake(board, x-1, y, count, size, meta);
+	    spread_lake(board, x, y+1, count, size, meta);
+		spread_lake(board, x, y-1, count, size, meta);
 	}
 }
 
-static void spread_forest(board_t *board, int x, int y, int *count, int size)
+static void spread_forest(board_t *board, int x, int y, int *count, int size, int meta)
 {
-	static enum tree_specie_t trees[] = { TS_OAK, TS_APPLE, TS_BIRCH, TS_PINE };
-
 	if(IS_OUT_OF_BOUNDS(board,x,y) || board->cells[y][x].type == CT_TREE)
 		return;
-
+	
 	if(RANDOM_FLOAT() > (float)*count/size
 	   && (get_neighbors_count(x,y, board, CT_TREE, NULL) != 1 || RANDOM_FLOAT() > 0.5))
 	{
 		board->cells[y][x].type = CT_TREE;
 		board->cells[y][x].data.tree.life = 100;
-		board->cells[y][x].data.tree.specie = trees[random() % 4];
+		if(RANDOM_FLOAT() < 0.6)
+			board->cells[y][x].data.tree.specie = trees[meta];
+		else
+			board->cells[y][x].data.tree.specie = trees[random() % TS_TOTAL];
 		
 		*count = *count+1;
-		spread_forest(board, x+1, y, count, size);
-		spread_forest(board, x-1, y, count, size);
-		spread_forest(board, x, y+1, count, size);
-		spread_forest(board, x, y-1, count, size);
+		spread_forest(board, x+1, y, count, size, meta);
+		spread_forest(board, x-1, y, count, size, meta);
+		spread_forest(board, x, y+1, count, size, meta);
+		spread_forest(board, x, y-1, count, size, meta);
 	}
 }
 
-static void spawn_spot(spread_func spread,board_t *board, float density, float shatter_factor)
+static void spawn_spot(spread_func spread,board_t *board, float density, float shatter_factor, int meta)
 {
 	float size = density*board->width*board->height*shatter_factor;
 	int count = 0;
-    spread(board, random()%board->width, random()%board->height, &count, size);
+    spread(board, random()%board->width, random()%board->height, &count, size, meta);
 }
 
