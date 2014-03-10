@@ -19,7 +19,7 @@
 static GLuint vao, vbo;
 
 
-static tex_t get_player_tex(int team);
+static tex_t get_player_tex(int team, int dir);
 
 
 void init_players_rendering(void)
@@ -60,7 +60,7 @@ void render_players(player_t *players, int player_count, camera_t *camera)
 			float x, y, z;
 			get_map_coord(players->x, players->y, &x, &y, &z);
 			get_ctexture(vertices + (count * TEXTURE_VERTEX_LEN * TEXTURE_VERTEX_NB),
-				     get_player_tex(players->team),
+				     get_player_tex(players->team, players->dir),
 				     x, y, z+1);
 			count++;
 		}
@@ -78,9 +78,9 @@ void render_players(player_t *players, int player_count, camera_t *camera)
 	glUseProgram(standard);
 	glUniform1i(glGetUniformLocation(standard, "tex"), 0);
 	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
-					   1, GL_FALSE, (GLfloat*)projection);
+			   1, GL_FALSE, (GLfloat*)projection);
 	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
-					   1, GL_FALSE, (GLfloat*)camera->matrix);
+			   1, GL_FALSE, (GLfloat*)camera->matrix);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_CHARS));
 	glDrawArrays(GL_QUADS, 0, count * TEXTURE_VERTEX_NB);
@@ -94,10 +94,24 @@ void terminate_players_rendering(void)
 }
 
 
-static tex_t get_player_tex(int team)
+static tex_t get_player_tex(int team, int dir)
 {
-	if (team == TEAM_ARBRIST)
-		return TEX_CHARS_ARBRIST_S;
-	else
-		return TEX_CHARS_BURNER_S;
+	if (team == TEAM_NONE)
+		return TEX_NONE;
+
+	if ((dir & DIR_UP) == dir)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_N : TEX_CHARS_BURNER_N;
+	if ((dir & DIR_DOWN) == dir)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_S : TEX_CHARS_BURNER_S;
+	if ((dir & DIR_LEFT) == dir)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_W : TEX_CHARS_BURNER_W;
+	if ((dir & DIR_RIGHT) == dir)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_E : TEX_CHARS_BURNER_E;
+	if (dir & DIR_UP && dir & DIR_RIGHT)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_NE : TEX_CHARS_BURNER_NE;
+	if (dir & DIR_UP && dir & DIR_LEFT)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_NW : TEX_CHARS_BURNER_NW;
+	if (dir & DIR_DOWN && dir & DIR_RIGHT)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_SE : TEX_CHARS_BURNER_SE;
+	return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_SW : TEX_CHARS_BURNER_SW;
 }
