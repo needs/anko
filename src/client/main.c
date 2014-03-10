@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
 	if (!init())
 		goto err_init;
-	if ((current = generate(config.board_width, config.board_height, config.gen_params)) == NULL)
+	if ((current = generate(config.board_width, config.board_height, &config.gen_params)) == NULL)
 		goto err_current;
 	if ((old = alloc_board(config.board_width, config.board_height)) == NULL)
 		goto err_old;

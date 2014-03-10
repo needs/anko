@@ -8,7 +8,7 @@
 
 #define RANDOM_FLOAT() ((float)random()/RAND_MAX)
 
-typedef void(*spread_func)(board_t*,int,int,int*,int);
+typedef void(*spread_func)(board_t*, int, int, int*, int);
 
 static int should_spawn(cell_type_t type, board_t *board, float density);
 static void spawn_spot(spread_func spread, board_t *board, float density, float shatter_factor);
@@ -17,16 +17,16 @@ static void spread_lake(board_t *board, int x, int y, int *count, int size);
 static void spread_forest(board_t *board, int x, int y, int *count, int size);
 static void gen_stats(board_t *board);
 
-board_t* generate(int width, int height, gen_params_t params)
+board_t* generate(int width, int height, gen_params_t *params)
 {
 	board_t *board = NULL;
 	int i, j;
 	
 	assert(width > 0);
 	assert(height > 0);
-	assert(params.tree_density <= 1);
-   	assert(params.water_density <= 1);
-	assert(params.water_shatter_factor > 0 && params.water_shatter_factor <= 1);
+	assert(params->tree_density <= 1);
+   	assert(params->water_density <= 1);
+	assert(params->water_shatter_factor > 0 && params->water_shatter_factor <= 1);
 	
 	if ((board = alloc_board(width, height)) == NULL) 
 		return NULL;
@@ -37,14 +37,14 @@ board_t* generate(int width, int height, gen_params_t params)
 		}
 	}
 	
-	while(should_spawn(CT_TREE, board, params.tree_density))
+	while(should_spawn(CT_TREE, board, params->tree_density))
 	{
-		spawn_spot(&spread_forest, board, params.tree_density, 0.5);
+		spawn_spot(&spread_forest, board, params->tree_density, 0.5);
 	}
 	
-	while(should_spawn(CT_WATER, board, params.water_density))
+	while(should_spawn(CT_WATER, board, params->water_density))
 	{
-		spawn_spot(&spread_lake, board, params.water_density, params.water_shatter_factor);
+		spawn_spot(&spread_lake, board, params->water_density, params->water_shatter_factor);
 	}
 
 	correct_water(board);
