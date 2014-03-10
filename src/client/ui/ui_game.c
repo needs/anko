@@ -32,6 +32,7 @@ typedef struct ui_game_data_t
 	camera_t camera;
 	int camx;
 	int camy;
+	int key_dir;
 	
 	int was_focused;
 } ui_game_data_t;
@@ -102,7 +103,6 @@ void ui_game_update(ui_frame_t* frame, float deltatime)
 void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mods)
 {
 	ui_game_data_t *data = frame->data;
-	int dir = get_player_dir(data->world->game, data->world->active_player);
 	(void)scancode;
 	(void)mods;
 
@@ -119,29 +119,47 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 
 	if (key == GLFW_KEY_W) {
 		if (action == GLFW_PRESS)
-			dir |= DIR_UP;
+			data->key_dir |= DIR_UP;
 		else if (action == GLFW_RELEASE)
-			dir &= ~DIR_UP;
+			data->key_dir &= ~DIR_UP;
 	}
 	if (key == GLFW_KEY_S) {
 		if (action == GLFW_PRESS)
-			dir |= DIR_DOWN;
+			data->key_dir |= DIR_DOWN;
 		else if (action == GLFW_RELEASE)
-			dir &= ~DIR_DOWN;
+			data->key_dir &= ~DIR_DOWN;
 	}
 	if (key == GLFW_KEY_D) {
 		if (action == GLFW_PRESS)
-			dir |= DIR_RIGHT;
+			data->key_dir |= DIR_RIGHT;
 		else if (action == GLFW_RELEASE)
-			dir &= ~DIR_RIGHT;
+			data->key_dir &= ~DIR_RIGHT;
 	}
 	if (key == GLFW_KEY_A) {
 		if (action == GLFW_PRESS)
-			dir |= DIR_LEFT;
+			data->key_dir |= DIR_LEFT;
 		else if (action == GLFW_RELEASE)
-			dir &= ~DIR_LEFT;
+			data->key_dir &= ~DIR_LEFT;
 	}
-	set_player_dir(data->world->game, data->world->active_player, dir);
+
+	if (data->key_dir == 0)
+		set_player_dir(data->world->game, data->world->active_player, 0);
+	else if ((data->key_dir & DIR_UP) == data->key_dir)
+		set_player_dir(data->world->game, data->world->active_player, DIR_UP | DIR_LEFT);
+	else if ((data->key_dir & DIR_DOWN) == data->key_dir)
+		set_player_dir(data->world->game, data->world->active_player, DIR_DOWN | DIR_RIGHT);
+	else if ((data->key_dir & DIR_LEFT) == data->key_dir)
+		set_player_dir(data->world->game, data->world->active_player, DIR_LEFT | DIR_DOWN);
+	else if ((data->key_dir & DIR_RIGHT) == data->key_dir)
+		set_player_dir(data->world->game, data->world->active_player, DIR_UP | DIR_RIGHT);
+	else if (data->key_dir & DIR_UP && data->key_dir & DIR_RIGHT)
+		set_player_dir(data->world->game, data->world->active_player, DIR_UP);
+	else if (data->key_dir & DIR_UP && data->key_dir & DIR_LEFT)
+		set_player_dir(data->world->game, data->world->active_player, DIR_LEFT);
+	else if (data->key_dir & DIR_DOWN && data->key_dir & DIR_RIGHT)
+		set_player_dir(data->world->game, data->world->active_player, DIR_RIGHT);
+	else if (data->key_dir & DIR_DOWN && data->key_dir & DIR_LEFT)
+		set_player_dir(data->world->game, data->world->active_player, DIR_DOWN);
 
 	if(frame->keyboard_owner)
 	{
@@ -246,6 +264,7 @@ ui_frame_t* init_ui_game(world_t *world)
 		data->camx = 0;
 		data->camy = 0;
 		data->was_focused = 1;
+		data->key_dir = 0;
 		set_camera(&data->camera, 0,0,1);
 		
 		frame->data = data;
