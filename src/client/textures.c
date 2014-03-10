@@ -113,7 +113,7 @@ static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float 
 }
 
 
-void get_texture(float *data, tex_t tex, float x, float y)
+void get_texture(float *data, tex_t tex, float x, float y, float z)
 {
 	assert(data != NULL);
 	assert(tex >= TEX_NONE);
@@ -123,20 +123,19 @@ void get_texture(float *data, tex_t tex, float x, float y)
 
 	/* Do assignement by hand to be sure that we are just writing to data,
 	 * and not reading at it. */
-	data[0]  = ref[0]  + x; data[1]  = ref[1]  + y; data[2]  = ref[2];  data[3]  = ref[3];
-	data[4]  = ref[4]  + x; data[5]  = ref[5]  + y; data[6]  = ref[6];  data[7]  = ref[7];
-	data[8]  = ref[8]  + x; data[9]  = ref[9]  + y; data[10] = ref[10]; data[11] = ref[11];
-	data[12] = ref[12] + x; data[13] = ref[13] + y; data[14] = ref[14]; data[15] = ref[15];
+	data[0]  = ref[0]  + x; data[1]  = ref[1]  + y; data[2]   = z;  data[3]  = ref[2];  data[4]  = ref[3];
+	data[5]  = ref[4]  + x; data[6]  = ref[5]  + y; data[7]   = z;  data[8]  = ref[6];  data[9]  = ref[7];
+	data[10] = ref[8]  + x; data[11] = ref[9]  + y; data[12]  = z;  data[13] = ref[10]; data[14] = ref[11];
+	data[15] = ref[12] + x; data[16] = ref[13] + y; data[17]  = z;  data[18] = ref[14]; data[19] = ref[15];
 }
 
-
-void get_ctexture(float *data, tex_t tex, float x, float y)
+void get_ctexture(float *data, tex_t tex, float x, float y, float z)
 {
-	get_texture(data, tex, x - textures[tex].ox, y - textures[tex].oy);
+	get_texture(data, tex, x - textures[tex].ox, y - textures[tex].oy, z);
 }
 
 
-void get_stexture(float *data, tex_t tex, float x, float y, float sx, float sy)
+void get_stexture(float *data, tex_t tex, float x, float y, float z, float sx, float sy)
 {
 	assert(data != NULL);
 	assert(tex >= TEX_NONE);
@@ -146,16 +145,16 @@ void get_stexture(float *data, tex_t tex, float x, float y, float sx, float sy)
 
 	/* Do assignement by hand to be sure that we are just writing to data,
 	 * and not reading at it. */
-	data[0]  = ref[0] * sx  + x; data[1]  = ref[1] * sy  + y; data[2]  = ref[2];  data[3]  = ref[3];
-	data[4]  = ref[4] * sx  + x; data[5]  = ref[5] * sy  + y; data[6]  = ref[6];  data[7]  = ref[7];
-	data[8]  = ref[8] * sx  + x; data[9]  = ref[9] * sy  + y; data[10] = ref[10]; data[11] = ref[11];
-	data[12] = ref[12] * sx + x; data[13] = ref[13] * sy + y; data[14] = ref[14]; data[15] = ref[15];
+	data[0]  = ref[0] * sx  + x; data[1]  = ref[1] * sy  + y; data[2]  = z; data[3]  =  ref[2]; data[4]  = ref[3];
+	data[5]  = ref[4] * sx  + x; data[6]  = ref[5] * sy  + y; data[7]  = z; data[8]  =  ref[6]; data[9]  = ref[7];
+	data[10] = ref[8] * sx  + x; data[11] = ref[9] * sy  + y; data[12] = z; data[13] = ref[10]; data[14] = ref[11];
+	data[15] = ref[12] * sx + x; data[16] = ref[13] * sy + y; data[17] = z; data[18] = ref[14]; data[19] = ref[15];
 }
 
 
-void get_sctexture(float *data, tex_t tex, float x, float y, float sx, float sy)
+void get_sctexture(float *data, tex_t tex, float x, float y, float z, float sx, float sy)
 {
-	get_stexture(data, tex, x - textures[tex].ox * sx, y - textures[tex].oy * sy, sx, sy);
+	get_stexture(data, tex, x - textures[tex].ox * sx, y - textures[tex].oy * sy, z, sx, sy);
 }
 
 

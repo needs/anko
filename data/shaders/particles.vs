@@ -1,6 +1,6 @@
 #version 130
 
-in vec2 position;
+in vec3 position;
 in vec2 UV;
 in vec2 lifetime;
 in vec2 alpha;
@@ -21,5 +21,5 @@ void main()
 	uv = UV;
 	Lifetime = lifetime;
 	Alpha = alpha;
-	gl_Position = projection * view * vec4(mix(position.x, target.x, curtime), mix(position.y, target.y, curtime), 0.0, 1.0);
+	gl_Position = projection * view * vec4(mix(position.x, target.x, curtime), mix(position.y, target.y, curtime), position.z, 1.0);
 }

@@ -2,7 +2,7 @@
 #include <client/shader.h>
 #include <client/config.h>
 #include <math.h>
-
+#include <stdio.h>
 int should_quit = 0;
 float speed = 0;
 
@@ -10,7 +10,7 @@ mat4x4 projection;
 
 int init_context(void)
 {
-	int depth = sqrt(pow(config.board_width,2)+pow(config.board_height, 2));
+	int depth = config.board_width+config.board_height;
 	glewExperimental = GL_TRUE;
 	glewInit();
 

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -12,9 +13,8 @@
 #include <client/context.h>
 #include <game/board.h>
 
-
 typedef struct mapcell_t {
-	float x, y;
+	float x, y, z;
 } mapcell_t;
 
 typedef struct map_t {
@@ -24,7 +24,6 @@ typedef struct map_t {
 	int width, height;
 	mapcell_t **cells;
 } map_t;
-
 
 static void create_vao(GLuint *vao, GLuint *vbo);
 static int seed_map(map_t *map, board_t *board);
@@ -91,12 +90,13 @@ static map_t* alloc_map(int width, int height)
 		for (j = 0; j < width; j++) {
 			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
 			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
+			map->cells[i][j].z = i+j+1;
 		}
 	}
 
 	map->width  = width;
 	map->height = height;
-	map->vsize = 16 * map->width * map->height;
+	map->vsize = TEXTURE_VERTEX_SIZE * map->width * map->height;
 
 	create_vao(&map->vao, &map->vbo);
 
@@ -126,11 +126,11 @@ static void create_vao(GLuint *vao, GLuint *vbo)
 	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
 	GLint position = glGetAttribLocation(standard, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
+	glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, TEXTURE_VERTEX_SIZE, 0);
 	glEnableVertexAttribArray(position);
 
 	GLint uv = glGetAttribLocation(standard, "UV");
-	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, TEXTURE_VERTEX_SIZE, (void*)(3*sizeof(float)));
 	glEnableVertexAttribArray(uv);
 
 	glBindVertexArray(0);
@@ -163,14 +163,16 @@ static int seed_map(map_t *map, board_t *board)
 		}
 		for (i = 0; i < map->height; i++) {
 			for (j = 0; j < map->width; j++) {
-				get_ctexture(buf + ((i * map->width + j) * 16),
-					     get_floor_tex(&board->cells[i][j]),
-					     map->cells[i][j].x,
-					     map->cells[i][j].y);
-				get_ctexture(buf + map->vsize + ((i * map->width + j) * 16),
-					     get_entity_tex(&board->cells[i][j]),
-					     map->cells[i][j].x,
-					     map->cells[i][j].y);
+				get_ctexture(buf + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
+							 get_floor_tex(&board->cells[i][j]),
+							 map->cells[i][j].x,
+							 map->cells[i][j].y,
+							 0);
+				get_ctexture(buf + map->vsize + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
+							 get_entity_tex(&board->cells[i][j]),
+							 map->cells[i][j].x,
+							 map->cells[i][j].y,
+							 map->cells[i][j].z);
 			}
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
@@ -246,10 +248,10 @@ void render_map(map_t *map, camera_t *camera)
 					   1, GL_FALSE, (GLfloat*)camera->matrix);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
-	glDrawArrays(GL_QUADS, 0, map->vsize / 4);
+	glDrawArrays(GL_QUADS, 0, map->vsize / TEXTURE_VERTEX_LEN);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_ENTITIES));
-	glDrawArrays(GL_QUADS, map->vsize / 4, map->vsize / 4);
+	glDrawArrays(GL_QUADS, map->vsize / TEXTURE_VERTEX_LEN, map->vsize / TEXTURE_VERTEX_LEN);
 }
 
 
@@ -280,11 +282,12 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				prop.box.end.y = 4.0;
 				prop.dir.y = -50.0;
 
-				get_ctexture(buf + ((i * map->width + j) * 16),
-					     get_entity_tex(&current->cells[i][j]),
-					     map->cells[i][j].x,
-					     map->cells[i][j].y);
-				spawn_particles(gen, 1, map->cells[i][j].x, map->cells[i][j].y, &prop);
+				get_ctexture(buf + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
+							 get_entity_tex(&current->cells[i][j]),
+							 map->cells[i][j].x,
+							 map->cells[i][j].y,
+							 map->cells[i][j].z);
+				spawn_particles(gen, 1, map->cells[i][j].x, map->cells[i][j].y, map->cells[i][j].z+1, &prop);
 			}
 		}
 	}
