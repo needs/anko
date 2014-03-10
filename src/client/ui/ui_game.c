@@ -39,11 +39,13 @@ void draw_game(ui_frame_t *frame)
 {
 	ui_game_data_t *data = frame->data;
 	int i = 0;
-	rtt_start();
+	
+	//glEnable(GL_DEPTH_TEST);
+	//rtt_start();
 	glClear(GL_COLOR_BUFFER_BIT);
 	render_world(data->world, &data->camera);
-	rtt_stop();
-	rtt_draw();
+	//rtt_stop();
+	//rtt_draw();
 
 	if(!frame->children)
 		return;
