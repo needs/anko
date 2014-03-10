@@ -130,7 +130,6 @@ int add_player(game_t *game, int team)
 
 	assert(pid != MAX_PLAYERS);
 	get_spawn_coords(game->current, &game->players[pid].x, &game->players[pid].y);
-	fprintf(stderr, "x = %f, y = %f.\n", game->players[pid].x, game->players[pid].y);
 	game->players[pid].team = team;
 	game->players[pid].is_used = 1;
 	game->player_count++;
