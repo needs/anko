@@ -229,7 +229,7 @@ ui_frame_t* init_ui_game(world_t *world)
 			goto err_children;
 		
 		frame->children[0] = init_ui_console(frame, 10, config.screen_height - 215, 400, 200);
-		frame->children[1] = init_ui_debug(frame, world,  10, 10, 250, 100);
+		frame->children[1] = init_ui_debug(frame, world,  5, 5, 125, 250);
 		frame->children[2] = NULL;
 		rtt_init();
 		return frame;

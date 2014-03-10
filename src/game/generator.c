@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <game/generator.h>
 #include <game/simulator.h>
@@ -14,6 +15,7 @@ static void spawn_spot(spread_func spread, board_t *board, float density, float 
 static void correct_water(board_t *board);
 static void spread_lake(board_t *board, int x, int y, int *count, int size);
 static void spread_forest(board_t *board, int x, int y, int *count, int size);
+static void gen_stats(board_t *board);
 
 board_t* generate(int width, int height, gen_params_t params)
 {
@@ -52,7 +54,33 @@ board_t* generate(int width, int height, gen_params_t params)
 	board->cells[pos[0]][pos[1]].data.tree.life = 99;
 	board->cells[pos[0]][pos[1]].data.tree.specie = TS_APPLE;
 
+	gen_stats(board);
 	return board;
+}
+
+static void gen_stats(board_t *board)
+{
+	int i,j;
+
+	memset(&board->stats, 0, sizeof(board->stats));
+	
+	for(i = 0; i < board->height; i++)
+		for(j = 0; j < board->width; j++)
+	    {
+		    if(board->cells[i][j].type == CT_TREE)
+			{
+				board->stats.total_tree++;
+				if(board->cells[i][j].data.tree.life < 100)
+				{
+					if(board->cells[i][j].data.tree.life)
+						board->stats.burning_tree++;
+					else
+						board->stats.burned_tree++;
+				}
+			}
+			else if(board->cells[i][j].type == CT_WATER)
+				board->stats.total_water++;
+		}
 }
 
 static void correct_water(board_t *board)
