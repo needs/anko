@@ -1,26 +1,28 @@
 #include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
-#include "ui_game.h"
-#include "../context.h"
-#include "../world.h"
-#include "../font.h"
-#include "../rtt.h"
-#include "../camera.h"
-#include "../linmath.h"
-#include "../config.h"
-#include "ui_console.h"
-#include "ui_debug.h"
-#include <assert.h>
-#include <stdio.h>
 
+#include <client/ui/ui_game.h>
+#include <client/ui/ui_console.h>
+#include <client/ui/ui_debug.h>
+#include <client/context.h>
+#include <client/world.h>
+#include <client/font.h>
+#include <client/rtt.h>
+#include <client/camera.h>
+#include <client/linmath.h>
+#include <client/config.h>
+
+
+#define IS_KEY_DOWN(k) (key == k &&  (action == GLFW_PRESS || action == GLFW_REPEAT))
 #define CAMERA_SPEED 500 // px/s
 
 static const float MOUSE_SCROLL_SPEED = 0.03;
 
-#define IS_KEY_DOWN(k) (key == k &&  (action == GLFW_PRESS || action == GLFW_REPEAT))
 
 typedef struct ui_game_data_t
 {
@@ -32,8 +34,10 @@ typedef struct ui_game_data_t
 	int was_focused;
 } ui_game_data_t;
 
+
 void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int action, int mods);
 void destroy_ui_game(ui_frame_t* frame);
+
 
 void draw_game(ui_frame_t *frame)
 {

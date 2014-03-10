@@ -1,7 +1,7 @@
 #ifndef _UI_GAME_H_
 #define _UI_GAME_H_
 
-#include "ui_frame.h"
+#include <client/ui/ui_frame.h>
 
 ui_frame_t* init_ui_game();
 
