@@ -18,29 +18,29 @@
 #include <game/board.h>
 #include <game/generator.h>
 #include <game/simulator.h>
+#include <game/game.h>
 #include <client/ui/ui_frame.h>
 #include <client/ui/ui_game.h>
 
 #define SPEED_UPDATE 0.3
 #define MAX_MSPF 1.0 / config.max_fps
 
+
 static GLFWwindow* window;
 static float last_speed_update = 0;
 static float speed_frames = 0;
 static float speed_time = 0;
-static float step_timer;
 static ui_frame_t *current_ui;
 
 static int  init(void);
 static void terminate(void);
 static void update_speed(float deltatime);
-static void try_simulate(world_t *world, board_t **old, board_t **current, float deltatime);
-static void swap(void **p1, void **p2);
+
 
 int main(int argc, char **argv)
 {
-	board_t *current, *old;
 	world_t *world;
+	game_t *game;
 	double last_time = 0;
 	double current_time = 0;
 	float deltatime = 0;
@@ -53,11 +53,9 @@ int main(int argc, char **argv)
 
 	if (!init())
 		goto err_init;
-	if ((current = generate(config.board_width, config.board_height, config.gen_params)) == NULL)
-		goto err_current;
-	if ((old = alloc_board(config.board_width, config.board_height)) == NULL)
-		goto err_old;
-	if ((world = create_world(current)) == NULL)
+	if ((game = new_game(config.board_width, config.board_height, &config.gen_params, config.sim_speed * 1000)) == NULL)
+		goto err_game;
+	if ((world = create_world(game->current)) == NULL)
 		goto err_world;
 	if ((current_ui = init_ui_game(world)) == NULL)
 		goto err_ui;
@@ -74,10 +72,10 @@ int main(int argc, char **argv)
 
 		// Update 
 		update_ui(current_ui, deltatime);
-		try_simulate(world, &old, &current, deltatime);
+		if (update_game(game, deltatime * 1000))
+			update_world(world, game->current, game->old);
 		if(should_quit)
 			glfwSetWindowShouldClose(window, GL_TRUE);
-	
 		
 		// Rendering
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -93,8 +91,7 @@ int main(int argc, char **argv)
 	}
 
 	destroy_ui(current_ui);
-	free_board(old);
-	free_board(current);
+	game_over(game);
 	end_of_the_world(world); // Tin tin tin
 	terminate();
 
@@ -102,26 +99,13 @@ int main(int argc, char **argv)
 err_ui:
 	end_of_the_world(world);
 err_world:
-	free_board(old);
-err_old:
-	free_board(current);
-err_current:
+	game_over(game);
+err_game:
 	terminate();
 err_init:
 	return EXIT_FAILURE;
 }
 
-
-static void try_simulate(world_t *world, board_t **old, board_t **current, float deltatime)
-{
-	if (step_timer < deltatime) {
-		step(*old, *current);
-		swap((void**)current, (void**)old);
-		update_world(world, *current, *old);
-		step_timer = config.sim_speed;
-	} else
-		step_timer -= deltatime;
-}
 
 static void update_speed(float deltatime)
 {
@@ -165,7 +149,6 @@ static int init(void)
 	if(!load_font())
 		goto err_font;
 		
-	step_timer = config.sim_speed;
 	return 1;
 
 err_font:
@@ -188,15 +171,4 @@ static void terminate(void)
 	close_context();
 	glfwDestroyWindow(window);
 	glfwTerminate();
-}
-
-static void swap(void **p1, void **p2)
-{
-	void *tmp;
-
-	assert(p1 != NULL);
-	assert(p2 != NULL);
-	tmp = *p1;
-	*p1 = *p2;
-	*p2 = tmp;
 }
