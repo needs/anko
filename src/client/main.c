@@ -55,11 +55,12 @@ int main(int argc, char **argv)
 		goto err_init;
 	if ((game = new_game(config.board_width, config.board_height, &config.gen_params, config.sim_speed * 1000)) == NULL)
 		goto err_game;
-	if ((world = create_world(game->current)) == NULL)
+	if ((world = create_world(game)) == NULL)
 		goto err_world;
 	if ((current_ui = init_ui_game(world)) == NULL)
 		goto err_ui;
 
+	add_player(game, TEAM_BURNER);
 	events_link_frame(&current_ui); // link window event to game ui frame
 	glClearColor(0, 0, 0, 1);
 
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
 		// Update 
 		update_ui(current_ui, deltatime);
 		if (update_game(game, deltatime * 1000))
-			update_world(world, game->current, game->old);
+			update_world(world);
 		if(should_quit)
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		

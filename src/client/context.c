@@ -1,12 +1,16 @@
 #include <client/context.h>
 #include <client/shader.h>
 #include <client/config.h>
+#include <client/players.h>
 #include <math.h>
 #include <stdio.h>
+
+
 int should_quit = 0;
 float speed = 0;
 
 mat4x4 projection;
+
 
 int init_context(void)
 {
@@ -20,6 +24,7 @@ int init_context(void)
 	/* Load shaders and make them active */
 	if (!load_shaders())
 		goto err_shaders;
+	init_players_rendering();
 	
 	mat4x4_ortho(projection, 0, config.screen_width, config.screen_height, 0, -depth, 0);
 	return 1;
@@ -31,5 +36,6 @@ err_shaders:
 
 void close_context(void)
 {
-    unload_shaders();
+	terminate_players_rendering();
+	unload_shaders();
 }

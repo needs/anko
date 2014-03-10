@@ -24,4 +24,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old);
 /* Just draw the map, nothing is computed here. */
 void render_map(map_t *map, camera_t *camera);
 
+/* Compute the coordinate on a map. */
+void get_map_coord(float x, float y, float *rx, float *ry, float *rz);
+
 #endif /* _MAP_H_ */

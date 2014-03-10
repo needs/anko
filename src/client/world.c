@@ -3,24 +3,26 @@
 #include <stdio.h>
 #include <client/world.h>
 #include <client/map.h>
+#include <game/game.h>
 #include <game/board.h>
 
 
-world_t* create_world(board_t *board)
+world_t* create_world(game_t *game)
 {
 	world_t *world;
 
-	assert(board != NULL);
+	assert(game != NULL);
 
 	if ((world = malloc(sizeof(*world))) == NULL) {
 		perror("malloc(world)");
 		goto err_world;
 	}
 
-	if ((world->map = create_map(board)) == NULL)
+	if ((world->map = create_map(game->current)) == NULL)
 		goto err_map;
 	if ((world->gen = init_particles()) == NULL)
 		goto err_particles;
+	world->game = game;
 
 	return world;
 
@@ -33,13 +35,11 @@ err_world:
 }
 
 
-void update_world(world_t *world, board_t *current, board_t *old)
+void update_world(world_t *world)
 {
 	assert(world != NULL);
-	assert(current != NULL);
-	assert(old != NULL);
 
-	update_map(world->map, world->gen, current, old);
+	update_map(world->map, world->gen, world->game->current, world->game->old);
 	update_particles(world->gen);
 }
 

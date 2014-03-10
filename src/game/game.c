@@ -9,6 +9,7 @@
 
 
 static void swap(void **p1, void **p2);
+void get_spawn_coords(board_t *board, float *x, float *y);
 
 
 game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
@@ -19,7 +20,7 @@ game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 	assert(height > 0);
 	assert(params != NULL);
 
-	if ((game = malloc(sizeof(*game))) == NULL) {
+	if ((game = calloc(1, sizeof(*game))) == NULL) {
 		perror("malloc(game)");
 		goto err_game;
 	}
@@ -31,6 +32,7 @@ game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 
 	game->sim_speed = sim_speed;
 	game->sim_timer = sim_speed;
+	game->player_count = 0;
 
 	return game;
 
@@ -65,6 +67,66 @@ void game_over(game_t *game)
 	free_board(game->current);
 	free_board(game->old);
 	free(game);
+}
+
+
+/*
+ * Add a player.
+ * Return a player ID if success, player IDs are > 0.
+ * Return -1 if maximum of players is reached.
+ * Return -2 if teams must be balanced.
+ */
+int add_player(game_t *game, int team)
+{
+	int pid;
+
+	assert(game != NULL);
+	assert(team == TEAM_ARBRIST || team == TEAM_BURNER);
+
+	if (game->player_count == MAX_PLAYERS)
+		return -1;
+
+	for (pid = 0; game->players[pid].is_used && pid < MAX_PLAYERS; pid++)
+		;
+
+	assert(pid != MAX_PLAYERS);
+	get_spawn_coords(game->current, &game->players[pid].x, &game->players[pid].y);
+	fprintf(stderr, "x = %f, y = %f.\n", game->players[pid].x, game->players[pid].y);
+	game->players[pid].team = team;
+	game->players[pid].is_used = 1;
+	game->player_count++;
+
+	return pid;
+}
+
+
+void rem_player(game_t *game, int pid)
+{
+	assert(game != NULL);
+	assert(game->player_count > 0);
+	assert(pid > 0 && pid < MAX_PLAYERS);
+	assert(game->players[pid].is_used == 1);
+
+	/* Simple as that (for now ;) ) */
+	game->players[pid].is_used = 0;
+	game->player_count--;
+}
+
+
+void get_spawn_coords(board_t *board, float *x, float *y)
+{
+	assert(board != NULL);
+	assert(x != NULL);
+	assert(y != NULL);
+
+	/* thta's really not well made, need to change this in the futur,
+	 * maybe with precomputed spawn points or an other game mechanic. */
+	do {
+		*x = random() % board->width;
+		*y = random() % board->height;
+	} while (board->cells[(int)*y][(int)*x].type != CT_GRASS);
+	*x = *x - 0.5;
+	*y = *y - 0.5;
 }
 
 

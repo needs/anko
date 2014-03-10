@@ -16,6 +16,7 @@
 #include <client/camera.h>
 #include <client/linmath.h>
 #include <client/config.h>
+#include <client/players.h>
 
 
 #define IS_KEY_DOWN(k) (key == k &&  (action == GLFW_PRESS || action == GLFW_REPEAT))
@@ -55,6 +56,7 @@ void draw_game(ui_frame_t *frame)
 	glDepthFunc(GL_LEQUAL);
 
 	render_world(data->world, &data->camera);
+	render_players(data->world->game->players, data->world->game->player_count, &data->camera);
 
 	rtt_stop();
 	rtt_draw();

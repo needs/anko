@@ -236,8 +236,8 @@ void render_map(map_t *map, camera_t *camera)
 {
 	assert(map != NULL);
 
-
 	glBindVertexArray(map->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	glActiveTexture(GL_TEXTURE0);
 
 	glUseProgram(standard);
@@ -283,10 +283,10 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				prop.dir.y = -50.0;
 
 				get_ctexture(buf + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
-							 get_entity_tex(&current->cells[i][j]),
-							 map->cells[i][j].x,
-							 map->cells[i][j].y,
-							 map->cells[i][j].z);
+					     get_entity_tex(&current->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y,
+					     map->cells[i][j].z);
 				spawn_particles(gen, 1, map->cells[i][j].x, map->cells[i][j].y, map->cells[i][j].z+1, &prop);
 			}
 		}
@@ -295,4 +295,16 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 	 * to GL_BUFFER_ARRAY */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+
+void get_map_coord(float x, float y, float *rx, float *ry, float *rz)
+{
+	assert(rx != NULL);
+	assert(ry != NULL);
+	assert(rz != NULL);
+
+	*rx = y*-TILE_WIDTH/2 + x*TILE_WIDTH/2;
+	*ry = x*TILE_HEIGHT/2 + y*TILE_HEIGHT/2;
+	*rz = (int)x + (int)y + 1;
 }

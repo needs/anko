@@ -7,10 +7,13 @@
 
 #include <client/linmath.h>
 
+
+#define TEXTURE_VERTEX_NB  4
 #define TEXTURE_VERTEX_LEN 5
 #define TEXTURE_VERTEX_SIZE (TEXTURE_VERTEX_LEN * sizeof(float))
 
-#define ADD_TEXTURE(name, path) TEX_##name,
+
+#define ADD_TEXTURE(name, path)         TEX_##name,
 #define ADD_IN_TEXTURE(name, from, ...) TEX_##from##_##name,
 typedef enum tex_t {
 	TEX_NONE = 0,
