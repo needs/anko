@@ -17,6 +17,7 @@
 #define VERTEX_DATA_SIZE 32
 #define MAX_MESSAGES_LENGTH 255
 #define MAX_MESSAGES 128
+#define FONT_SCALE 0.6
 
 #define INPUT_BOX_SIZE ((float)1/6)
 #define TEXT_BOX_SIZE (1-INPUT_BOX_SIZE)
@@ -98,13 +99,15 @@ static void render_input(ui_frame_t *frame)
 		
 	set_font_color(1, 1, 1, 1);
 
-	fill_resized_input(tmp, data->input.buffer, frame, 19);
+	fill_resized_input(tmp, data->input.buffer, frame,(frame->height*INPUT_BOX_SIZE)*FONT_SCALE);
 	wcscat(message, tmp);
 
 	if(frame->parent->keyboard_owner == frame && fmod(glfwGetTime(), 1) > 0.5)
 		wcscat(message, prompt);
 	
-	render_text(message, frame->x+5, frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3, 19);
+	render_text(message, frame->x+5,
+				frame->y+frame->height-(frame->height*INPUT_BOX_SIZE)+(frame->height*INPUT_BOX_SIZE)/3,
+				(frame->height*INPUT_BOX_SIZE)*FONT_SCALE);
 }
 
 static float resized_text_height(ui_frame_t *frame, wchar_t *str, float size)
@@ -178,10 +181,12 @@ static void render_messages(ui_frame_t *frame)
 	while( i < data->messages.count && y_offset < frame->height*TEXT_BOX_SIZE)
 	{
 		wcsncpy(message, data->messages.data[((data->messages.start+data->messages.count)-i-1)%MAX_MESSAGES], MAX_MESSAGES_LENGTH+1);
-		th = resized_text_height(frame, message, 19);
+		th = resized_text_height(frame, message, (frame->height*INPUT_BOX_SIZE)*FONT_SCALE);
 		if(y_offset + th < frame->height*TEXT_BOX_SIZE)
 		{
-			render_resized_text(frame, message, frame->x+5, frame->y+(frame->height*TEXT_BOX_SIZE)-(y_offset + th), 19);
+			render_resized_text(frame, message, frame->x+5,
+								frame->y+(frame->height*TEXT_BOX_SIZE)-(y_offset + th),
+								(frame->height*INPUT_BOX_SIZE)*FONT_SCALE);
 		}
 	
 		y_offset+=th;
