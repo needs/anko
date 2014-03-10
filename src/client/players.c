@@ -100,18 +100,18 @@ static tex_t get_player_tex(int team, int dir)
 		return TEX_NONE;
 
 	if ((dir & DIR_UP) == dir)
-		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_N : TEX_CHARS_BURNER_N;
-	if ((dir & DIR_DOWN) == dir)
-		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_S : TEX_CHARS_BURNER_S;
-	if ((dir & DIR_LEFT) == dir)
-		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_W : TEX_CHARS_BURNER_W;
-	if ((dir & DIR_RIGHT) == dir)
-		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_E : TEX_CHARS_BURNER_E;
-	if (dir & DIR_UP && dir & DIR_RIGHT)
 		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_NE : TEX_CHARS_BURNER_NE;
-	if (dir & DIR_UP && dir & DIR_LEFT)
+	if ((dir & DIR_DOWN) == dir)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_SW : TEX_CHARS_BURNER_SW;
+	if ((dir & DIR_LEFT) == dir)
 		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_NW : TEX_CHARS_BURNER_NW;
-	if (dir & DIR_DOWN && dir & DIR_RIGHT)
+	if ((dir & DIR_RIGHT) == dir)
 		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_SE : TEX_CHARS_BURNER_SE;
-	return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_SW : TEX_CHARS_BURNER_SW;
+	if (dir & DIR_UP && dir & DIR_RIGHT)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_E : TEX_CHARS_BURNER_E;
+	if (dir & DIR_UP && dir & DIR_LEFT)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_N : TEX_CHARS_BURNER_N;
+	if (dir & DIR_DOWN && dir & DIR_RIGHT)
+		return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_S : TEX_CHARS_BURNER_S;
+	return team == TEAM_ARBRIST ? TEX_CHARS_ARBRIST_W : TEX_CHARS_BURNER_W;
 }
