@@ -28,7 +28,7 @@ game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 		goto err_game;
 	}
 
-	if ((game->current = generate(width, height, *params)) == NULL)
+	if ((game->current = generate(width, height, params)) == NULL)
 		goto err_current;
 	if ((game->old = alloc_board(width, height)) == NULL)
 		goto err_old;

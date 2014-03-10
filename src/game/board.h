@@ -38,11 +38,20 @@ typedef struct cell_t
 	} data;
 } cell_t;
 
+typedef struct board_stats_t
+{
+	int total_tree;
+	int burning_tree;
+	int burned_tree;
+	int total_water;
+} board_stats_t;
+
 typedef struct board_t
 {
 	cell_t **cells;
 	int width;
 	int height;
+	board_stats_t stats;
 } board_t;
 
 

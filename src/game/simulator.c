@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <game/generator.h>
 #include <game/simulator.h>
+#include <string.h>
 
 static int is_burning(void *data)
 {
@@ -20,6 +21,7 @@ void step(board_t *dest, board_t *src)
 	assert(src != NULL);
 	assert(src->width == dest->width);
 	assert(src->height == dest->height);
+	memcpy(&dest->stats, &src->stats, sizeof(board_stats_t)); // maybe add a fonction copy to init dest ?
 
 	for (j = 0; j < src->height; j++)
 	{
@@ -36,12 +38,19 @@ void step(board_t *dest, board_t *src)
 				if (src->cells[j][i].data.tree.life == 100)
 				{
 					if( ((float)random() / RAND_MAX ) < (float)nb/4)
+					{
 						dest->cells[j][i].data.tree.life = 99; // FLAME UP THIS TREE
+						dest->stats.burning_tree++;
+					}
 					else
 						dest->cells[j][i].data.tree.life = 100;
 				}
 				else if (src->cells[j][i].data.tree.life > 0)
+				{
 					dest->cells[j][i].data.tree.life = 0; // src->cells[j][i].data.tree.life - 20;
+					dest->stats.burned_tree++;
+					dest->stats.burning_tree--;
+				}
 			}
 			else
 			{
@@ -49,7 +58,11 @@ void step(board_t *dest, board_t *src)
 				dest->cells[j][i].data = src->cells[j][i].data;
 				
 				if(src->cells[j][i].type == CT_TREE && is_burning(&src->cells[j][i].data))
+				{
 					dest->cells[j][i].data.tree.life = 0; //src->cells[j][i].data.tree.life - 20;
+					dest->stats.burned_tree++;
+					dest->stats.burning_tree--;
+				}
 			}
 		}
 	}

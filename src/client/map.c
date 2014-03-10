@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -12,18 +13,6 @@
 #include <client/shader.h>
 #include <client/context.h>
 #include <game/board.h>
-
-typedef struct mapcell_t {
-	float x, y, z;
-} mapcell_t;
-
-typedef struct map_t {
-	GLuint vbo, vao;
-	long vsize;		/* Size for floor/entity VBO */
-
-	int width, height;
-	mapcell_t **cells;
-} map_t;
 
 static void create_vao(GLuint *vao, GLuint *vbo);
 static int seed_map(map_t *map, board_t *board);
@@ -43,6 +32,8 @@ map_t* create_map(board_t *board)
 	if (!seed_map(map, board))
 		return NULL;
 
+	memcpy(&map->board_stats, &board->stats, sizeof(board_stats_t));
+	
 	return map;
 }
 
@@ -267,6 +258,8 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 	assert(old->width  == current->width &&  old->width  == map->width);
 	assert(old->height == current->height && old->height == map->height);
 
+	memcpy(&map->board_stats, &current->stats, sizeof(board_stats_t));
+	
 	/* Only entities may change */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	buf = glMapBufferRange(GL_ARRAY_BUFFER, map->vsize * sizeof(float), map->vsize * sizeof(float), GL_MAP_WRITE_BIT);
@@ -291,6 +284,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 			}
 		}
 	}
+	
 	/* Rebind the buffer because other function might bind something else
 	 * to GL_BUFFER_ARRAY */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);

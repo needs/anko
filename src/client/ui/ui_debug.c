@@ -7,6 +7,8 @@
 #include <client/linmath.h>
 #include <client/config.h>
 #include <client/context.h>
+#include <client/world.h>
+#include <client/map.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -35,6 +37,7 @@ void draw_debug(ui_frame_t *frame)
 	wchar_t buf[255];
 	float th;
 	float ch=0;
+    float total = data->world->map->width*data->world->map->height;
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
 			
@@ -48,11 +51,47 @@ void draw_debug(ui_frame_t *frame)
 	render_text(buf, frame->x+5, frame->y+5, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
+	swprintf(buf, 255, L"%.2f ms\n", speed);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
 	swprintf(buf, 255, L"b: %ix%i", config.board_width, config.board_height);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
-	swprintf(buf, 255, L"p: %i", data->world->gen->count);
+	swprintf(buf, 255, L"p: %i\n", data->world->gen->count);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
+	swprintf(buf, 255, L"w: %.2f%%", (float)100*(data->world->map->board_stats.total_water)/total);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
+	swprintf(buf, 255, L"t: %.2f%%\n", (float)100*(data->world->map->board_stats.total_tree)/total);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
+
+	swprintf(buf, 255, L"%i (%.2f%%)",
+			 data->world->map->board_stats.total_tree-(data->world->map->board_stats.burning_tree+data->world->map->board_stats.burned_tree),
+			 100*(data->world->map->board_stats.total_tree-(data->world->map->board_stats.burning_tree+data->world->map->board_stats.burned_tree))/total
+		);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
+
+	swprintf(buf, 255, L"%i (%.2f%%)",
+			 data->world->map->board_stats.burning_tree,
+			 100*(data->world->map->board_stats.burning_tree)/total
+		);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
+
+	swprintf(buf, 255, L"%i (%.2f%%)",
+			 data->world->map->board_stats.burned_tree,
+			 100*(data->world->map->board_stats.burned_tree)/total
+		);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;

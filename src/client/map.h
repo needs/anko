@@ -11,8 +11,18 @@
 #define TILE_HEIGHT 34
 
 
-typedef struct map_t map_t;
+typedef struct mapcell_t {
+	float x, y, z;
+} mapcell_t;
 
+typedef struct map_t {
+	GLuint vbo, vao;
+	long vsize;		/* Size for floor/entity VBO */
+
+	int width, height;
+	mapcell_t **cells;
+	board_stats_t board_stats;
+} map_t;
 
 /* Allocate the map based on the generated board. NULL on error. */
 map_t* create_map(board_t *board);
