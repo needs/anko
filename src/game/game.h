@@ -17,7 +17,7 @@ enum {
 
 enum {
 	DIR_LEFT  = 1,
-	DIR_TOP   = 2,
+	DIR_UP    = 2,
 	DIR_RIGHT = 4,
 	DIR_DOWN  = 8,
 };
@@ -42,6 +42,10 @@ typedef struct game_t {
 
 game_t* new_game(int width, int height, gen_params_t *params, long sim_speed);
 void game_over(game_t *game);
+
+/* Set player direction */
+void set_player_dir(game_t *game, int pid, int dir);
+int get_player_dir(game_t *game, int pid);
 
 /* Return 1 when something change, 0 else */
 int  update_game(game_t *game, long diff);

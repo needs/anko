@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 	if ((current_ui = init_ui_game(world)) == NULL)
 		goto err_ui;
 
-	add_player(game, TEAM_BURNER);
+	world_set_active_player(world, add_player(game, TEAM_BURNER));
 	events_link_frame(&current_ui); // link window event to game ui frame
 	glClearColor(0, 0, 0, 1);
 

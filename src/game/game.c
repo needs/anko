@@ -8,6 +8,9 @@
 #include <game/simulator.h>
 
 
+#define PLAYER_SPEED 500.0
+
+
 static void swap(void **p1, void **p2);
 void get_spawn_coords(board_t *board, float *x, float *y);
 
@@ -45,10 +48,30 @@ err_game:
 }
 
 
-int update_game(game_t *game, long diff)
+void set_player_dir(game_t *game, int pid, int dir)
 {
 	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
 
+	game->players[pid].dir = dir;
+}
+
+
+int get_player_dir(game_t *game, int pid)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	return game->players[pid].dir;
+}
+
+
+int update_game(game_t *game, long diff)
+{
+	int i;
+
+	assert(game != NULL);
+
+	/* Simulation */
 	if (game->sim_timer < diff) {
 		step(game->old, game->current);
 		swap((void**)&game->current, (void**)&game->old);
@@ -56,6 +79,22 @@ int update_game(game_t *game, long diff)
 		return 1;
 	}
 	game->sim_timer -= diff;
+
+	/* Player movement */
+	for (i = 0; i < MAX_PLAYERS; i++) {
+		if (!game->players[i].is_used)
+			continue;
+
+		if (game->players[i].dir & DIR_LEFT)
+			game->players[i].x += diff * (1 / PLAYER_SPEED);
+		if (game->players[i].dir & DIR_RIGHT)
+			game->players[i].x -= diff * (1 / PLAYER_SPEED);
+		if (game->players[i].dir & DIR_UP)
+			game->players[i].y -= diff * (1 / PLAYER_SPEED);
+		if (game->players[i].dir & DIR_DOWN)
+			game->players[i].y += diff * (1 / PLAYER_SPEED);
+	}
+	
 	return 0;
 }
 

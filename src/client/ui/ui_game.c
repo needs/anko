@@ -17,6 +17,7 @@
 #include <client/linmath.h>
 #include <client/config.h>
 #include <client/players.h>
+#include <game/game.h>
 
 
 #define IS_KEY_DOWN(k) (key == k &&  (action == GLFW_PRESS || action == GLFW_REPEAT))
@@ -101,6 +102,7 @@ void ui_game_update(ui_frame_t* frame, float deltatime)
 void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mods)
 {
 	ui_game_data_t *data = frame->data;
+	int dir = get_player_dir(data->world->game, data->world->active_player);
 	(void)scancode;
 	(void)mods;
 
@@ -114,6 +116,32 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 		else
 			should_quit = 1;
 	}
+
+	if (key == GLFW_KEY_W) {
+		if (action == GLFW_PRESS)
+			dir |= DIR_UP;
+		else if (action == GLFW_RELEASE)
+			dir &= ~DIR_UP;
+	}
+	if (key == GLFW_KEY_S) {
+		if (action == GLFW_PRESS)
+			dir |= DIR_DOWN;
+		else if (action == GLFW_RELEASE)
+			dir &= ~DIR_DOWN;
+	}
+	if (key == GLFW_KEY_D) {
+		if (action == GLFW_PRESS)
+			dir |= DIR_RIGHT;
+		else if (action == GLFW_RELEASE)
+			dir &= ~DIR_RIGHT;
+	}
+	if (key == GLFW_KEY_A) {
+		if (action == GLFW_PRESS)
+			dir |= DIR_LEFT;
+		else if (action == GLFW_RELEASE)
+			dir &= ~DIR_LEFT;
+	}
+	set_player_dir(data->world->game, data->world->active_player, dir);
 
 	if(frame->keyboard_owner)
 	{
@@ -254,10 +282,10 @@ void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int actio
 	(void)mods;
 
 	// We don't deal with repeated key
-	if(action == GLFW_REPEAT)
+	if (action == GLFW_REPEAT)
 		return;
 	
-	if(key == GLFW_KEY_UP || key == GLFW_KEY_W)
+	if (key == GLFW_KEY_UP)
 	{
 		if(action == GLFW_PRESS)
 			data->camy += 1;
@@ -266,7 +294,7 @@ void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int actio
 		data->was_focused = 1;
 	}
 
-	if(key == GLFW_KEY_DOWN || key == GLFW_KEY_S)
+	if (key == GLFW_KEY_DOWN)
 	{
 		if(action == GLFW_PRESS)
 			data->camy -= 1;
@@ -275,7 +303,7 @@ void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int actio
 		data->was_focused = 1;
 	}
 
-	if(key == GLFW_KEY_RIGHT || key == GLFW_KEY_D)
+	if (key == GLFW_KEY_RIGHT)
 	{
 		if(action == GLFW_PRESS)
 			data->camx += 1;
@@ -284,7 +312,7 @@ void ui_game_input_camera(ui_game_data_t *data, int key, int scancode, int actio
 		data->was_focused = 1;
 	}
 
-	if(key == GLFW_KEY_LEFT || key == GLFW_KEY_A)
+	if (key == GLFW_KEY_LEFT)
 	{
 		if(action == GLFW_PRESS)
 			data->camx -= 1;

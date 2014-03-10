@@ -23,6 +23,7 @@ world_t* create_world(game_t *game)
 	if ((world->gen = init_particles()) == NULL)
 		goto err_particles;
 	world->game = game;
+	world->active_player = -1;
 
 	return world;
 
@@ -51,6 +52,13 @@ void render_world(world_t *world, camera_t *camera)
 
 	render_map(world->map, camera);
 	render_particles(world->gen, camera);
+}
+
+
+void world_set_active_player(world_t *world, int pid)
+{
+	assert(world != NULL);
+	world->active_player = pid;
 }
 
 

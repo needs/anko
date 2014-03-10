@@ -12,12 +12,16 @@ typedef struct world_t {
 	map_t *map;
 	partgen_t *gen;
 	game_t *game;
+	int active_player;
 } world_t;
 
 
 world_t* create_world(game_t *game);
 void update_world(world_t *world);
 void render_world(world_t *world, camera_t *camera);
+
+/* Set active player (used to center camera & move the player on input) */
+void world_set_active_player(world_t *world, int pid);
 
 /* For you safety, call this only if you playing from Bugarach */
 void end_of_the_world(world_t *world);
