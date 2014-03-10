@@ -86,9 +86,9 @@ int update_game(game_t *game, long diff)
 			continue;
 
 		if (game->players[i].dir & DIR_LEFT)
-			game->players[i].x += diff * (1 / PLAYER_SPEED);
-		if (game->players[i].dir & DIR_RIGHT)
 			game->players[i].x -= diff * (1 / PLAYER_SPEED);
+		if (game->players[i].dir & DIR_RIGHT)
+			game->players[i].x += diff * (1 / PLAYER_SPEED);
 		if (game->players[i].dir & DIR_UP)
 			game->players[i].y -= diff * (1 / PLAYER_SPEED);
 		if (game->players[i].dir & DIR_DOWN)

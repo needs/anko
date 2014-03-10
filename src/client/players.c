@@ -61,7 +61,7 @@ void render_players(player_t *players, int player_count, camera_t *camera)
 			get_map_coord(players->x, players->y, &x, &y, &z);
 			get_ctexture(vertices + (count * TEXTURE_VERTEX_LEN * TEXTURE_VERTEX_NB),
 				     get_player_tex(players->team),
-				     x, y, z);
+				     x, y, z+1);
 			count++;
 		}
 		players++;
