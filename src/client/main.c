@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		
 		// Rendering
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		draw_ui(current_ui);
 		font_swap_buffers();
 		glfwSwapBuffers(window);

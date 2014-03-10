@@ -43,12 +43,24 @@ void draw_game(ui_frame_t *frame)
 {
 	ui_game_data_t *data = frame->data;
 	int i = 0;
+	
+	
 	rtt_start();
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Enable what we needs
+	glEnable(GL_DEPTH_TEST);
+	glAlphaFunc(GL_GREATER, 0.05); // This is necessary to avoid crop in some cases
+	glEnable(GL_ALPHA_TEST);
+	glDepthFunc(GL_LEQUAL);
+
 	render_world(data->world, &data->camera);
+
 	rtt_stop();
 	rtt_draw();
 
+	glDisable(GL_DEPTH_TEST);
+	
 	if(!frame->children)
 		return;
 	

@@ -14,7 +14,7 @@ void set_camera(camera_t *camera, float x, float y, float scale)
 {
 	camera->camera_scale = scale;
 	camera->camera_pos[0] = x + config.screen_width/2;
-	camera->camera_pos[1] = y + config.screen_height/2;
+	camera->camera_pos[1] = y;
 	update_camera(camera);
 }
 
@@ -22,14 +22,15 @@ void move_camera(camera_t *camera, float x, float y)
 {
 	camera->camera_pos[0] -= x;
 	camera->camera_pos[1] += y;
-	update_camera(camera);
+   	update_camera(camera);
 }
 
 void scale_camera(camera_t *camera, float scale)
 {
 	if(camera->camera_scale + scale > (float)1 / ZOOM_MIN) return;
 	if(camera->camera_scale + scale < (float)1 / ZOOM_MAX) return;
-	
+
+	camera->camera_pos[1] -= (scale > 0 ? 1 : -1) * config.board_height/2;
 	camera->camera_scale += scale;
 	update_camera(camera);
 }

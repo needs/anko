@@ -8,10 +8,12 @@
 #include <client/config.h>
 
 
-static GLuint rtt_fbo;
-static GLuint rtt_tex;
-static GLuint rtt_vbo;
-static GLuint rtt_vao;
+static GLuint rtt_fbo; // Frame Buffer Object
+static GLuint rtt_tex; // Texture
+static GLuint rtt_vbo; // Vertex Buffer Object
+static GLuint rtt_vao; // Vertex Array Object
+static GLuint rtt_rbo; // Render Buffer Object
+
 int rtt_effect = 0; // will use an enum later
 
 void rtt_start()
@@ -45,12 +47,21 @@ void rtt_init()
 {
 	glGenFramebuffers(1, &rtt_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, rtt_fbo);
+	/********************************************/
+	// bind the rbo
+	glGenRenderbuffers(1, &rtt_rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rtt_rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, config.screen_width, config.screen_height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rtt_rbo);
+	
+	// bind the texture
 	glGenTextures(1, &rtt_tex);
 	glBindTexture(GL_TEXTURE_2D, rtt_tex);
 	glTexImage2D(GL_TEXTURE_2D,0,GL_RGB, config.screen_width, config.screen_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rtt_tex, 0);
+	/********************************************/
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	float vertices[] = {
