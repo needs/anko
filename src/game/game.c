@@ -99,9 +99,11 @@ int update_game(game_t *game, long diff)
 		if (game->players[i].dir & DIR_DOWN)
 			y += diff * (1 / PLAYER_SPEED);
 
-		if (x >= 0 && x < game->current->width)
+		if (x >= 0 && x < game->current->width&&
+		    game->current->cells[(int)game->players[i].y][(int)x].type == CT_GRASS)
 			game->players[i].x = x;
-		if (y >= 0 && y < game->current->height)
+		if (y >= 0 && y < game->current->height &&
+		    game->current->cells[(int)y][(int)game->players[i].x].type == CT_GRASS)
 			game->players[i].y = y;
 	}
 	

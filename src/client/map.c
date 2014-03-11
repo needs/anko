@@ -234,9 +234,9 @@ void render_map(map_t *map, camera_t *camera)
 	glUseProgram(standard);
 	glUniform1i(glGetUniformLocation(standard, "tex"), 0);
 	glUniformMatrix4fv(glGetUniformLocation(standard, "projection"),
-					   1, GL_FALSE, (GLfloat*)projection);
+			   1, GL_FALSE, (GLfloat*)projection);
 	glUniformMatrix4fv(glGetUniformLocation(standard, "view"),
-					   1, GL_FALSE, (GLfloat*)camera->matrix);
+			   1, GL_FALSE, (GLfloat*)camera->matrix);
 
 	glBindTexture(GL_TEXTURE_2D, get_texid(TEX_TILES));
 	glDrawArrays(GL_QUADS, 0, map->vsize / TEXTURE_VERTEX_LEN);
