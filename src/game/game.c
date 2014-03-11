@@ -82,17 +82,27 @@ int update_game(game_t *game, long diff)
 
 	/* Player movement */
 	for (i = 0; i < MAX_PLAYERS; i++) {
+		float x, y;
+
 		if (!game->players[i].is_used)
 			continue;
 
+		x = game->players[i].x;
+		y = game->players[i].y;
+
 		if (game->players[i].dir & DIR_LEFT)
-			game->players[i].x -= diff * (1 / PLAYER_SPEED);
+			x -= diff * (1 / PLAYER_SPEED);
 		if (game->players[i].dir & DIR_RIGHT)
-			game->players[i].x += diff * (1 / PLAYER_SPEED);
+			x += diff * (1 / PLAYER_SPEED);
 		if (game->players[i].dir & DIR_UP)
-			game->players[i].y -= diff * (1 / PLAYER_SPEED);
+			y -= diff * (1 / PLAYER_SPEED);
 		if (game->players[i].dir & DIR_DOWN)
-			game->players[i].y += diff * (1 / PLAYER_SPEED);
+			y += diff * (1 / PLAYER_SPEED);
+
+		if (x >= 0 && x < game->current->width)
+			game->players[i].x = x;
+		if (y >= 0 && y < game->current->height)
+			game->players[i].y = y;
 	}
 	
 	return 0;
@@ -163,8 +173,8 @@ void get_spawn_coords(board_t *board, float *x, float *y)
 		*x = random() % board->width;
 		*y = random() % board->height;
 	} while (board->cells[(int)*y][(int)*x].type != CT_GRASS);
-	*x = *x - 0.5;
-	*y = *y - 0.5;
+	*x = *x + 0.5;
+	*y = *y + 0.5;
 }
 
 
