@@ -79,7 +79,7 @@ static map_t* alloc_map(int width, int height)
 		}
 
 		for (j = 0; j < width; j++) {
-			map->cells[i][j].x = j*-TILE_WIDTH/2 + i*TILE_WIDTH/2;
+			map->cells[i][j].x = i*-TILE_WIDTH/2 + j*TILE_WIDTH/2;
 			map->cells[i][j].y = i*TILE_HEIGHT/2 + j*TILE_HEIGHT/2;
 			map->cells[i][j].z = i+j+1;
 		}
@@ -155,15 +155,15 @@ static int seed_map(map_t *map, board_t *board)
 		for (i = 0; i < map->height; i++) {
 			for (j = 0; j < map->width; j++) {
 				get_ctexture(buf + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
-							 get_floor_tex(&board->cells[i][j]),
-							 map->cells[i][j].x,
-							 map->cells[i][j].y,
-							 0);
+					     get_floor_tex(&board->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y,
+					     0);
 				get_ctexture(buf + map->vsize + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
-							 get_entity_tex(&board->cells[i][j]),
-							 map->cells[i][j].x,
-							 map->cells[i][j].y,
-							 map->cells[i][j].z);
+					     get_entity_tex(&board->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y,
+					     map->cells[i][j].z);
 			}
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
@@ -298,7 +298,8 @@ void get_map_coord(float x, float y, float *rx, float *ry, float *rz)
 	assert(ry != NULL);
 	assert(rz != NULL);
 
+	x -= 1.0; y -= 1.0;
 	*rx = y*-TILE_WIDTH/2 + x*TILE_WIDTH/2;
-	*ry = x*TILE_HEIGHT/2 + y*TILE_HEIGHT/2;
+	*ry = y*TILE_HEIGHT/2 + x*TILE_HEIGHT/2;
 	*rz = (int)x + (int)y + 1;
 }
