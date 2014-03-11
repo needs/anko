@@ -19,22 +19,24 @@ typedef struct partgen_t {
 
 
 struct partargs_t {
-	float lifetime;
-	tex_t tex;
+	float lifetime;		/* Lifetime of a particle */
+	float spawn_period;	/* Period when particles can spawn */
+	tex_t tex;		/* Texture, must be in TEX_PARTICLES */
 
 	struct {
 		float start, end;
-	} opacity;
+	} opacity;		/* Opacity */
 
 	struct {
 		struct { float x, y; } start;
 		struct { float x, y; } end;
-	} box;
+	} box;			/* Size of the particle */
 
 	struct {
 		float x, y;
-	} dir;
+	} dir;			/* Direction of the particle */
 };
+
 
 extern struct partargs_t PARTARGS_DEFAULT;
 

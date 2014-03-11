@@ -18,6 +18,7 @@
 /* By default, a particle becomes transparent and decrese in size. */
 struct partargs_t PARTARGS_DEFAULT = {
 	.lifetime = 1.0,
+	.spawn_period = 1.0,
 	.opacity = {
 		.start = 1.0,
 		.end = 0.0,
@@ -109,6 +110,8 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, float z, struct pa
 
 	for (i = 0; i < n; i++) {
 		float data[PART_LEN], datat[PART_LEN];
+		float start_time = curtime + (((float)random() / RAND_MAX) * prop->spawn_period);
+
 		get_sctexture(data, prop->tex, x, y, z, prop->box.start.x, prop->box.start.y);
 		get_sctexture(datat, prop->tex, x + prop->dir.x * prop->lifetime, y + prop->dir.y * prop->lifetime, z, prop->box.end.x, prop->box.end.y);
 
@@ -119,7 +122,7 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, float z, struct pa
 			buf[partindex + 2] = data[j * TEXTURE_VERTEX_LEN + 2];
 			buf[partindex + 3] = data[j * TEXTURE_VERTEX_LEN + 3];
 			buf[partindex + 4] = data[j * TEXTURE_VERTEX_LEN + 4];
-			buf[partindex + 5] = curtime;
+			buf[partindex + 5] = start_time;
 			buf[partindex + 6] = prop->lifetime;
 			buf[partindex + 7] = prop->opacity.start;
 			buf[partindex + 8] = prop->opacity.end;
@@ -127,7 +130,7 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, float z, struct pa
 			buf[partindex + 10]= datat[j * TEXTURE_VERTEX_LEN + 1];
 		}
 
-		gen->particles[gen->offset + gen->count + i] = curtime + prop->lifetime;
+		gen->particles[gen->offset + gen->count + i] = start_time + prop->lifetime;
 	}
 
 	if (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE)

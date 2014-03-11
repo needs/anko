@@ -13,7 +13,7 @@ void main()
 {
 	float Curtime = (time - Lifetime.x) / Lifetime.y;
 
-	if (Curtime > 1.0)
+	if (Curtime < 0.0 || Curtime > 1.0)
 		out_Color = vec4(0.0, 0.0, 0.0, 0.0);
 	else
 		out_Color = texture(tex, uv) * vec4(1.0, 1.0, 1.0, mix(Alpha.x, Alpha.y, Curtime));
