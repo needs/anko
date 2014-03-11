@@ -8,7 +8,7 @@
 #include <game/simulator.h>
 
 
-#define PLAYER_SPEED 500.0
+#define PLAYER_SPEED 0.004
 
 
 static void swap(void **p1, void **p2);
@@ -91,13 +91,13 @@ int update_game(game_t *game, long diff)
 		y = game->players[i].y;
 
 		if (game->players[i].dir & DIR_LEFT)
-			x -= diff * (1 / PLAYER_SPEED);
+			x -= diff * PLAYER_SPEED;
 		if (game->players[i].dir & DIR_RIGHT)
-			x += diff * (1 / PLAYER_SPEED);
+			x += diff * PLAYER_SPEED;
 		if (game->players[i].dir & DIR_UP)
-			y -= diff * (1 / PLAYER_SPEED);
+			y -= diff * PLAYER_SPEED;
 		if (game->players[i].dir & DIR_DOWN)
-			y += diff * (1 / PLAYER_SPEED);
+			y += diff * PLAYER_SPEED;
 
 		if (x >= 0 && x < game->current->width&&
 		    game->current->cells[(int)game->players[i].y][(int)x].type == CT_GRASS)
