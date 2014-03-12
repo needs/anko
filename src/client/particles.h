@@ -35,6 +35,10 @@ struct partargs_t {
 	struct {
 		float x, y;
 	} dir;			/* Direction of the particle */
+
+	struct {
+		float x, y;
+	} spawn_box;		/* Lower right corner of the spawning box */
 };
 
 
