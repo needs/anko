@@ -18,6 +18,7 @@ typedef struct world_t {
 
 world_t* create_world(game_t *game);
 void update_world(world_t *world);
+void refresh_world(world_t *world);
 void render_world(world_t *world, camera_t *camera);
 
 /* Set active player (used to center camera & move the player on input) */

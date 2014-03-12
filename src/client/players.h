@@ -3,6 +3,7 @@
 
 #include <game/game.h>
 #include <client/camera.h>
+#include <client/particles.h>
 
 void init_players_rendering(void);
 void render_players(player_t *players, int player_count, camera_t *camera);

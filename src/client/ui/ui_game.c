@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -22,7 +23,6 @@
 
 #define IS_KEY_DOWN(k) (key == k &&  (action == GLFW_PRESS || action == GLFW_REPEAT))
 #define CAMERA_SPEED 500 // px/s
-
 static const float MOUSE_SCROLL_SPEED = 0.03;
 
 
@@ -33,7 +33,6 @@ typedef struct ui_game_data_t
 	int camx;
 	int camy;
 	int key_dir;
-	
 	int was_focused;
 } ui_game_data_t;
 
@@ -117,6 +116,15 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 			should_quit = 1;
 	}
 
+	if(frame->keyboard_owner)
+	{
+		data->camx = 0;
+		data->camy = 0;
+		data->was_focused = 0;
+		ui_on_key(frame->keyboard_owner, key, scancode, action, mods);
+		return;
+	}	
+
 	if (key == GLFW_KEY_W) {
 		if (action == GLFW_PRESS)
 			data->key_dir |= DIR_UP;
@@ -142,8 +150,9 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 			data->key_dir &= ~DIR_LEFT;
 	}
 
+	set_player_moving(data->world->game, data->world->active_player, 1);
 	if (data->key_dir == 0)
-		set_player_dir(data->world->game, data->world->active_player, 0);
+		set_player_moving(data->world->game, data->world->active_player, 0);
 	else if ((data->key_dir & DIR_UP) == data->key_dir)
 		set_player_dir(data->world->game, data->world->active_player, DIR_UP | DIR_LEFT);
 	else if ((data->key_dir & DIR_DOWN) == data->key_dir)
@@ -161,13 +170,12 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 	else if (data->key_dir & DIR_DOWN && data->key_dir & DIR_LEFT)
 		set_player_dir(data->world->game, data->world->active_player, DIR_DOWN);
 
-	if(frame->keyboard_owner)
+	if(key == GLFW_KEY_SPACE)
 	{
-		data->camx = 0;
-		data->camy = 0;
-		data->was_focused = 0;
-		ui_on_key(frame->keyboard_owner, key, scancode, action, mods);
-		return;
+		if(action == GLFW_PRESS)
+		    set_player_shooting(data->world->game, data->world->active_player, 1);
+		else if(action == GLFW_RELEASE)
+		    set_player_shooting(data->world->game, data->world->active_player, 0);
 	}
 	
 	if(frame->children)
@@ -181,11 +189,6 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 	}
 
 	ui_game_input_camera(data, key, scancode, action, mods);
-		
-	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-	{
-		rtt_effect = (rtt_effect +1)%6;
-	}
 }
 
 void ui_game_on_char(ui_frame_t* frame, unsigned int c)
@@ -256,16 +259,13 @@ ui_frame_t* init_ui_game(world_t *world)
 	ui_frame_t *frame = create_ui();
 	if(frame)
 	{
-		ui_game_data_t *data = malloc(sizeof(ui_game_data_t));
+		ui_game_data_t *data = calloc(1, sizeof(ui_game_data_t));
 		if(!data)
 			goto err_data;
 		
 		data->world = world;
-		data->camx = 0;
-		data->camy = 0;
 		data->was_focused = 1;
-		data->key_dir = 0;
-		set_camera(&data->camera, 0,0,1);
+		set_camera(&data->camera, 0, 0, 1);
 		
 		frame->data = data;
 		frame->draw = &draw_game;
@@ -282,7 +282,7 @@ ui_frame_t* init_ui_game(world_t *world)
 			goto err_children;
 		
 		frame->children[0] = init_ui_console(frame, 10, config.screen_height - 215, 400, 200);
-		frame->children[1] = init_ui_debug(frame, world,  5, 5, 125, 250);
+		frame->children[1] = init_ui_debug(frame, world,  5, 5, 150, 275);
 		frame->children[2] = NULL;
 		rtt_init();
 		return frame;

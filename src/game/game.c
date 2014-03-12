@@ -8,12 +8,13 @@
 #include <game/simulator.h>
 
 
-#define PLAYER_SPEED 0.004
-
+#define PLAYER_SPEED 0.004 // px/ms at normal zoom
 
 static void swap(void **p1, void **p2);
 void get_spawn_coords(board_t *board, float *x, float *y);
 
+static void proceed_player_move(player_t *p, game_t *game, long diff);
+static void proceed_player_shoot(player_t *p, game_t *game, long diff);
 
 game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 {
@@ -64,6 +65,94 @@ int get_player_dir(game_t *game, int pid)
 	return game->players[pid].dir;
 }
 
+void get_player_pos(game_t *game, int pid, float *x, float *y)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	*x = game->players[pid].x;
+	*y = game->players[pid].y;
+}
+
+void set_player_moving(game_t *game, int pid, short moving)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	game->players[pid].is_moving = moving;
+}
+
+void set_player_shooting(game_t *game, int pid, short shooting)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	game->players[pid].is_shooting = shooting;
+}
+
+static void proceed_player_move(player_t *p, game_t *game, long diff)
+{
+	float x, y;
+
+	if (!p->is_used || !p->is_moving)
+	    return;
+
+	x = p->x;
+	y = p->y;
+
+	if (p->dir & DIR_LEFT)
+		x -= diff * PLAYER_SPEED;
+	if (p->dir & DIR_RIGHT)
+		x += diff * PLAYER_SPEED;
+	if (p->dir & DIR_UP)
+		y -= diff * PLAYER_SPEED;
+	if (p->dir & DIR_DOWN)
+		y += diff * PLAYER_SPEED;
+
+	if (x >= 0 && x < game->current->width&&
+		(game->current->cells[(int)p->y][(int)x].type == CT_GRASS
+		 || (game->current->cells[(int)p->y][(int)x].type == CT_TREE &&
+			 game->current->cells[(int)p->y][(int)x].data.tree.life <= 0)))
+		p->x = x;
+	if (y >= 0 && y < game->current->height &&
+		(game->current->cells[(int)y][(int)p->x].type == CT_GRASS
+		 ||(game->current->cells[(int)y][(int)p->x].type == CT_TREE &&
+			game->current->cells[(int)y][(int)p->x].data.tree.life <= 0)))
+		p->y = y;
+}
+
+static void proceed_player_shoot(player_t *p, game_t *game, long diff)
+{
+	float x, y;
+
+	if (!p->is_used || !p->is_shooting)
+	    return;
+
+	x = p->x;
+	y = p->y;
+
+	if (p->dir & DIR_LEFT)
+		x -= diff * PLAYER_SPEED;
+	if (p->dir & DIR_RIGHT)
+		x += diff * PLAYER_SPEED;
+	if (p->dir & DIR_UP)
+		y -= diff * PLAYER_SPEED;
+	if (p->dir & DIR_DOWN)
+		y += diff * PLAYER_SPEED;
+
+	if(x >= 0 && x < game->current->width
+	   && y >= 0 && y < game->current->height
+	   && game->current->cells[(int)y][(int)x].type == CT_TREE)
+	{
+		switch(p->weapon)
+		{
+		case WP_FLAMETHROWER:
+			game->current->cells[(int)y][(int)x].data.tree.life-=(float)diff/1000;
+			break;
+		case WP_WATERPISTOL:
+			game->current->cells[(int)y][(int)x].data.tree.life+=(float)diff/1000;
+			break;
+		}
+	}
+	
+}
 
 int update_game(game_t *game, long diff)
 {
@@ -82,29 +171,8 @@ int update_game(game_t *game, long diff)
 
 	/* Player movement */
 	for (i = 0; i < MAX_PLAYERS; i++) {
-		float x, y;
-
-		if (!game->players[i].is_used)
-			continue;
-
-		x = game->players[i].x;
-		y = game->players[i].y;
-
-		if (game->players[i].dir & DIR_LEFT)
-			x -= diff * PLAYER_SPEED;
-		if (game->players[i].dir & DIR_RIGHT)
-			x += diff * PLAYER_SPEED;
-		if (game->players[i].dir & DIR_UP)
-			y -= diff * PLAYER_SPEED;
-		if (game->players[i].dir & DIR_DOWN)
-			y += diff * PLAYER_SPEED;
-
-		if (x >= 0 && x < game->current->width&&
-		    game->current->cells[(int)game->players[i].y][(int)x].type == CT_GRASS)
-			game->players[i].x = x;
-		if (y >= 0 && y < game->current->height &&
-		    game->current->cells[(int)y][(int)game->players[i].x].type == CT_GRASS)
-			game->players[i].y = y;
+		proceed_player_move(&game->players[i], game, diff);
+		proceed_player_shoot(&game->players[i], game, diff);
 	}
 	
 	return 0;
@@ -143,7 +211,16 @@ int add_player(game_t *game, int team)
 	assert(pid != MAX_PLAYERS);
 	get_spawn_coords(game->current, &game->players[pid].x, &game->players[pid].y);
 	game->players[pid].team = team;
+	if(team == TEAM_ARBRIST)
+		game->players[pid].weapon = WP_WATERPISTOL;
+	else if(team == TEAM_BURNER)
+		game->players[pid].weapon = WP_FLAMETHROWER;
+	else
+		game->players[pid].weapon = WP_NONE;
+	
 	game->players[pid].is_used = 1;
+	game->players[pid].is_moving = 0;
+	game->players[pid].is_shooting = 0;
 	game->player_count++;
 
 	return pid;

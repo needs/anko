@@ -22,12 +22,19 @@ enum {
 	DIR_DOWN  = 8,
 };
 
+enum {
+	WP_NONE = 0,
+	WP_FLAMETHROWER,
+	WP_WATERPISTOL
+};
 
 typedef struct player_t {
 	short is_used;		/* 0 if this structure is not linked to a player */
-
+	short is_shooting;
+	short is_moving;
 	int dir;
 	int team;
+	int weapon;
 	float x, y;
 } player_t;
 
@@ -35,7 +42,6 @@ typedef struct game_t {
 	board_t *current, *old;
 	player_t players[MAX_PLAYERS];
 	int player_count;
-
 	long sim_speed, sim_timer;
 } game_t;
 
@@ -46,6 +52,10 @@ void game_over(game_t *game);
 /* Set player direction */
 void set_player_dir(game_t *game, int pid, int dir);
 int get_player_dir(game_t *game, int pid);
+
+void get_player_pos(game_t *game, int pid, float *x, float *y);
+void set_player_moving(game_t *game, int pid, short moving);
+void set_player_shooting(game_t *game, int pid, short shooting);
 
 /* Return 1 when something change, 0 else */
 int  update_game(game_t *game, long diff);
