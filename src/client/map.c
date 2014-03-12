@@ -266,6 +266,16 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 	for (i = 0; i < map->height; i++) {
 		for (j = 0; j < map->width; j++) {
 			if (!cmp_cell(&current->cells[i][j], &old->cells[i][j])) {
+				get_ctexture(buf + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
+					     get_entity_tex(&current->cells[i][j]),
+					     map->cells[i][j].x,
+					     map->cells[i][j].y,
+					     map->cells[i][j].z);
+			}
+
+			/* Spawn some particles when a tree is burning */
+			if (current->cells[i][j].type == CT_TREE &&
+			    current->cells[i][j].data.tree.life < 100 && current->cells[i][j].data.tree.life > 0) {
 				struct partargs_t prop = PARTARGS_DEFAULT;
 				prop.lifetime = 1.0;
 				prop.tex = TEX_PARTICLES_FIRE1;
@@ -278,13 +288,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				prop.spawn_box.x = 20.0;
 				prop.spawn_box.y = -70.0;
 
-				get_ctexture(buf + ((i * map->width + j) * TEXTURE_VERTEX_SIZE),
-					     get_entity_tex(&current->cells[i][j]),
-					     map->cells[i][j].x,
-					     map->cells[i][j].y,
-					     map->cells[i][j].z);
-				if (current->cells[i][j].data.tree.life < 100 && current->cells[i][j].data.tree.life > 0)
-					spawn_particles(gen, 10, map->cells[i][j].x - 10, map->cells[i][j].y, map->cells[i][j].z+1, &prop);
+				spawn_particles(gen, 10, map->cells[i][j].x - 10, map->cells[i][j].y, map->cells[i][j].z+1, &prop);
 			}
 		}
 	}
