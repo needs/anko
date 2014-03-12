@@ -288,6 +288,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				prop1.spawn_period = 1.0;
 				prop1.spawn_box.x = 20.0;
 				prop1.spawn_box.y = -70.0;
+				prop2.opacity.start = 0.9;
 
 				prop2.lifetime = 5.0;
 				prop2.tex = TEX_PARTICLES_SMOKE1;
@@ -296,14 +297,14 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				prop2.box.end.x = 3.0;
 				prop2.box.end.y = 5.0;
 				prop2.dir.y = -10.0;
-				prop2.spawn_period = 4.0;
+				prop2.spawn_period = 3.0;
 				prop2.spawn_box.x = 20.0;
 				prop2.spawn_box.y = -70.0;
 				prop2.opacity.start = 0.5;
 				prop2.opacity.end = 0.0;
 
-				spawn_particles(gen, 10, map->cells[i][j].x - 10, map->cells[i][j].y, map->cells[i][j].z+1, &prop1);
-				spawn_particles(gen, 5, map->cells[i][j].x - 10, map->cells[i][j].y - 20, map->cells[i][j].z+1, &prop2);
+				spawn_particles(gen, 2, map->cells[i][j].x - 10, map->cells[i][j].y - 40, current->height + current->width, &prop1);
+				spawn_particles(gen, 2, map->cells[i][j].x - 10, map->cells[i][j].y - 20, current->height + current->width, &prop2);
 			}
 		}
 	}
