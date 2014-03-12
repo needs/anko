@@ -280,15 +280,15 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				struct partargs_t prop2 = PARTARGS_DEFAULT;
 				prop1.lifetime = 1.0;
 				prop1.tex = TEX_PARTICLES_FIRE1;
-				prop1.box.start.x = 1.0;
-				prop1.box.start.y = 1.0;
-				prop1.box.end.x = 4.0;
-				prop1.box.end.y = 4.0;
-				prop1.dir.y = -50.0;
+				prop1.box.start.x = 2.5;
+				prop1.box.start.y = 2.5;
+				prop1.box.end.x = 5.0;
+				prop1.box.end.y = 5.0;
+				prop1.dir.y = -40.0;
 				prop1.spawn_period = 1.0;
 				prop1.spawn_box.x = 20.0;
 				prop1.spawn_box.y = -70.0;
-				prop2.opacity.start = 0.9;
+				prop2.opacity.start = 0.8;
 
 				prop2.lifetime = 5.0;
 				prop2.tex = TEX_PARTICLES_SMOKE1;
