@@ -276,19 +276,34 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 			/* Spawn some particles when a tree is burning */
 			if (current->cells[i][j].type == CT_TREE &&
 			    current->cells[i][j].data.tree.life < 100 && current->cells[i][j].data.tree.life > 0) {
-				struct partargs_t prop = PARTARGS_DEFAULT;
-				prop.lifetime = 1.0;
-				prop.tex = TEX_PARTICLES_FIRE1;
-				prop.box.start.x = 1.0;
-				prop.box.start.y = 1.0;
-				prop.box.end.x = 4.0;
-				prop.box.end.y = 4.0;
-				prop.dir.y = -50.0;
-				prop.spawn_period = 1.0;
-				prop.spawn_box.x = 20.0;
-				prop.spawn_box.y = -70.0;
+				struct partargs_t prop1 = PARTARGS_DEFAULT;
+				struct partargs_t prop2 = PARTARGS_DEFAULT;
+				prop1.lifetime = 1.0;
+				prop1.tex = TEX_PARTICLES_FIRE1;
+				prop1.box.start.x = 1.0;
+				prop1.box.start.y = 1.0;
+				prop1.box.end.x = 4.0;
+				prop1.box.end.y = 4.0;
+				prop1.dir.y = -50.0;
+				prop1.spawn_period = 1.0;
+				prop1.spawn_box.x = 20.0;
+				prop1.spawn_box.y = -70.0;
 
-				spawn_particles(gen, 10, map->cells[i][j].x - 10, map->cells[i][j].y, map->cells[i][j].z+1, &prop);
+				prop2.lifetime = 5.0;
+				prop2.tex = TEX_PARTICLES_SMOKE1;
+				prop2.box.start.x = 1.0;
+				prop2.box.start.y = 1.0;
+				prop2.box.end.x = 3.0;
+				prop2.box.end.y = 5.0;
+				prop2.dir.y = -10.0;
+				prop2.spawn_period = 4.0;
+				prop2.spawn_box.x = 20.0;
+				prop2.spawn_box.y = -70.0;
+				prop2.opacity.start = 0.5;
+				prop2.opacity.end = 0.0;
+
+				spawn_particles(gen, 10, map->cells[i][j].x - 10, map->cells[i][j].y, map->cells[i][j].z+1, &prop1);
+				spawn_particles(gen, 5, map->cells[i][j].x - 10, map->cells[i][j].y - 20, map->cells[i][j].z+1, &prop2);
 			}
 		}
 	}
