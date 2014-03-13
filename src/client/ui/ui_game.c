@@ -78,7 +78,7 @@ void draw_game(ui_frame_t *frame)
 void ui_game_update(ui_frame_t* frame, float deltatime)
 {
 	ui_game_data_t *data = frame->data;
-	int i;
+	int i = 0;
 
 	if(data->camy > 0)
 		move_camera(&data->camera, 0, CAMERA_SPEED*deltatime);
