@@ -30,14 +30,19 @@ struct partargs_t PARTARGS_DEFAULT = {
 	},
 	.dir = { 0.0, -10.0 },
 	.spawn_box = { 0.0, 0.0 },
+	.rotation = 0.1,
 };
 
 
-#define PART_VERTEX_LEN  11
+#define PART_VERTEX_LEN  16
 #define PART_VERTEX_SIZE PART_VERTEX_LEN * sizeof(float)
 #define PART_NB_VERTEX   4
 #define PART_SIZE        PART_NB_VERTEX * PART_VERTEX_SIZE
 #define PART_LEN         PART_NB_VERTEX * PART_VERTEX_LEN
+
+
+/* Write the vertices in the buffer buf (the VBO) */
+static float add_particle(float *buf, struct partargs_t *prop, float x, float y, float z);
 
 
 partgen_t* init_particles(void)
@@ -87,10 +92,9 @@ partgen_t* init_particles(void)
 
 void spawn_particles(partgen_t *gen, int n, float x, float y, float z, struct partargs_t *prop)
 {
-	int i, j;
 	GLint old_bind;
 	float *buf;
-	float curtime = glfwGetTime();
+	int i;
 
 	assert(gen != NULL);
 	assert(n > 0);
@@ -110,30 +114,8 @@ void spawn_particles(partgen_t *gen, int n, float x, float y, float z, struct pa
 	}
 
 	for (i = 0; i < n; i++) {
-		float data[PART_LEN], datat[PART_LEN];
-		float start_time = curtime + (((float)random() / RAND_MAX) * prop->spawn_period);
-		float tx = x + (((float)random() / RAND_MAX) * prop->spawn_box.x);
-		float ty = y + (((float)random() / RAND_MAX) * prop->spawn_box.y);
-
-		get_sctexture(data, prop->tex, tx, ty, z, prop->box.start.x, prop->box.start.y);
-		get_sctexture(datat, prop->tex, tx + prop->dir.x * prop->lifetime, ty + prop->dir.y * prop->lifetime, z, prop->box.end.x, prop->box.end.y);
-
-		for (j = 0; j < PART_NB_VERTEX; j++) {
-			const unsigned partindex = (i * PART_LEN) + j * PART_VERTEX_LEN;
-			buf[partindex + 0] = data[j * TEXTURE_VERTEX_LEN + 0];
-			buf[partindex + 1] = data[j * TEXTURE_VERTEX_LEN + 1];
-			buf[partindex + 2] = data[j * TEXTURE_VERTEX_LEN + 2];
-			buf[partindex + 3] = data[j * TEXTURE_VERTEX_LEN + 3];
-			buf[partindex + 4] = data[j * TEXTURE_VERTEX_LEN + 4];
-			buf[partindex + 5] = start_time;
-			buf[partindex + 6] = prop->lifetime;
-			buf[partindex + 7] = prop->opacity.start;
-			buf[partindex + 8] = prop->opacity.end;
-			buf[partindex + 9] = datat[j * TEXTURE_VERTEX_LEN + 0];
-			buf[partindex + 10]= datat[j * TEXTURE_VERTEX_LEN + 1];
-		}
-
-		gen->particles[gen->offset + gen->count + i] = start_time + prop->lifetime;
+		gen->particles[gen->offset + gen->count + i] = add_particle(buf, prop, x, y, z);
+		buf += PART_LEN;
 	}
 
 	if (glUnmapBuffer(GL_ARRAY_BUFFER) == GL_FALSE)
@@ -213,4 +195,52 @@ void free_particles(partgen_t *gen)
 	glDeleteBuffers(1, &gen->vbo);
 	glDeleteVertexArrays(1, &gen->vao);
 	free(gen);
+}
+
+
+static float add_particle(float *buf,
+			  struct partargs_t *prop,float x, float y, float z)
+{
+	float origin[PART_LEN], target[PART_LEN];
+	float start_time;
+	float ox, oy;
+	int j;
+
+	assert(buf  != NULL);
+	assert(prop != NULL);
+
+	/* ox, oy are the random offset of the spawning position */
+	ox = (((float)random() / RAND_MAX) * prop->spawn_box.x);
+	oy = (((float)random() / RAND_MAX) * prop->spawn_box.y);
+
+	/* start_time is the timestamp from when the particle is showed */
+	start_time = glfwGetTime() + (((float)random() / RAND_MAX) * prop->spawn_period);
+
+	/* Get position of the origin vertices and destination vertices.
+	 * (Interpolation is made in the shader) */
+	get_sctexture(origin, prop->tex,
+		      x + ox, y + oy, z,
+		      prop->box.start.x, prop->box.start.y);
+	get_sctexture(target, prop->tex,
+		      x + ox + prop->dir.x * prop->lifetime,
+		      y + oy + prop->dir.y * prop->lifetime,
+		      z, prop->box.end.x, prop->box.end.y);
+
+	for (j = 0; j < PART_NB_VERTEX; j++) {
+		const unsigned i = j * PART_VERTEX_LEN;
+
+		buf[i + 0]  = origin[j * TEXTURE_VERTEX_LEN + 0];
+		buf[i + 1]  = origin[j * TEXTURE_VERTEX_LEN + 1];
+		buf[i + 2]  = origin[j * TEXTURE_VERTEX_LEN + 2];
+		buf[i + 3]  = origin[j * TEXTURE_VERTEX_LEN + 3];
+		buf[i + 4]  = origin[j * TEXTURE_VERTEX_LEN + 4];
+		buf[i + 5]  = start_time;
+		buf[i + 6]  = prop->lifetime;
+		buf[i + 7]  = prop->opacity.start;
+		buf[i + 8]  = prop->opacity.end;
+		buf[i + 9]  = target[j * TEXTURE_VERTEX_LEN + 0];
+		buf[i + 10] = target[j * TEXTURE_VERTEX_LEN + 1];
+	}
+
+	return start_time + prop->lifetime;
 }

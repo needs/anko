@@ -302,6 +302,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 				prop2.spawn_box.y = -70.0;
 				prop2.opacity.start = 0.5;
 				prop2.opacity.end = 0.0;
+				prop2.rotation = 10;
 
 				spawn_particles(gen, 2, map->cells[i][j].x - 10, map->cells[i][j].y - 40, current->height + current->width, &prop1);
 				spawn_particles(gen, 2, map->cells[i][j].x - 10, map->cells[i][j].y - 20, current->height + current->width, &prop2);
