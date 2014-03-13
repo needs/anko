@@ -22,7 +22,7 @@
 
 
 #define IS_KEY_DOWN(k) (key == k &&  (action == GLFW_PRESS || action == GLFW_REPEAT))
-#define CAMERA_SPEED 500 // px/s
+#define CAMERA_SPEED 5 // px/s
 static const float MOUSE_SCROLL_SPEED = 0.03;
 
 
@@ -74,21 +74,22 @@ void draw_game(ui_frame_t *frame)
 	}
 }
 
-void ui_game_update(ui_frame_t* frame, float deltatime)
+static void update_camera(ui_frame_t* frame)
 {
 	ui_game_data_t *data = frame->data;
+	assert(frame);
+	assert(data);
+	float x, y;
+	get_player_pos(data->world->game, data->world->active_player, &x, &y);
+	set_camera_pos(&data->camera, x, y);
+}
+
+void ui_game_update(ui_frame_t* frame, float deltatime)
+{
 	int i;
-
-	if(data->camy > 0)
-		move_camera(&data->camera, 0, CAMERA_SPEED*deltatime);
-	else if(data->camy < 0)
-		move_camera(&data->camera, 0, -CAMERA_SPEED*deltatime);
-
-	if(data->camx > 0)
-		move_camera(&data->camera, CAMERA_SPEED*deltatime, 0);
-	else if(data->camx < 0)
-		move_camera(&data->camera, -CAMERA_SPEED*deltatime, 0);
 	
+	update_camera(frame);
+
 	if(!frame->children)
 		return;
 	
@@ -170,6 +171,8 @@ void ui_game_on_key(ui_frame_t* frame, int key, int scancode, int action, int mo
 	else if (data->key_dir & DIR_DOWN && data->key_dir & DIR_LEFT)
 		set_player_dir(data->world->game, data->world->active_player, DIR_DOWN);
 
+
+				   
 	if(key == GLFW_KEY_SPACE)
 	{
 		if(action == GLFW_PRESS)
@@ -266,7 +269,6 @@ ui_frame_t* init_ui_game(world_t *world)
 		data->world = world;
 		data->was_focused = 1;
 		set_camera(&data->camera, 0, 0, 1);
-		
 		frame->data = data;
 		frame->draw = &draw_game;
 		frame->on_key = &ui_game_on_key;

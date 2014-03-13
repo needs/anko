@@ -16,5 +16,6 @@ typedef struct camera_t
 void set_camera(camera_t *camera, float x, float y, float scale);
 void move_camera(camera_t *camera, float x, float y);
 void scale_camera(camera_t *camera, float scale);
+void set_camera_pos(camera_t *camera, float x, float y);
 
 #endif /* _CAMERA_H_ */
