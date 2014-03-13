@@ -48,7 +48,6 @@ void update_world(world_t *world)
 {
 	int i;
 	assert(world != NULL);
-	return; // C++ PROGRAMMERS SO BAD OMG, is that better than comment code ?
 	for(i = 0; i < world->game->player_count; i++)
 	{
 		player_t *p = &world->game->players[i];
@@ -91,7 +90,7 @@ void update_world(world_t *world)
 			
 			get_player_pos(world->game, world->active_player, &px, &py);
 			get_map_coord(px, py, &mx, &my, &mz);
-			spawn_particles(world->gen, 1, mx, my, mz-1, &prop);	
+			spawn_particles(world->gen, 1, mx, my, mz, &prop);	
 		}
 	}
 }
