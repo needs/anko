@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include <game/game.h>
 #include <game/board.h>
@@ -37,7 +38,8 @@ game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 	game->sim_speed = sim_speed;
 	game->sim_timer = sim_speed;
 	game->player_count = 0;
-
+	memcpy(&game->gen_params, params, sizeof(gen_params_t));
+		   
 	return game;
 
 err_old:
@@ -71,6 +73,14 @@ void get_player_pos(game_t *game, int pid, float *x, float *y)
 	assert(pid >= 0 && pid < MAX_PLAYERS);
 	*x = game->players[pid].x;
 	*y = game->players[pid].y;
+}
+
+void set_player_pos(game_t *game, int pid, float x, float y)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	game->players[pid].x = x;
+    game->players[pid].y = y;
 }
 
 void set_player_moving(game_t *game, int pid, short moving)
@@ -266,4 +276,28 @@ static void swap(void **p1, void **p2)
 	tmp = *p1;
 	*p1 = *p2;
 	*p2 = tmp;
+}
+
+int regenerate_map(game_t *game)
+{
+	assert(game);
+	board_t* new;
+	if((new = generate(game->current->width, game->current->height, &game->gen_params)))
+	{
+		free_board(game->current);
+		game->current = new;
+		return 1;
+	}
+	return 0;
+}
+
+int teleport_player(game_t *game, int pid, int x, int y)
+{
+	assert(game);
+	assert(game->current);
+	if(game->current->cells[y][x].type == CT_GRASS)
+	{
+		set_player_pos(game, pid, x+0.5, y+0.5);
+	}
+	return 1;
 }

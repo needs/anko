@@ -43,6 +43,7 @@ typedef struct game_t {
 	player_t players[MAX_PLAYERS];
 	int player_count;
 	long sim_speed, sim_timer;
+	gen_params_t gen_params;
 } game_t;
 
 
@@ -54,6 +55,7 @@ void set_player_dir(game_t *game, int pid, int dir);
 int get_player_dir(game_t *game, int pid);
 
 void get_player_pos(game_t *game, int pid, float *x, float *y);
+void set_player_pos(game_t *game, int pid, float x, float y);
 void set_player_moving(game_t *game, int pid, short moving);
 void set_player_shooting(game_t *game, int pid, short shooting);
 
@@ -71,5 +73,7 @@ int add_player(game_t *game, int team);
 /* Remove a player of the board */
 void rem_player(game_t *game, int pid);
 
+int regenerate_map(game_t *game);
+int teleport_player(game_t *game, int pid, int x, int y);
 
 #endif /* _GAME_H_ */

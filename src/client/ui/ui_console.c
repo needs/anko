@@ -6,6 +6,7 @@
 #include <client/font.h>
 #include <client/shader.h>
 #include <client/context.h>
+#include <client/commands.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <client/event.h>
@@ -43,7 +44,7 @@ typedef struct ui_console_data_t
 {
 	GLuint vao;
 	GLuint vbo;
-
+	game_t *game;
 	console_input_t input;
 	console_messages_t messages;
 	console_messages_t input_history;
@@ -180,10 +181,7 @@ static void render_messages(ui_frame_t *frame)
 		wcsncpy(message, data->messages.data[((data->messages.start+data->messages.count)-i-1)%MAX_MESSAGES], MAX_MESSAGES_LENGTH+1);
 		th = resized_text_height(frame, message, 19);
 		if(y_offset + th < frame->height*TEXT_BOX_SIZE)
-		{
 			render_resized_text(frame, message, frame->x+5, frame->y+(frame->height*TEXT_BOX_SIZE)-(y_offset + th), 19);
-		}
-	
 		y_offset+=th;
 		i++;
 	}
@@ -281,7 +279,18 @@ void ui_console_on_key(ui_frame_t* frame, int key, int scancode, int action, int
 			frame->parent->keyboard_owner = NULL;
 			if(data->input.size)
 			{
-				console_add_message(&data->messages, data->input.buffer);
+				char buffer[MAX_MESSAGES_LENGTH+1];
+				wcstombs(buffer, data->input.buffer, MAX_MESSAGES_LENGTH+1);
+
+				if(is_command(buffer))
+				{
+					wchar_t result[MAX_MESSAGES_LENGTH+1];
+					mbstowcs(result, execute_command(buffer, data->game), MAX_MESSAGES_LENGTH+1);
+				    console_add_message(&data->messages, result);
+				}
+				else
+					console_add_message(&data->messages, data->input.buffer);
+
 				console_add_message(&data->input_history, data->input.buffer);
 			}
 			
@@ -315,21 +324,15 @@ void ui_console_on_char(ui_frame_t *frame, unsigned int c)
 	}
 }
 
-ui_frame_t *init_ui_console(ui_frame_t *parent, float x, float y, float w, float h)
+ui_frame_t *init_ui_console(ui_frame_t *parent, game_t *game, float x, float y, float w, float h)
 {
 	ui_frame_t *frame = create_ui();
 	if(frame)
 	{
-		ui_console_data_t *data = malloc(sizeof(ui_console_data_t));
+		ui_console_data_t *data = calloc(1, sizeof(ui_console_data_t));
 		if(!data)
 			goto err_data;
-		data->input.buffer[0] = 0;
-		data->input.size = 0;
-
-		data->messages.start = 0;
-		data->messages.count = 0;
-		data->input_history.start = 0;
-		data->input_history.count = 0;
+		data->game = game;
 
 		frame->data = data;
 		frame->destroy = &destroy_ui_console;
