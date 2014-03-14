@@ -28,9 +28,8 @@ struct partargs_t PARTARGS_DEFAULT = {
 		.start = { 1.0, 1.0 },
 		.end   = { 0.0, 0.0 },
 	},
-	.dir = { 0.0, -10.0 },
+	.dir = { 0.0, -10.0, .rotate = 1 },
 	.spawn_box = { 0.0, 0.0 },
-	.rotation = 0.1,
 };
 
 
@@ -43,6 +42,9 @@ struct partargs_t PARTARGS_DEFAULT = {
 
 /* Write the vertices in the buffer buf (the VBO) */
 static float add_particle(float *buf, struct partargs_t *prop, float x, float y, float z);
+
+/* Rotate particle */
+static void rotate_vec2(float *x, float *y, float angle, float cx, float cy);
 
 
 partgen_t* init_particles(void)
@@ -204,6 +206,7 @@ static float add_particle(float *buf,
 	float origin[PART_LEN], target[PART_LEN];
 	float start_time;
 	float ox, oy;
+	float angle = 0;
 	int j;
 
 	assert(buf  != NULL);
@@ -226,8 +229,20 @@ static float add_particle(float *buf,
 		      y + oy + prop->dir.y * prop->lifetime,
 		      z, prop->box.end.x, prop->box.end.y);
 
+	if (prop->dir.rotate)
+		angle = atan2f(prop->dir.y, prop->dir.x) + M_PI_2;
+
 	for (j = 0; j < PART_NB_VERTEX; j++) {
 		const unsigned i = j * PART_VERTEX_LEN;
+
+		rotate_vec2(&origin[j * TEXTURE_VERTEX_LEN + 0],
+			    &origin[j * TEXTURE_VERTEX_LEN + 1],
+			    angle, x + ox, y + oy);
+		rotate_vec2(&target[j * TEXTURE_VERTEX_LEN + 0],
+			    &target[j * TEXTURE_VERTEX_LEN + 1],
+			    angle,
+			    x + ox + prop->dir.x * prop->lifetime,
+			    y + oy + prop->dir.y * prop->lifetime);
 
 		buf[i + 0]  = origin[j * TEXTURE_VERTEX_LEN + 0];
 		buf[i + 1]  = origin[j * TEXTURE_VERTEX_LEN + 1];
@@ -243,4 +258,20 @@ static float add_particle(float *buf,
 	}
 
 	return start_time + prop->lifetime;
+}
+
+
+static void rotate_vec2(float *x, float *y, float angle, float cx, float cy)
+{
+	float tmp;
+
+	assert(x != NULL);
+	assert(y != NULL);
+
+	*x -= cx; *y -= cy; tmp = *x;
+
+	*x = tmp * cos(angle) - *y * sin(angle);
+	*y = tmp * sin(angle) + *y * cos(angle);
+
+	*x += cx; *y += cy;
 }

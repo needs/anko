@@ -34,13 +34,12 @@ struct partargs_t {
 
 	struct {
 		float x, y;
+		short rotate;	/* 1 If the particle is 'facing' the direction */
 	} dir;			/* Direction of the particle */
 
 	struct {
 		float x, y;
 	} spawn_box;		/* Lower right corner of the spawning box */
-
-	float rotation;
 };
 
 
