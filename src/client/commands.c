@@ -73,6 +73,7 @@ char** create_table(char *s, int *argc)
 	char *arg;
 	int wc = wordcount(s);
 	char *new = strdup(s);
+	printf("%i\n", wc);
 
 	if(!new)
 		return NULL;
@@ -86,7 +87,7 @@ char** create_table(char *s, int *argc)
 
 	table[i] = arg;
 	i++;
-	while(arg != NULL)
+	while(arg != NULL && i < wc)
 	{
 		arg = strtok(NULL, " ");
 

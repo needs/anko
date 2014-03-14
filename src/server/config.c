@@ -9,7 +9,7 @@
 
 struct config_t config = {
 	/* Default value, might be overrided */
-	.port = 31415, 
+	.port = 31415,
 	.board_width   = 50,
 	.board_height  = 50,
 	.sim_speed     = 0.2,
@@ -31,7 +31,6 @@ static struct option long_options[] = {
 	{ "port",             required_argument, 0, 'p' },
 	{ NULL, 0, NULL, 0 }
 };
-
 
 static char *desc[] = {
 	"Display help",
