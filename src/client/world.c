@@ -35,6 +35,15 @@ err_world:
 	return NULL;
 }
 
+void regen_map(world_t *world)
+{
+	map_t *new = create_map(world->game->current);
+	if(new)
+	{
+		free_map(world->map);
+		world->map = new;
+	}
+}
 
 void refresh_world(world_t *world)
 {

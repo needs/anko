@@ -15,7 +15,7 @@ static char** create_table(char *s, int *argc);
 int wordcount(char *s);
 
 // Command Handlers
-char* regen_map(int argc, char **argv, game_t* game);
+char* cmd_regen_map(int argc, char **argv, game_t* game);
 
 cmd_handler handlers[] =
 {
@@ -120,7 +120,7 @@ int wordcount(char *s)
 	return count;
 }
 
-char* regen_map(int argc, char **argv, game_t* game)
+char* cmd_regen_map(int argc, char **argv, game* game)
 {
 	(void)argc;
 	(void)argv;
