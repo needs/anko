@@ -35,6 +35,7 @@ struct partargs_t {
 	struct {
 		float x, y;
 		short rotate;	/* 1 If the particle is 'facing' the direction */
+		float dispersion; /* Angle of the dispersion (0 for no dispersion) */
 	} dir;			/* Direction of the particle */
 
 	struct {

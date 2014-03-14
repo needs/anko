@@ -28,7 +28,11 @@ struct partargs_t PARTARGS_DEFAULT = {
 		.start = { 1.0, 1.0 },
 		.end   = { 0.0, 0.0 },
 	},
-	.dir = { 0.0, -10.0, .rotate = 1 },
+	.dir = {
+		0.0, -10.0,
+		.rotate = 0,
+		.dispersion = 0
+	},
 	.spawn_box = { 0.0, 0.0 },
 };
 
@@ -207,6 +211,7 @@ static float add_particle(float *buf,
 	float start_time;
 	float ox, oy;
 	float angle = 0;
+	float dir_x, dir_y;
 	int j;
 
 	assert(buf  != NULL);
@@ -219,18 +224,24 @@ static float add_particle(float *buf,
 	/* start_time is the timestamp from when the particle is showed */
 	start_time = glfwGetTime() + (((float)random() / RAND_MAX) * prop->spawn_period);
 
+	/* Rotate the direction given the dispersion */
+	dir_x = prop->dir.x;
+	dir_y = prop->dir.y;
+	rotate_vec2(&dir_x, &dir_y,
+		    ((float)random() / RAND_MAX) * prop->dir.dispersion, 0, 0);
+
 	/* Get position of the origin vertices and destination vertices.
 	 * (Interpolation is made in the shader) */
 	get_sctexture(origin, prop->tex,
 		      x + ox, y + oy, z,
 		      prop->box.start.x, prop->box.start.y);
 	get_sctexture(target, prop->tex,
-		      x + ox + prop->dir.x * prop->lifetime,
-		      y + oy + prop->dir.y * prop->lifetime,
+		      x + ox + dir_x * prop->lifetime,
+		      y + oy + dir_y * prop->lifetime,
 		      z, prop->box.end.x, prop->box.end.y);
 
 	if (prop->dir.rotate)
-		angle = atan2f(prop->dir.y, prop->dir.x) + M_PI_2;
+		angle = atan2f(dir_y, dir_x) + M_PI_2;
 
 	for (j = 0; j < PART_NB_VERTEX; j++) {
 		const unsigned i = j * PART_VERTEX_LEN;
@@ -241,8 +252,8 @@ static float add_particle(float *buf,
 		rotate_vec2(&target[j * TEXTURE_VERTEX_LEN + 0],
 			    &target[j * TEXTURE_VERTEX_LEN + 1],
 			    angle,
-			    x + ox + prop->dir.x * prop->lifetime,
-			    y + oy + prop->dir.y * prop->lifetime);
+			    x + ox + dir_x * prop->lifetime,
+			    y + oy + dir_y * prop->lifetime);
 
 		buf[i + 0]  = origin[j * TEXTURE_VERTEX_LEN + 0];
 		buf[i + 1]  = origin[j * TEXTURE_VERTEX_LEN + 1];
