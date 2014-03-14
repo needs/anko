@@ -36,7 +36,7 @@ static struct option long_options[] = {
 };
 
 
-static char *desc[] = {
+static const char *desc[] = {
 	"Display help",
 	"Include and interpret a configuration file",
 	"Simulation speed",
@@ -48,7 +48,7 @@ static char *desc[] = {
 	"Shattering of water (]0;1]), 1 means no shattering",
 };
 
-static void usage(char *name);
+static void usage(const char *name);
 
 
 int config_from_args(int argc, char **argv)
@@ -110,7 +110,7 @@ ret_fail:
 }
 
 
-static void usage(char *name)
+static void usage(const char *name)
 {
 	struct option *opt = long_options;
 	fprintf(stderr, "Usage: %s [OPTIONS]\n", name);
@@ -137,11 +137,11 @@ int config_from_file(char *path, int quiet)
 	}
 
 	while ((count = fscanf(f, "%253s %255s", opt, arg)) == 2) {
-		/* Add '--' allowing, to be used by command-line parsing getopt. */
+		/* Add '--', allowing to be used by command-line parsing getopt(). */
 		memmove(opt + 2, opt, 254);
 		opt[0] = '-'; opt[1] = '-';
 
-		if (strcmp(opt, "help") &&
+		if (strcmp(opt, "--help") &&
 		    config_from_args(3, (char*[]){ path, opt, arg, NULL })) {
 			fclose(f);
 			return 2;
