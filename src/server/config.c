@@ -5,16 +5,14 @@
 #include <string.h>
 #include <getopt.h>
 
-#include <client/config.h>
+#include <server/config.h>
 
 struct config_t config = {
 	/* Default value, might be overrided */
-	.screen_width  = 1024,
-	.screen_height = 720,
+	.port = 31415, 
 	.board_width   = 50,
 	.board_height  = 50,
 	.sim_speed     = 0.2,
-	.max_fps       = 1000,
 	.gen_params = {
 		.tree_density  = 0.7,
 		.water_density = 0.2,
@@ -26,12 +24,11 @@ static struct option long_options[] = {
 	{ "help",             no_argument,       0, 'h' },
 	{ "include",          required_argument, 0, 'i' },
 	{ "speed",            required_argument, 0, 's' },
-	{ "max-fps",          required_argument, 0, 'f' },
 	{ "board-size",       required_argument, 0, 'b' },
-	{ "screen-res",       required_argument, 0, 'r' },
 	{ "tree-density",     required_argument, 0, 't' },
 	{ "water-density",    required_argument, 0, 'w' },
 	{ "water-shattering", required_argument, 0, 'k' },
+	{ "port",             required_argument, 0, 'p' },
 	{ NULL, 0, NULL, 0 }
 };
 
@@ -40,12 +37,11 @@ static char *desc[] = {
 	"Display help",
 	"Include and interpret a configuration file",
 	"Simulation speed",
-	"Maximum of Frames Per Second",
 	"Size of the board (widthxheight)",
-	"Size of window (widthxheight)",
 	"Density of tree ([0;1])",
 	"Density of water ([0;1])",
 	"Shattering of water (]0;1]), 1 means no shattering",
+	"Network port used",
 };
 
 static void usage(char *name);
@@ -58,7 +54,7 @@ int config_from_args(int argc, char **argv)
 	int opt;
 	optind = 0;
 
-	while ((opt = getopt_long(argc, argv, "i:f:s:b:r:t:w:k:h", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hi:s:b:t:w:k:p:", long_options, NULL)) != -1) {
 		switch(opt) {
 		case 'i':
 			if (config_from_file(optarg, 0))
@@ -67,14 +63,8 @@ int config_from_args(int argc, char **argv)
 		case 's':
 			config.sim_speed = atof(optarg);
 			break;
-		case 'f':
-			config.max_fps = atoi(optarg);
-			break;
 		case 'b':
 			sscanf(optarg, "%dx%d", &config.board_width, &config.board_height);
-			break;
-		case 'r':
-			sscanf(optarg, "%dx%d", &config.screen_width, &config.screen_height);
 			break;
 		case 't':
 			config.gen_params.tree_density = atof(optarg);
@@ -84,6 +74,9 @@ int config_from_args(int argc, char **argv)
 			break;
 		case 'k':
 			config.gen_params.water_shatter_factor = atof(optarg);
+			break;
+		case 'p':
+			config.port = atoi(optarg);
 			break;
 		case 'h':
 			usage(argv[0]);

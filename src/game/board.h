@@ -26,7 +26,7 @@ enum tree_specie_t
 typedef struct tree_data_t
 {
 	enum tree_specie_t specie;
-	int life;
+	float life;
 	//int age;
 } tree_data_t;
 

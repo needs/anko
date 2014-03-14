@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include <game/game.h>
 #include <game/board.h>
@@ -8,12 +9,13 @@
 #include <game/simulator.h>
 
 
-#define PLAYER_SPEED 0.004
-
+#define PLAYER_SPEED 0.006 // px/ms at normal zoom
 
 static void swap(void **p1, void **p2);
 void get_spawn_coords(board_t *board, float *x, float *y);
 
+static void proceed_player_move(player_t *p, game_t *game, long diff);
+static void proceed_player_shoot(player_t *p, game_t *game, long diff);
 
 game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 {
@@ -36,7 +38,8 @@ game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 	game->sim_speed = sim_speed;
 	game->sim_timer = sim_speed;
 	game->player_count = 0;
-
+	memcpy(&game->gen_params, params, sizeof(gen_params_t));
+		   
 	return game;
 
 err_old:
@@ -64,6 +67,119 @@ int get_player_dir(game_t *game, int pid)
 	return game->players[pid].dir;
 }
 
+void get_player_pos(game_t *game, int pid, float *x, float *y)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	*x = game->players[pid].x;
+	*y = game->players[pid].y;
+}
+
+void set_player_pos(game_t *game, int pid, float x, float y)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	game->players[pid].x = x;
+    game->players[pid].y = y;
+}
+
+void set_player_moving(game_t *game, int pid, short moving)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	game->players[pid].is_moving = moving;
+}
+
+void set_player_shooting(game_t *game, int pid, short shooting)
+{
+	assert(game != NULL);
+	assert(pid >= 0 && pid < MAX_PLAYERS);
+	game->players[pid].is_shooting = shooting;
+}
+
+static void proceed_player_move(player_t *p, game_t *game, long diff)
+{
+	float x, y;
+
+	if (!p->is_used || !p->is_moving)
+	    return;
+
+	x = 0;
+	y = 0;
+
+	if (p->dir & DIR_LEFT)
+		x -= diff * PLAYER_SPEED;
+	if (p->dir & DIR_RIGHT)
+		x += diff * PLAYER_SPEED;
+	if (p->dir & DIR_UP)
+		y -= diff * PLAYER_SPEED;
+	if (p->dir & DIR_DOWN)
+		y += diff * PLAYER_SPEED;
+
+	if(x && y)
+	{
+		y *= 0.5;
+		x *= 0.5;
+	}
+
+	x += p->x;
+	y += p->y;
+	
+	if (x >= 0 && x < game->current->width&&
+		(game->current->cells[(int)p->y][(int)x].type == CT_GRASS
+		 || (game->current->cells[(int)p->y][(int)x].type == CT_TREE &&
+			 game->current->cells[(int)p->y][(int)x].data.tree.life <= 0)))
+		p->x = x;
+	if (y >= 0 && y < game->current->height &&
+		(game->current->cells[(int)y][(int)p->x].type == CT_GRASS
+		 ||(game->current->cells[(int)y][(int)p->x].type == CT_TREE &&
+			game->current->cells[(int)y][(int)p->x].data.tree.life <= 0)))
+		p->y = y;
+}
+
+static void proceed_player_shoot(player_t *p, game_t *game, long diff)
+{
+	float x, y;
+	float i;
+	
+	if (!p->is_used || !p->is_shooting || !p->weapon.type)
+	    return;
+
+	x = 0;
+	y = 0;
+
+	if (p->dir & DIR_LEFT)
+		x -= 1;
+	if (p->dir & DIR_RIGHT)
+		x += 1;
+	if (p->dir & DIR_UP)
+		y -= 1;
+	if (p->dir & DIR_DOWN)
+		y += 1;
+
+	for(i = 0; i < p->weapon.range; i++)
+	{
+		float xx, yy;
+		xx = p->x + x + (x > 0 ? i : -i);
+		yy = p->y + y + (y > 0 ? i : -i);
+			   
+		if(xx >= 0 && xx < game->current->width
+		   && yy >= 0 && yy < game->current->height
+		   && game->current->cells[(int)yy][(int)xx].type == CT_TREE)
+		{
+			switch(p->weapon.type)
+			{
+			case WP_FLAMETHROWER:
+				game->current->cells[(int)yy][(int)xx].data.tree.life-=(float)diff/1000;
+				break;
+			case WP_WATERPISTOL:
+				game->current->cells[(int)yy][(int)xx].data.tree.life+=(float)diff/1000;
+				break;
+			}
+		}
+	}
+	
+}
 
 int update_game(game_t *game, long diff)
 {
@@ -82,29 +198,8 @@ int update_game(game_t *game, long diff)
 
 	/* Player movement */
 	for (i = 0; i < MAX_PLAYERS; i++) {
-		float x, y;
-
-		if (!game->players[i].is_used)
-			continue;
-
-		x = game->players[i].x;
-		y = game->players[i].y;
-
-		if (game->players[i].dir & DIR_LEFT)
-			x -= diff * PLAYER_SPEED;
-		if (game->players[i].dir & DIR_RIGHT)
-			x += diff * PLAYER_SPEED;
-		if (game->players[i].dir & DIR_UP)
-			y -= diff * PLAYER_SPEED;
-		if (game->players[i].dir & DIR_DOWN)
-			y += diff * PLAYER_SPEED;
-
-		if (x >= 0 && x < game->current->width&&
-		    game->current->cells[(int)game->players[i].y][(int)x].type == CT_GRASS)
-			game->players[i].x = x;
-		if (y >= 0 && y < game->current->height &&
-		    game->current->cells[(int)y][(int)game->players[i].x].type == CT_GRASS)
-			game->players[i].y = y;
+		proceed_player_move(&game->players[i], game, diff);
+		proceed_player_shoot(&game->players[i], game, diff);
 	}
 	
 	return 0;
@@ -143,7 +238,22 @@ int add_player(game_t *game, int team)
 	assert(pid != MAX_PLAYERS);
 	get_spawn_coords(game->current, &game->players[pid].x, &game->players[pid].y);
 	game->players[pid].team = team;
+	if(team == TEAM_ARBRIST)
+	{
+		game->players[pid].weapon.type = WP_WATERPISTOL;
+		game->players[pid].weapon.range = 1;
+	}
+	else if(team == TEAM_BURNER)
+	{
+		game->players[pid].weapon.type = WP_FLAMETHROWER;
+		game->players[pid].weapon.range = 3;
+	}
+	else
+		game->players[pid].weapon.type = WP_NONE;
+	
 	game->players[pid].is_used = 1;
+	game->players[pid].is_moving = 0;
+	game->players[pid].is_shooting = 0;
 	game->player_count++;
 
 	return pid;
@@ -189,4 +299,31 @@ static void swap(void **p1, void **p2)
 	tmp = *p1;
 	*p1 = *p2;
 	*p2 = tmp;
+}
+
+int regenerate_map(game_t *game)
+{
+	assert(game);
+	board_t* new;
+	if((new = generate(game->current->width, game->current->height, &game->gen_params)))
+	{
+		free_board(game->current);
+		game->current = new;
+		return 1;
+	}
+	return 0;
+}
+
+int teleport_player(game_t *game, int pid, int x, int y)
+{
+	assert(game);
+	assert(game->current);
+	if(x >= 0 && x < game->current->width
+	   && y >= 0 && y < game->current->height
+	   && game->current->cells[y][x].type == CT_GRASS)
+	{
+		set_player_pos(game, pid, x+0.5, y+0.5);
+		return 1;
+	}
+	return 0;
 }

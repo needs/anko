@@ -55,6 +55,10 @@ void draw_debug(ui_frame_t *frame)
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
+	swprintf(buf, 255, L"pos: (%.2f,%.2f)", data->world->game->players[data->world->active_player].x, data->world->game->players[data->world->active_player].y);
+	render_text(buf, frame->x+5, frame->y+5+ch, 20);
+	get_text_dim(buf, NULL, &th, 20);
+	ch+=th;
 	swprintf(buf, 255, L"b: %ix%i", config.board_width, config.board_height);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);

@@ -38,7 +38,7 @@ void init_players_rendering(void)
 	glVertexAttribPointer(uv, 2, GL_FLOAT, GL_FALSE, TEXTURE_VERTEX_SIZE, (void*)(3*sizeof(float)));
 	glEnableVertexAttribArray(uv);
 
-	glBufferData(GL_ARRAY_BUFFER, TEXTURE_VERTEX_SIZE * TEXTURE_VERTEX_NB * MAX_PLAYERS, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, TEXTURE_VERTEX_SIZE * TEXTURE_VERTEX_NB * MAX_PLAYERS, NULL, GL_STREAM_DRAW);
 
 	glBindVertexArray(0);
 }
@@ -47,24 +47,26 @@ void init_players_rendering(void)
 void render_players(player_t *players, int player_count, camera_t *camera)
 {
 	int i, count = 0;
+	player_t *player;
 	float vertices[TEXTURE_VERTEX_LEN * TEXTURE_VERTEX_NB * MAX_PLAYERS];
-
+	
 	assert(players != NULL);
 	assert(camera  != NULL);
-
+	
 	if (player_count == 0)
 		return;
 
+	player = players;
 	for (i = 0; i < MAX_PLAYERS; i++) {
-		if (players->is_used && players->team != TEAM_NONE) {
+		if (player->is_used && player->team != TEAM_NONE) {
 			float x, y, z;
-			get_map_coord(players->x, players->y, &x, &y, &z);
+			get_map_coord(player->x, player->y, &x, &y, &z);
 			get_ctexture(vertices + (count * TEXTURE_VERTEX_LEN * TEXTURE_VERTEX_NB),
-				     get_player_tex(players->team, players->dir),
-				     x, y, z+1);
+				     get_player_tex(player->team, player->dir),
+				     x, y, z+2);
 			count++;
 		}
-		players++;
+		player++;
 	}
 
 	assert(count == player_count);

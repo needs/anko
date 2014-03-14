@@ -1,6 +1,7 @@
 *.o
 /anko
 /anko_text
+/anko_server
 *#*
 *~
 .build

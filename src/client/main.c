@@ -73,8 +73,9 @@ int main(int argc, char **argv)
 
 		// Update 
 		update_ui(current_ui, deltatime);
+		update_world(world);
 		if (update_game(game, deltatime * 1000))
-			update_world(world);
+			refresh_world(world);
 		if(should_quit)
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		
