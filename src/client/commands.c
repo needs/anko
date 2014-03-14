@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef char*(*exec_fun)(int, char**,game_t*);
+typedef char*(*exec_fun)(int, char**, world_t*);
 
 typedef struct {
 	char *cmd;
@@ -15,11 +15,13 @@ static char** create_table(char *s, int *argc);
 int wordcount(char *s);
 
 // Command Handlers
-char* cmd_regen_map(int argc, char **argv, game_t* game);
+char* cmd_regen_map(int argc, char **argv, world_t* world);
+char* cmd_tp(int argc, char **argv, world_t* world);
 
 cmd_handler handlers[] =
 {
-	{ "regen", NULL },
+	{ "regen", cmd_regen_map },
+	{ "tp", cmd_tp },
 	{ NULL, NULL}
 };
 
@@ -41,7 +43,7 @@ int is_command(char *s)
 	return result;
 }
 
-char* execute_command(char *s, game_t *game)
+char* execute_command(char *s, world_t *world)
 {
 	int argc, i = 0;
 	char **argv = create_table(s, &argc);
@@ -52,7 +54,7 @@ char* execute_command(char *s, game_t *game)
 	while(handlers[i].cmd)
 	{
 		if(!strcmp(argv[0], handlers[i].cmd) && handlers[i].exec)
-			result = handlers[i].exec(argc, argv, game);
+			result = handlers[i].exec(argc, argv, world);
 		i++;
 	}
 	free_table(argv);
@@ -120,10 +122,25 @@ int wordcount(char *s)
 	return count;
 }
 
-char* cmd_regen_map(int argc, char **argv, game_t* game)
+char* cmd_regen_map(int argc, char **argv, world_t* world)
 {
 	(void)argc;
 	(void)argv;
-    regenerate_map(game);
+    regenerate_map(world->game);
+	regen_map(world);
 	return "Map regenerated";
+}
+
+char* cmd_tp(int argc, char **argv, world_t* world)
+{
+	(void)argc;
+	(void)argv;
+	if(argc < 3)
+		return "invalid parameters";
+	
+	if(teleport_player(world->game, world->active_player, atoi(argv[1]), atoi(argv[2])))
+		return "POINT";
+	else
+		return "Can't teleport player to location";
+		
 }

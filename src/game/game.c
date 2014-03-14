@@ -9,7 +9,7 @@
 #include <game/simulator.h>
 
 
-#define PLAYER_SPEED 0.004 // px/ms at normal zoom
+#define PLAYER_SPEED 0.006 // px/ms at normal zoom
 
 static void swap(void **p1, void **p2);
 void get_spawn_coords(board_t *board, float *x, float *y);
@@ -104,8 +104,8 @@ static void proceed_player_move(player_t *p, game_t *game, long diff)
 	if (!p->is_used || !p->is_moving)
 	    return;
 
-	x = p->x;
-	y = p->y;
+	x = 0;
+	y = 0;
 
 	if (p->dir & DIR_LEFT)
 		x -= diff * PLAYER_SPEED;
@@ -116,6 +116,15 @@ static void proceed_player_move(player_t *p, game_t *game, long diff)
 	if (p->dir & DIR_DOWN)
 		y += diff * PLAYER_SPEED;
 
+	if(x && y)
+	{
+		y *= 0.5;
+		x *= 0.5;
+	}
+
+	x += p->x;
+	y += p->y;
+	
 	if (x >= 0 && x < game->current->width&&
 		(game->current->cells[(int)p->y][(int)x].type == CT_GRASS
 		 || (game->current->cells[(int)p->y][(int)x].type == CT_TREE &&
@@ -131,34 +140,42 @@ static void proceed_player_move(player_t *p, game_t *game, long diff)
 static void proceed_player_shoot(player_t *p, game_t *game, long diff)
 {
 	float x, y;
-
-	if (!p->is_used || !p->is_shooting)
+	float i;
+	
+	if (!p->is_used || !p->is_shooting || !p->weapon.type)
 	    return;
 
-	x = p->x;
-	y = p->y;
+	x = 0;
+	y = 0;
 
 	if (p->dir & DIR_LEFT)
-		x -= diff * PLAYER_SPEED;
+		x -= 1;
 	if (p->dir & DIR_RIGHT)
-		x += diff * PLAYER_SPEED;
+		x += 1;
 	if (p->dir & DIR_UP)
-		y -= diff * PLAYER_SPEED;
+		y -= 1;
 	if (p->dir & DIR_DOWN)
-		y += diff * PLAYER_SPEED;
+		y += 1;
 
-	if(x >= 0 && x < game->current->width
-	   && y >= 0 && y < game->current->height
-	   && game->current->cells[(int)y][(int)x].type == CT_TREE)
+	for(i = 0; i < p->weapon.range; i++)
 	{
-		switch(p->weapon)
+		float xx, yy;
+		xx = p->x + x + (x > 0 ? i : -i);
+		yy = p->y + y + (y > 0 ? i : -i);
+			   
+		if(xx >= 0 && xx < game->current->width
+		   && yy >= 0 && yy < game->current->height
+		   && game->current->cells[(int)yy][(int)xx].type == CT_TREE)
 		{
-		case WP_FLAMETHROWER:
-			game->current->cells[(int)y][(int)x].data.tree.life-=(float)diff/1000;
-			break;
-		case WP_WATERPISTOL:
-			game->current->cells[(int)y][(int)x].data.tree.life+=(float)diff/1000;
-			break;
+			switch(p->weapon.type)
+			{
+			case WP_FLAMETHROWER:
+				game->current->cells[(int)yy][(int)xx].data.tree.life-=(float)diff/1000;
+				break;
+			case WP_WATERPISTOL:
+				game->current->cells[(int)yy][(int)xx].data.tree.life+=(float)diff/1000;
+				break;
+			}
 		}
 	}
 	
@@ -222,11 +239,17 @@ int add_player(game_t *game, int team)
 	get_spawn_coords(game->current, &game->players[pid].x, &game->players[pid].y);
 	game->players[pid].team = team;
 	if(team == TEAM_ARBRIST)
-		game->players[pid].weapon = WP_WATERPISTOL;
+	{
+		game->players[pid].weapon.type = WP_WATERPISTOL;
+		game->players[pid].weapon.range = 1;
+	}
 	else if(team == TEAM_BURNER)
-		game->players[pid].weapon = WP_FLAMETHROWER;
+	{
+		game->players[pid].weapon.type = WP_FLAMETHROWER;
+		game->players[pid].weapon.range = 3;
+	}
 	else
-		game->players[pid].weapon = WP_NONE;
+		game->players[pid].weapon.type = WP_NONE;
 	
 	game->players[pid].is_used = 1;
 	game->players[pid].is_moving = 0;
@@ -295,9 +318,12 @@ int teleport_player(game_t *game, int pid, int x, int y)
 {
 	assert(game);
 	assert(game->current);
-	if(game->current->cells[y][x].type == CT_GRASS)
+	if(x >= 0 && x < game->current->width
+	   && y >= 0 && y < game->current->height
+	   && game->current->cells[y][x].type == CT_GRASS)
 	{
 		set_player_pos(game, pid, x+0.5, y+0.5);
+		return 1;
 	}
-	return 1;
+	return 0;
 }

@@ -28,13 +28,18 @@ enum {
 	WP_WATERPISTOL
 };
 
+typedef struct weapon_t {
+	int type;
+	float range;
+} weapon_t;
+
 typedef struct player_t {
 	short is_used;		/* 0 if this structure is not linked to a player */
 	short is_shooting;
 	short is_moving;
 	int dir;
 	int team;
-	int weapon;
+	weapon_t weapon;
 	float x, y;
 } player_t;
 

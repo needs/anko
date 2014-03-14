@@ -44,7 +44,7 @@ typedef struct ui_console_data_t
 {
 	GLuint vao;
 	GLuint vbo;
-	game_t *game;
+    world_t *world;
 	console_input_t input;
 	console_messages_t messages;
 	console_messages_t input_history;
@@ -285,7 +285,7 @@ void ui_console_on_key(ui_frame_t* frame, int key, int scancode, int action, int
 				if(is_command(buffer))
 				{
 					wchar_t result[MAX_MESSAGES_LENGTH+1];
-					mbstowcs(result, execute_command(buffer, data->game), MAX_MESSAGES_LENGTH+1);
+					mbstowcs(result, execute_command(buffer, data->world), MAX_MESSAGES_LENGTH+1);
 				    console_add_message(&data->messages, result);
 				}
 				else
@@ -324,7 +324,7 @@ void ui_console_on_char(ui_frame_t *frame, unsigned int c)
 	}
 }
 
-ui_frame_t *init_ui_console(ui_frame_t *parent, game_t *game, float x, float y, float w, float h)
+ui_frame_t *init_ui_console(ui_frame_t *parent, world_t *world, float x, float y, float w, float h)
 {
 	ui_frame_t *frame = create_ui();
 	if(frame)
@@ -332,7 +332,7 @@ ui_frame_t *init_ui_console(ui_frame_t *parent, game_t *game, float x, float y, 
 		ui_console_data_t *data = calloc(1, sizeof(ui_console_data_t));
 		if(!data)
 			goto err_data;
-		data->game = game;
+		data->world = world;
 
 		frame->data = data;
 		frame->destroy = &destroy_ui_console;
