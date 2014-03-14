@@ -20,6 +20,7 @@ world_t* create_world(game_t *game);
 void update_world(world_t *world);
 void refresh_world(world_t *world);
 void render_world(world_t *world, camera_t *camera);
+void render_world_particles(world_t *world, camera_t *camera);
 void regen_map(world_t *world); // update map rendering
 
 /* Set active player (used to center camera & move the player on input) */

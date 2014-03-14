@@ -106,23 +106,27 @@ void update_world(world_t *world)
 	}
 }
 
-
 void render_world(world_t *world, camera_t *camera)
 {
 	assert(world != NULL);
 	assert(camera != NULL);
 
 	render_map(world->map, camera);
-	render_particles(world->gen, camera);
 }
 
+void render_world_particles(world_t *world, camera_t *camera)
+{
+	assert(world != NULL);
+	assert(camera != NULL);
+
+	render_particles(world->gen, camera);
+}
 
 void world_set_active_player(world_t *world, int pid)
 {
 	assert(world != NULL);
 	world->active_player = pid;
 }
-
 
 void end_of_the_world(world_t *world)
 {

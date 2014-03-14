@@ -58,7 +58,8 @@ void draw_game(ui_frame_t *frame)
 
 	render_world(data->world, &data->camera);
 	render_players(data->world->game->players, data->world->game->player_count, &data->camera);
-
+	render_world_particles(data->world, &data->camera);
+	
 	rtt_stop();
 	rtt_draw();
 
