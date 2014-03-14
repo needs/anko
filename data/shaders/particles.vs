@@ -21,5 +21,7 @@ void main()
 	uv = UV;
 	Lifetime = lifetime;
 	Alpha = alpha;
-	gl_Position = projection * view * vec4(mix(position.x, target.x, curtime), mix(position.y, target.y, curtime), position.z, 1.0);
+	gl_Position = projection * view * vec4(mix(position.x, target.x, curtime),
+					       mix(position.y, target.y, curtime),
+					       position.z, 1.0);
 }

@@ -8,6 +8,9 @@
 #include <client/stb_image.h>
 
 
+#define IS_TEX_VALID(tex) ((tex) >= TEX_NONE && (tex) < TEX_TOTAL)
+
+
 typedef struct texture_t {
 	GLuint tex;		/* OpenGL texture */
 	float data[16];		/* Vertices and coordinates */
@@ -116,8 +119,7 @@ static void ref_texture(texture_t *tex, texture_t *ref, float x, float y, float 
 void get_texture(float *data, tex_t tex, float x, float y, float z)
 {
 	assert(data != NULL);
-	assert(tex >= TEX_NONE);
-	assert(tex <  TEX_TOTAL);
+	assert(IS_TEX_VALID(tex));
 
 	float *ref = textures[tex].data;
 
@@ -138,8 +140,7 @@ void get_ctexture(float *data, tex_t tex, float x, float y, float z)
 void get_stexture(float *data, tex_t tex, float x, float y, float z, float sx, float sy)
 {
 	assert(data != NULL);
-	assert(tex >= TEX_NONE);
-	assert(tex <  TEX_TOTAL);
+	assert(IS_TEX_VALID(tex));
 
 	float *ref = textures[tex].data;
 
@@ -160,5 +161,6 @@ void get_sctexture(float *data, tex_t tex, float x, float y, float z, float sx, 
 
 GLuint get_texid(tex_t tex)
 {
+	assert(IS_TEX_VALID(tex));
 	return textures[tex].tex;
 }

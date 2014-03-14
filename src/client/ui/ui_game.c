@@ -84,6 +84,7 @@ static void update_camera(ui_frame_t* frame)
 	set_camera_pos(&data->camera, x, y);
 }
 
+
 void ui_game_update(ui_frame_t* frame, float deltatime)
 {
 	int i;

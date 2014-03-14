@@ -62,16 +62,18 @@ void update_world(world_t *world)
 		player_t *p = &world->game->players[i];
 		if(p->is_used && p->is_shooting)
 		{
-			float temp_speed = 125;
+			float temp_speed = 300;
 			struct partargs_t prop = PARTARGS_DEFAULT;
 			float px, py, mx, my, mz;
-			prop.lifetime = 0.5;
+			prop.lifetime = 0.4;
 			prop.tex = TEX_PARTICLES_FIRE1;
 			prop.box.start.x = 2.0;
 			prop.box.start.y = 2.0;
 			prop.box.end.x = 3.0;
 			prop.box.end.y = 3.0;
 			prop.spawn_period = 0.0;
+			prop.dir.dispersion = 0.4;
+			prop.dir.rotate = 1;
 			
 			prop.dir.y = 0;
 			prop.dir.x = 0;
