@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 	float deltatime = 0;
 	float sleep_time;
 	
-	if (config_from_file("anko.cfg", 0) == 2)
+	if (config_from_file("anko.cfg", 1) == 2)
 		return EXIT_FAILURE;
 	if (config_from_args(argc, argv))
 		return EXIT_FAILURE;
