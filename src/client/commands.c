@@ -120,7 +120,7 @@ int wordcount(char *s)
 	return count;
 }
 
-char* cmd_regen_map(int argc, char **argv, game* game)
+char* cmd_regen_map(int argc, char **argv, game_t* game)
 {
 	(void)argc;
 	(void)argv;

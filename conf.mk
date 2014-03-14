@@ -8,7 +8,7 @@ CC = gcc
 #
 # Binaires à construire
 #
-BINS = anko anko_text
+BINS = anko anko_text anko_server
 
 SRCS_anko_text = src/game/*.c src/text/*.c
 LDFLAGS_anko_text =
@@ -17,6 +17,10 @@ CFLAGS_anko_text = $(CFLAGS)
 SRCS_anko = src/game/*.c src/client/*.c src/client/ui/*.c
 LDFLAGS_anko = -lglfw -lGL -lm -lGLEW
 CFLAGS_anko = $(CFLAGS)
+
+SRCS_anko_server = src/game/*.c src/server/*.c
+LDFLAGS_anko_server = -lm -lenet
+CFLAGS_anko_server = $(CFLAGS)
 
 # We create textures_pack.def if missing to avoid include error.
 $(shell test -f src/client/textures_pack.def || touch src/client/textures_pack.def)
