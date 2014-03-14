@@ -228,7 +228,8 @@ static float add_particle(float *buf,
 	dir_x = prop->dir.x;
 	dir_y = prop->dir.y;
 	rotate_vec2(&dir_x, &dir_y,
-		    ((float)random() / RAND_MAX) * prop->dir.dispersion, 0, 0);
+		    ((float)random() / RAND_MAX) * prop->dir.dispersion - prop->dir.dispersion/2,
+		    0, 0);
 
 	/* Get position of the origin vertices and destination vertices.
 	 * (Interpolation is made in the shader) */
