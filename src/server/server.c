@@ -5,6 +5,8 @@
 server_t *create_server(int port)
 {
 	server_t *server = malloc(sizeof(server_t));
+	if(!server)
+		goto err_server;
 	server->is_running = 1;
 	server->address.host = ENET_HOST_ANY;
 	server->address.port = port;
@@ -20,6 +22,8 @@ server_t *create_server(int port)
 err_game:
 	destroy_server(server);
 err_host:
+	free(server);
+err_server:
 	return NULL;
 }
 
