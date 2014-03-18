@@ -11,7 +11,7 @@ typedef enum cell_type_t
 	CT_WATER,
 	CT_ROCK,
 	CT_TREE,
-	CT_TOTAL,
+	CT_TOTAL
 } cell_type_t;
 
 enum tree_specie_t
@@ -20,14 +20,13 @@ enum tree_specie_t
 	TS_APPLE,
 	TS_BIRCH,
 	TS_PINE,
-	TS_TOTAL,
+	TS_TOTAL
 };
 
 typedef struct tree_data_t
 {
 	enum tree_specie_t specie;
 	float life;
-	//int age;
 } tree_data_t;
 
 typedef struct cell_t

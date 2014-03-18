@@ -9,7 +9,7 @@
 #include <game/simulator.h>
 
 
-#define PLAYER_SPEED 0.006 // px/ms at normal zoom
+#define PLAYER_SPEED 0.006 /* px/ms at normal zoom */
 
 static void swap(void **p1, void **p2);
 void get_spawn_coords(board_t *board, float *x, float *y);
@@ -303,8 +303,8 @@ static void swap(void **p1, void **p2)
 
 int regenerate_map(game_t *game)
 {
-	assert(game);
 	board_t* new;
+	assert(game);
 	if((new = generate(game->current->width, game->current->height, &game->gen_params)))
 	{
 		free_board(game->current);

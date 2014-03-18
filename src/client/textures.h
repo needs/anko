@@ -13,12 +13,12 @@
 #define TEXTURE_VERTEX_SIZE (TEXTURE_VERTEX_LEN * sizeof(float))
 
 
-#define ADD_TEXTURE(name, path)         TEX_##name,
-#define ADD_IN_TEXTURE(name, from, ...) TEX_##from##_##name,
+#define ADD_TEXTURE(name, path)                        TEX_##name,
+#define ADD_IN_TEXTURE(name, from, x, y, w, h, ox, oy) TEX_##from##_##name,
 typedef enum tex_t {
 	TEX_NONE = 0,
 #include "textures.def"
-	TEX_TOTAL,
+	TEX_TOTAL
 } tex_t;
 #undef ADD_IN_TEXTURE
 #undef ADD_TEXTURE

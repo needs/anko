@@ -11,7 +11,7 @@
 enum {
 	TEAM_NONE = 0,		/* Spectator */
 	TEAM_ARBRIST,
-	TEAM_BURNER,
+	TEAM_BURNER
 };
 
 
@@ -19,7 +19,7 @@ enum {
 	DIR_LEFT  = 1,
 	DIR_UP    = 2,
 	DIR_RIGHT = 4,
-	DIR_DOWN  = 8,
+	DIR_DOWN  = 8
 };
 
 enum {

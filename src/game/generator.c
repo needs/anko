@@ -8,7 +8,7 @@
 
 #define RANDOM_FLOAT() ((float)random()/RAND_MAX)
 
-static enum tree_specie_t trees[] = { TS_OAK, TS_APPLE, TS_BIRCH, TS_PINE }; // pine disabled for now
+static enum tree_specie_t trees[] = { TS_OAK, TS_APPLE, TS_BIRCH, TS_PINE }; /* pine disabled for now */
 
 typedef void(*spread_func)(board_t*, int, int, int*, int, int);
 
@@ -22,6 +22,7 @@ static void gen_stats(board_t *board);
 board_t* generate(int width, int height, gen_params_t *params)
 {
 	board_t *board = NULL;
+	int pos[2];
 	int i, j;
 	
 	assert(width > 0);
@@ -51,7 +52,9 @@ board_t* generate(int width, int height, gen_params_t *params)
 
 	correct_water(board);
 	
-	int pos[2] = { random()%board->height, random()%board->width };
+    pos[0] = random() % board->height;
+    pos[1] = random() % board->width;
+
 	board->cells[pos[0]][pos[1]].type = CT_TREE;
 	board->cells[pos[0]][pos[1]].data.tree.life = 99;
 	board->cells[pos[0]][pos[1]].data.tree.specie = TS_APPLE;
