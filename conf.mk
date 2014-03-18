@@ -15,7 +15,7 @@ LDFLAGS_anko_text =
 CFLAGS_anko_text = $(CFLAGS)
 
 SRCS_anko = src/game/*.c src/client/*.c src/client/ui/*.c
-LDFLAGS_anko = -lglfw -lGL -lm -lGLEW
+LDFLAGS_anko = -lglfw -lglfw3 -lX11 -lXxf86vm -lpthread -lXrandr -lXi -lglfw -lGL -lm -lGLEW
 CFLAGS_anko = $(CFLAGS)
 
 SRCS_anko_server = src/game/*.c src/server/*.c
