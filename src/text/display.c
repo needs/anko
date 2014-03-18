@@ -21,21 +21,21 @@ void display(board_t *board)
 			switch(board->cells[i][j].type)
 			{
 			case CT_GRASS:
-				printf(statemap[0]);
+				printf("%s", statemap[0]);
 				break;
 			case CT_WATER:
-				printf(statemap[1]);
+				printf("%s", statemap[1]);
 				break;
 			case CT_ROCK:
-				printf(statemap[2]);
+				printf("%s", statemap[2]);
 				break;
 			case CT_TREE:
 				if(board->cells[i][j].data.tree.life == 100)
-					printf(statemap[3]);
+					printf("%s", statemap[3]);
 				else if(board->cells[i][j].data.tree.life)
-					printf(statemap[4]);
+					printf("%s", statemap[4]);
 				else
-					printf(statemap[5]);
+					printf("%s", statemap[5]);
 				break;
 			default:
 				break;
