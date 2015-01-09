@@ -88,7 +88,7 @@ static void update_camera(ui_frame_t* frame)
 
 void ui_game_update(ui_frame_t* frame, float deltatime)
 {
-	int i;
+	int i = 0;
 	
 	update_camera(frame);
 
