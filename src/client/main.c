@@ -40,12 +40,12 @@ static void update_speed(float deltatime);
 int main(int argc, char **argv)
 {
 	world_t *world;
-	game_t *game;
+	game_t game;
 	double last_time = 0;
 	double current_time = 0;
 	float deltatime = 0;
 	float sleep_time;
-	
+
 	if (config_from_file("anko.cfg", 1) == 2)
 		return EXIT_FAILURE;
 	if (config_from_args(argc, argv))
@@ -53,14 +53,14 @@ int main(int argc, char **argv)
 
 	if (!init())
 		goto err_init;
-	if ((game = new_game(config.board_width, config.board_height, &config.gen_params, config.sim_speed * 1000)) == NULL)
+	if (!new_game(&game, config.board_width, config.board_height, &config.gen_params, config.sim_speed * 1000))
 		goto err_game;
-	if ((world = create_world(game)) == NULL)
+	if ((world = create_world(&game)) == NULL)
 		goto err_world;
 	if ((current_ui = init_ui_game(world)) == NULL)
 		goto err_ui;
 
-	world_set_active_player(world, add_player(game, TEAM_BURNER));
+	world_set_active_player(world, add_player(&game, TEAM_BURNER));
 	events_link_frame(&current_ui); // link window event to game ui frame
 	glClearColor(0, 0, 0, 1);
 
@@ -71,14 +71,14 @@ int main(int argc, char **argv)
 		update_speed(deltatime);
 		glfwPollEvents();
 
-		// Update 
+		// Update
 		update_ui(current_ui, deltatime);
 		update_world(world);
-		if (update_game(game, deltatime * 1000))
+		if (update_game(&game, deltatime * 1000))
 			refresh_world(world);
 		if(should_quit)
 			glfwSetWindowShouldClose(window, GL_TRUE);
-		
+
 		// Rendering
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		draw_ui(current_ui);
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	}
 
 	destroy_ui(current_ui);
-	game_over(game);
+	game_over(&game);
 	end_of_the_world(world); // Tin tin tin
 	terminate();
 
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 err_ui:
 	end_of_the_world(world);
 err_world:
-	game_over(game);
+	game_over(&game);
 err_game:
 	terminate();
 err_init:
@@ -141,16 +141,16 @@ static int init(void)
 	glfwMakeContextCurrent(window);
 
 	printf("OpenGL Version : %s\n\n", glGetString(GL_VERSION));
-	
+
 	if (!init_context())
 		goto err_context;
 	if (!load_textures())
 		goto err_texture;
 	init_events(window);
-  
+
 	if(!load_font())
 		goto err_font;
-		
+
 	return 1;
 
 err_font:

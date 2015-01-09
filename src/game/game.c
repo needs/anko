@@ -17,18 +17,12 @@ void get_spawn_coords(board_t *board, float *x, float *y);
 static void proceed_player_move(player_t *p, game_t *game, long diff);
 static void proceed_player_shoot(player_t *p, game_t *game, long diff);
 
-game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
+int new_game(game_t *game, int width, int height, gen_params_t *params, long sim_speed)
 {
-	game_t *game;
-
+	assert(game != NULL);
 	assert(width > 0);
 	assert(height > 0);
 	assert(params != NULL);
-
-	if ((game = calloc(1, sizeof(*game))) == NULL) {
-		perror("malloc(game)");
-		goto err_game;
-	}
 
 	if ((game->current = generate(width, height, params)) == NULL)
 		goto err_current;
@@ -39,15 +33,13 @@ game_t* new_game(int width, int height, gen_params_t *params, long sim_speed)
 	game->sim_timer = sim_speed;
 	game->player_count = 0;
 	memcpy(&game->gen_params, params, sizeof(gen_params_t));
-		   
-	return game;
+
+	return 1;
 
 err_old:
 	free_board(game->current);
 err_current:
-	free(game);
-err_game:
-	return NULL;
+	return 0;
 }
 
 
@@ -124,7 +116,7 @@ static void proceed_player_move(player_t *p, game_t *game, long diff)
 
 	x += p->x;
 	y += p->y;
-	
+
 	if (x >= 0 && x < game->current->width&&
 		(game->current->cells[(int)p->y][(int)x].type == CT_GRASS
 		 || (game->current->cells[(int)p->y][(int)x].type == CT_TREE &&
@@ -141,7 +133,7 @@ static void proceed_player_shoot(player_t *p, game_t *game, long diff)
 {
 	float x, y;
 	float i;
-	
+
 	if (!p->is_used || !p->is_shooting || !p->weapon.type)
 	    return;
 
@@ -162,7 +154,7 @@ static void proceed_player_shoot(player_t *p, game_t *game, long diff)
 		float xx, yy;
 		xx = p->x + x + (x > 0 ? i : -i);
 		yy = p->y + y + (y > 0 ? i : -i);
-			   
+
 		if(xx >= 0 && xx < game->current->width
 		   && yy >= 0 && yy < game->current->height
 		   && game->current->cells[(int)yy][(int)xx].type == CT_TREE)
@@ -178,7 +170,7 @@ static void proceed_player_shoot(player_t *p, game_t *game, long diff)
 			}
 		}
 	}
-	
+
 }
 
 int update_game(game_t *game, long diff)
@@ -201,7 +193,7 @@ int update_game(game_t *game, long diff)
 		proceed_player_move(&game->players[i], game, diff);
 		proceed_player_shoot(&game->players[i], game, diff);
 	}
-	
+
 	return 0;
 }
 
@@ -212,7 +204,6 @@ void game_over(game_t *game)
 
 	free_board(game->current);
 	free_board(game->old);
-	free(game);
 }
 
 
@@ -250,7 +241,7 @@ int add_player(game_t *game, int team)
 	}
 	else
 		game->players[pid].weapon.type = WP_NONE;
-	
+
 	game->players[pid].is_used = 1;
 	game->players[pid].is_moving = 0;
 	game->players[pid].is_shooting = 0;

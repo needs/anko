@@ -52,7 +52,7 @@ typedef struct game_t {
 } game_t;
 
 
-game_t* new_game(int width, int height, gen_params_t *params, long sim_speed);
+int new_game(game_t *game, int width, int height, gen_params_t *params, long sim_speed);
 void game_over(game_t *game);
 
 /* Set player direction */
