@@ -39,7 +39,7 @@ static void update_speed(float deltatime);
 
 int main(int argc, char **argv)
 {
-	world_t *world;
+	world_t world;
 	game_t game;
 	double last_time = 0;
 	double current_time = 0;
@@ -55,12 +55,12 @@ int main(int argc, char **argv)
 		goto err_init;
 	if (!new_game(&game, config.board_width, config.board_height, &config.gen_params, config.sim_speed * 1000))
 		goto err_game;
-	if ((world = create_world(&game)) == NULL)
+	if (!create_world(&world, &game))
 		goto err_world;
-	if ((current_ui = init_ui_game(world)) == NULL)
+	if ((current_ui = init_ui_game(&world)) == NULL)
 		goto err_ui;
 
-	world_set_active_player(world, add_player(&game, TEAM_BURNER));
+	world_set_active_player(&world, add_player(&game, TEAM_BURNER));
 	events_link_frame(&current_ui); // link window event to game ui frame
 	glClearColor(0, 0, 0, 1);
 
@@ -73,9 +73,9 @@ int main(int argc, char **argv)
 
 		// Update
 		update_ui(current_ui, deltatime);
-		update_world(world);
+		update_world(&world);
 		if (update_game(&game, deltatime * 1000))
-			refresh_world(world);
+			refresh_world(&world);
 		if(should_quit)
 			glfwSetWindowShouldClose(window, GL_TRUE);
 
@@ -94,12 +94,12 @@ int main(int argc, char **argv)
 
 	destroy_ui(current_ui);
 	game_over(&game);
-	end_of_the_world(world); // Tin tin tin
+	end_of_the_world(&world); // Tin tin tin
 	terminate();
 
 	return EXIT_SUCCESS;
 err_ui:
-	end_of_the_world(world);
+	end_of_the_world(&world);
 err_world:
 	game_over(&game);
 err_game:

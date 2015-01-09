@@ -7,16 +7,10 @@
 #include <game/board.h>
 
 
-world_t* create_world(game_t *game)
+int create_world(world_t *world, game_t *game)
 {
-	world_t *world;
-
+	assert(world != NULL);
 	assert(game != NULL);
-
-	if ((world = malloc(sizeof(*world))) == NULL) {
-		perror("malloc(world)");
-		goto err_world;
-	}
 
 	if ((world->map = create_map(game->current)) == NULL)
 		goto err_map;
@@ -25,14 +19,12 @@ world_t* create_world(game_t *game)
 	world->game = game;
 	world->active_player = -1;
 
-	return world;
+	return 1;
 
 err_particles:
 	free_map(world->map);
 err_map:
-	free(world);
-err_world:
-	return NULL;
+	return 0;
 }
 
 void regen_map(world_t *world)
@@ -74,10 +66,10 @@ void update_world(world_t *world)
 			prop.spawn_period = 0.0;
 			prop.dir.dispersion = 0.40;
 			prop.dir.rotate = 1;
-			
+
 			prop.dir.y = 0;
 			prop.dir.x = 0;
-			
+
 			if (p->dir & DIR_LEFT)
 			{
 				prop.dir.y -= temp_speed;
@@ -98,7 +90,7 @@ void update_world(world_t *world)
 				prop.dir.y -= temp_speed;
 				prop.dir.x += temp_speed;
 			}
-			
+
 			get_player_pos(world->game, world->active_player, &px, &py);
 			get_map_coord(px, py, &mx, &my, &mz);
 			spawn_particles(world->gen, 1, mx, my, mz, &prop);
@@ -134,5 +126,4 @@ void end_of_the_world(world_t *world)
 
 	free_map(world->map);
 	free_particles(world->gen);
-	free(world);
 }
