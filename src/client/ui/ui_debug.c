@@ -63,7 +63,7 @@ void draw_debug(ui_frame_t *frame)
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
-	swprintf(buf, 255, L"p: %i\n", data->world->gen->count);
+	swprintf(buf, 255, L"p: %i\n", data->world->gen.count);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;

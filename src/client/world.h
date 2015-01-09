@@ -10,7 +10,7 @@
 
 typedef struct world_t {
 	map_t map;
-	partgen_t *gen;
+	partgen_t gen;
 	game_t *game;
 	int active_player;
 } world_t;

@@ -51,14 +51,9 @@ static float add_particle(float *buf, struct partargs_t *prop, float x, float y,
 static void rotate_vec2(float *x, float *y, float angle, float cx, float cy);
 
 
-partgen_t* init_particles(void)
+void init_particles(partgen_t *gen)
 {
-	partgen_t *gen;
-
-	if ((gen = calloc(1, sizeof (*gen))) == NULL) {
-		perror("malloc(partgen)");
-		return NULL;
-	}
+	memset(gen, sizeof(*gen), 0);
 
 	gen->count = 0;
 	gen->offset = 0;
@@ -91,8 +86,6 @@ partgen_t* init_particles(void)
 	glEnableVertexAttribArray(target);
 
 	glBindVertexArray(0);
-
-	return gen;
 }
 
 
@@ -198,9 +191,9 @@ void render_particles(partgen_t *gen, camera_t *camera)
 void free_particles(partgen_t *gen)
 {
 	assert(gen != NULL);
+
 	glDeleteBuffers(1, &gen->vbo);
 	glDeleteVertexArrays(1, &gen->vao);
-	free(gen);
 }
 
 

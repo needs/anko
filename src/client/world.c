@@ -15,18 +15,12 @@ int create_world(world_t *world, game_t *game)
 
 	memset(world, sizeof(*world), 0);
 	if (!create_map(&world->map, game->current))
-		goto err_map;
-	if ((world->gen = init_particles()) == NULL)
-		goto err_particles;
+		return 0;
+	init_particles(&world->gen);
 	world->game = game;
 	world->active_player = -1;
 
 	return 1;
-
-err_particles:
-	free_map(&world->map);
-err_map:
-	return 0;
 }
 
 int regen_map(world_t *world)
@@ -45,8 +39,8 @@ void refresh_world(world_t *world)
 {
 	assert(world != NULL);
 
-	update_map(&world->map, world->gen, world->game->current, world->game->old);
-	update_particles(world->gen);
+	update_map(&world->map, &world->gen, world->game->current, world->game->old);
+	update_particles(&world->gen);
 }
 
 void update_world(world_t *world)
@@ -97,7 +91,7 @@ void update_world(world_t *world)
 
 			get_player_pos(world->game, world->active_player, &px, &py);
 			get_map_coord(px, py, &mx, &my, &mz);
-			spawn_particles(world->gen, 1, mx, my, mz, &prop);
+			spawn_particles(&world->gen, 1, mx, my, mz, &prop);
 		}
 	}
 }
@@ -115,7 +109,7 @@ void render_world_particles(world_t *world, camera_t *camera)
 	assert(world != NULL);
 	assert(camera != NULL);
 
-	render_particles(world->gen, camera);
+	render_particles(&world->gen, camera);
 }
 
 void world_set_active_player(world_t *world, int pid)
@@ -129,5 +123,5 @@ void end_of_the_world(world_t *world)
 	assert(world != NULL);
 
 	free_map(&world->map);
-	free_particles(world->gen);
+	free_particles(&world->gen);
 }

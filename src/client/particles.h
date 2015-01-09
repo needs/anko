@@ -47,7 +47,7 @@ struct partargs_t {
 extern struct partargs_t PARTARGS_DEFAULT;
 
 /* Create a new particles generator. */
-partgen_t* init_particles(void);
+void init_particles(partgen_t *gen);
 
 /* Spawn particles given the paramters.
  * If the maximum of particles is reached, the particles won't be rendered. */
