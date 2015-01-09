@@ -32,7 +32,7 @@ int is_command(char *s)
 	int result = 0;
 	if(!argv)
 		return 0;
-	
+
 	while(handlers[i].cmd && !result)
 	{
 		if(!strcmp(argv[0], handlers[i].cmd))
@@ -50,7 +50,7 @@ char* execute_command(char *s, world_t *world)
 	char * result = "command not found";
 	if(!argv)
 		return "error executing command";
-	
+
 	while(handlers[i].cmd)
 	{
 		if(!strcmp(argv[0], handlers[i].cmd) && handlers[i].exec)
@@ -77,7 +77,7 @@ char** create_table(char *s, int *argc)
 
 	if(!new)
 		return NULL;
-	
+
 	char** table = malloc(sizeof(char*)*(wc+1));
 
 	if(!table)
@@ -94,9 +94,9 @@ char** create_table(char *s, int *argc)
 		table[i] = arg;
 		i++;
 	}
-	
+
 	table[i] = NULL;
-	
+
 	if(argc) *argc = wc;
 	return table;
 }
@@ -105,14 +105,14 @@ int wordcount(char *s)
 {
 	int count = 0;
 	int flag = 0;
-	while(*s) 
+	while(*s)
 	{
 		if(*s == ' ' || *s == '\t' || *s == '\n')
 		{
-			if(flag) 
-			{ 
-				count++; 
-				flag = 0; 
+			if(flag)
+			{
+				count++;
+				flag = 0;
 			}
 		}
 		else
@@ -127,8 +127,9 @@ char* cmd_regen_map(int argc, char **argv, world_t* world)
 {
 	(void)argc;
 	(void)argv;
-    regenerate_map(world->game);
-	regen_map(world);
+	regenerate_map(world->game);
+	if (!regen_map(world))
+		return "Could not regenerate the map";
 	return "Map regenerated";
 }
 
@@ -138,10 +139,10 @@ char* cmd_tp(int argc, char **argv, world_t* world)
 	(void)argv;
 	if(argc < 3)
 		return "invalid parameters";
-	
+
 	if(teleport_player(world->game, world->active_player, atoi(argv[1]), atoi(argv[2])))
 		return "POINT";
 	else
 		return "Can't teleport player to location";
-		
+
 }

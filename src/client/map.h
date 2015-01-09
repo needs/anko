@@ -24,8 +24,8 @@ typedef struct map_t {
 	board_stats_t board_stats;
 } map_t;
 
-/* Allocate the map based on the generated board. NULL on error. */
-map_t* create_map(board_t *board);
+/* Allocate the map based on the generated board. 0 on error. */
+int create_map(map_t *map, board_t *board);
 void free_map(map_t *map);
 
 /* Change the map based on the differences between old and current. */

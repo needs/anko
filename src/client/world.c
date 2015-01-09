@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <client/world.h>
 #include <client/map.h>
 #include <game/game.h>
@@ -12,7 +13,8 @@ int create_world(world_t *world, game_t *game)
 	assert(world != NULL);
 	assert(game != NULL);
 
-	if ((world->map = create_map(game->current)) == NULL)
+	memset(world, sizeof(*world), 0);
+	if (!create_map(&world->map, game->current))
 		goto err_map;
 	if ((world->gen = init_particles()) == NULL)
 		goto err_particles;
@@ -22,26 +24,28 @@ int create_world(world_t *world, game_t *game)
 	return 1;
 
 err_particles:
-	free_map(world->map);
+	free_map(&world->map);
 err_map:
 	return 0;
 }
 
-void regen_map(world_t *world)
+int regen_map(world_t *world)
 {
-	map_t *new = create_map(world->game->current);
-	if(new)
-	{
-		free_map(world->map);
-		world->map = new;
-	}
+	map_t map;
+
+	if (!create_map(&map, world->game->current))
+		return 0;
+
+	free_map(&world->map);
+	world->map = map;
+	return 1;
 }
 
 void refresh_world(world_t *world)
 {
 	assert(world != NULL);
 
-	update_map(world->map, world->gen, world->game->current, world->game->old);
+	update_map(&world->map, world->gen, world->game->current, world->game->old);
 	update_particles(world->gen);
 }
 
@@ -103,7 +107,7 @@ void render_world(world_t *world, camera_t *camera)
 	assert(world != NULL);
 	assert(camera != NULL);
 
-	render_map(world->map, camera);
+	render_map(&world->map, camera);
 }
 
 void render_world_particles(world_t *world, camera_t *camera)
@@ -124,6 +128,6 @@ void end_of_the_world(world_t *world)
 {
 	assert(world != NULL);
 
-	free_map(world->map);
+	free_map(&world->map);
 	free_particles(world->gen);
 }

@@ -9,7 +9,7 @@
 
 
 typedef struct world_t {
-	map_t *map;
+	map_t map;
 	partgen_t *gen;
 	game_t *game;
 	int active_player;
@@ -21,7 +21,7 @@ void update_world(world_t *world);
 void refresh_world(world_t *world);
 void render_world(world_t *world, camera_t *camera);
 void render_world_particles(world_t *world, camera_t *camera);
-void regen_map(world_t *world); // update map rendering
+int regen_map(world_t *world);
 
 /* Set active player (used to center camera & move the player on input) */
 void world_set_active_player(world_t *world, int pid);

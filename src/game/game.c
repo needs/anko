@@ -24,6 +24,7 @@ int new_game(game_t *game, int width, int height, gen_params_t *params, long sim
 	assert(height > 0);
 	assert(params != NULL);
 
+	memset(game, 0, sizeof(*game));
 	if ((game->current = generate(width, height, params)) == NULL)
 		goto err_current;
 	if ((game->old = alloc_board(width, height)) == NULL)

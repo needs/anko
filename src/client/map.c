@@ -16,25 +16,26 @@
 
 static void create_vao(GLuint *vao, GLuint *vbo);
 static int seed_map(map_t *map, board_t *board);
-static map_t* alloc_map(int width, int height);
+static int alloc_map(map_t *map, int width, int height);
 static tex_t get_floor_tex(cell_t *c);
 static tex_t get_entity_tex(cell_t *c);
 
 
-map_t* create_map(board_t *board)
+int create_map(map_t *map, board_t *board)
 {
-	map_t *map;
-
+	assert(map != NULL);
 	assert(board != NULL);
 
-	if ((map = alloc_map(board->width, board->height)) == NULL)
-		return NULL;
-	if (!seed_map(map, board))
-		return NULL;
+	if (!alloc_map(map, board->width, board->height))
+		return 0;
+	if (!seed_map(map, board)) {
+		free_map(map);
+		return 0;
+	}
 
 	memcpy(&map->board_stats, &board->stats, sizeof(board_stats_t));
-	
-	return map;
+
+	return 1;
 }
 
 
@@ -49,24 +50,18 @@ void free_map(map_t *map)
 	glDeleteBuffers(1, &map->vbo);
 	glDeleteVertexArrays(1, &map->vao);
 	free(map->cells);
-	free(map);
 }
 
 
 /* Allocate needed memory and initialise width, height, x, and y. */
-static map_t* alloc_map(int width, int height)
+static int alloc_map(map_t *map, int width, int height)
 {
 	int i, j;
-	map_t *map;
 
 	assert(width > 0);
 	assert(height > 0);
 
-	if ((map = malloc(sizeof(*map))) == NULL) {
-		perror("malloc(map)");
-		goto err_map;
-	}
-
+	memset(map, sizeof(*map), 0);
 	if ((map->cells = malloc(height * sizeof(*map->cells))) == NULL) {
 		perror("malloc(map->cells)");
 		goto err_height;
@@ -91,16 +86,14 @@ static map_t* alloc_map(int width, int height)
 
 	create_vao(&map->vao, &map->vbo);
 
-	return map;
+	return 1;
 
 err_width:
 	while (i --> 0)
 		free(map->cells[i]);
 	free(map->cells);
 err_height:
-	free(map);
-err_map:
-	return NULL;
+	return 0;
 }
 
 
@@ -259,7 +252,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 	assert(old->height == current->height && old->height == map->height);
 
 	memcpy(&map->board_stats, &current->stats, sizeof(board_stats_t));
-	
+
 	/* Only entities may change */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
 	buf = glMapBufferRange(GL_ARRAY_BUFFER, map->vsize * sizeof(float), map->vsize * sizeof(float), GL_MAP_WRITE_BIT);
@@ -308,7 +301,7 @@ void update_map(map_t *map, partgen_t *gen, board_t *current, board_t *old)
 			}
 		}
 	}
-	
+
 	/* Rebind the buffer because other function might bind something else
 	 * to GL_BUFFER_ARRAY */
 	glBindBuffer(GL_ARRAY_BUFFER, map->vbo);

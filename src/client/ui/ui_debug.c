@@ -37,16 +37,16 @@ void draw_debug(ui_frame_t *frame)
 	wchar_t buf[255];
 	float th;
 	float ch=0;
-    float total = data->world->map->width*data->world->map->height;
+    float total = data->world->map.width*data->world->map.height;
 	glUseProgram(gui);
 	glBindVertexArray(data->vao);
-			
+
 	glUniform1i(glGetUniformLocation(gui, "has_texture"),0);
-	
+
 	glDrawArrays(GL_QUADS, 0, 4);
-	
+
 	set_font_color(1,1,1,1);
-	
+
 	swprintf(buf, 255, L"%i fps", (int)(1000/speed));
 	render_text(buf, frame->x+5, frame->y+5, 20);
 	get_text_dim(buf, NULL, &th, 20);
@@ -67,39 +67,39 @@ void draw_debug(ui_frame_t *frame)
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
-	swprintf(buf, 255, L"w: %.2f%%", (float)100*(data->world->map->board_stats.total_water)/total);
+	swprintf(buf, 255, L"w: %.2f%%", (float)100*(data->world->map.board_stats.total_water)/total);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
-	swprintf(buf, 255, L"t: %.2f%%\n", (float)100*(data->world->map->board_stats.total_tree)/total);
+	swprintf(buf, 255, L"t: %.2f%%\n", (float)100*(data->world->map.board_stats.total_tree)/total);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
 
 	swprintf(buf, 255, L"%i (%.2f%%)",
-			 data->world->map->board_stats.total_tree-(data->world->map->board_stats.burning_tree+data->world->map->board_stats.burned_tree),
-			 100*(data->world->map->board_stats.total_tree-(data->world->map->board_stats.burning_tree+data->world->map->board_stats.burned_tree))/total
+			 data->world->map.board_stats.total_tree-(data->world->map.board_stats.burning_tree+data->world->map.board_stats.burned_tree),
+			 100*(data->world->map.board_stats.total_tree-(data->world->map.board_stats.burning_tree+data->world->map.board_stats.burned_tree))/total
 		);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
 
 	swprintf(buf, 255, L"%i (%.2f%%)",
-			 data->world->map->board_stats.burning_tree,
-			 100*(data->world->map->board_stats.burning_tree)/total
+			 data->world->map.board_stats.burning_tree,
+			 100*(data->world->map.board_stats.burning_tree)/total
 		);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
 
 	swprintf(buf, 255, L"%i (%.2f%%)",
-			 data->world->map->board_stats.burned_tree,
-			 100*(data->world->map->board_stats.burned_tree)/total
+			 data->world->map.board_stats.burned_tree,
+			 100*(data->world->map.board_stats.burned_tree)/total
 		);
 	render_text(buf, frame->x+5, frame->y+5+ch, 20);
 	get_text_dim(buf, NULL, &th, 20);
 	ch+=th;
-	
+
 }
 
 void update_debug_render(ui_frame_t *frame)
@@ -136,8 +136,8 @@ void init_debug_rendering(ui_frame_t *frame)
     GLint col = glGetAttribLocation(gui, "Color");
 	glVertexAttribPointer(col, 4, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(4*sizeof(float)));
 	glEnableVertexAttribArray(col);
-	
-	
+
+
 	update_debug_render(frame);
 }
 
@@ -151,7 +151,7 @@ ui_frame_t *init_ui_debug(ui_frame_t *parent, world_t *world, float x, float y, 
 		if(!data)
 			goto err_data;
 		data->world = world;
-		
+
 		frame->data = data;
 		frame->destroy = &destroy_ui_debug;
 		frame->draw = &draw_debug;
