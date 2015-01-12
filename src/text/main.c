@@ -27,39 +27,44 @@ void handler(int sig)
 
 int main(int argc, char **argv)
 {
-	board_t *board, *dest, *tmp;
+	board_t board[2];
+	board_t *current, *old, *tmp;
 	int speed = 500;
 	gen_params_t gen_params = { .tree_density = 0.7, .water_density = 0.1, .water_shatter_factor = 0.4 };
-	
+
 	is_running = 1;
 	init_from_args(argc, argv, &speed, &gen_params);
-	
+
 	srandom(time(NULL));
 
 	signal(SIGINT,&handler);
-	
-	if ((board = generate(WIDTH, HEIGHT, &gen_params)) == NULL)
+
+	if (!alloc_board(&board[0], WIDTH, HEIGHT))
 		return EXIT_FAILURE;
-	if ((dest = alloc_board(WIDTH, HEIGHT)) == NULL)
+	if (!alloc_board(&board[1], WIDTH, HEIGHT))
 		return EXIT_FAILURE;
+	generate(&board[0], &gen_params);
+	current = &board[0];
+	old = &board[1];
 
 	clear_screen();
 	display(board);
-	
+
 	while(is_running)
 	{
-		step(dest, board);
-		
-		tmp = board;
-		board = dest;
-		dest = tmp;
-		
-		display(board);
+		step(old, current);
+
+		/* Swap */
+		tmp = current;
+		current = old;
+		old = tmp;
+
+		display(current);
 		usleep(speed*1000);
 	}
 
-	free_board(board);
-	free_board(dest);
+	free_board(&board[0]);
+	free_board(&board[1]);
 
 	return EXIT_SUCCESS;
 }
