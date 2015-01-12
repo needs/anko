@@ -1,7 +1,0 @@
-/* Packed textures generated at compilation time */
-#include "textures_pack.def"
-
-/* Other textures goes here */
-ADD_TEXTURE(FONT_DROID, "data/fonts/droid.png")
-
-#include "textures_chars.def"
