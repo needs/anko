@@ -4,18 +4,14 @@
 #include <stdio.h>
 
 
-board_t* alloc_board(int width, int height)
+int alloc_board(board_t *board, int width, int height)
 {
 	int i;
-	board_t *board;
 
+	assert(board != NULL);
 	assert(width > 0);
 	assert(height > 0);
 
-	if ((board = malloc(sizeof(*board))) == NULL) {
-		perror("malloc(board)");
-		goto err_board;
-	}
 	if ((board->cells = malloc(height * sizeof(*board->cells))) == NULL) {
 		perror("malloc(board->cells)");
 		goto err_height;
@@ -31,16 +27,14 @@ board_t* alloc_board(int width, int height)
 	board->width = width;
 	board->height = height;
 
-	return board;
+	return 1;
 
 err_width:
 	while (--i >= 0)
 		free(board->cells[i]);
 	free(board->cells);
 err_height:
-	free(board);
-err_board:
-	return NULL;
+	return 0;
 }
 
 
@@ -56,7 +50,6 @@ void free_board(board_t *board)
 	for (i = 0; i < board->height; i++)
 		free(board->cells[i]);
 	free(board->cells);
-	free(board);
 }
 
 int get_neighbors_count(int x, int y, board_t* board, cell_type_t type, int(*predicate)(void*))

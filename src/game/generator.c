@@ -19,48 +19,49 @@ static void spread_lake(board_t *board, int x, int y, int *count, int size, int 
 static void spread_forest(board_t *board, int x, int y, int *count, int size, int meta);
 static void gen_stats(board_t *board);
 
-board_t* generate(int width, int height, gen_params_t *params)
+int generate(board_t *board, int width, int height, gen_params_t *params)
 {
-	board_t *board = NULL;
 	int pos[2];
 	int i, j;
-	
+
+	assert(board != NULL);
 	assert(width > 0);
 	assert(height > 0);
 	assert(params->tree_density <= 1);
    	assert(params->water_density <= 1);
 	assert(params->water_shatter_factor > 0 && params->water_shatter_factor <= 1);
-	
-	if ((board = alloc_board(width, height)) == NULL) 
-		return NULL;
+
+	/* TODO: The board should be created before */
+	if (!alloc_board(board, width, height))
+		return 0;
 
 	for (i = 0; i < board->height; i++) {
 		for (j = 0; j < board->width; j++) {
 			board->cells[i][j].type = CT_GRASS;
 		}
 	}
-	
+
 	while(should_spawn(CT_TREE, board, params->tree_density))
 	{
 		spawn_spot(&spread_forest, board, params->tree_density, 0.2, trees[random() % TS_TOTAL]);
 	}
-	
+
 	while(should_spawn(CT_WATER, board, params->water_density))
 	{
 		spawn_spot(&spread_lake, board, params->water_density, params->water_shatter_factor, 0);
 	}
 
 	correct_water(board);
-	
-    pos[0] = random() % board->height;
-    pos[1] = random() % board->width;
+
+	pos[0] = random() % board->height;
+	pos[1] = random() % board->width;
 
 	board->cells[pos[0]][pos[1]].type = CT_TREE;
 	board->cells[pos[0]][pos[1]].data.tree.life = 99;
 	board->cells[pos[0]][pos[1]].data.tree.specie = TS_APPLE;
 
 	gen_stats(board);
-	return board;
+	return 1;
 }
 
 static void gen_stats(board_t *board)
@@ -68,7 +69,7 @@ static void gen_stats(board_t *board)
 	int i,j;
 
 	memset(&board->stats, 0, sizeof(board->stats));
-	
+
 	for(i = 0; i < board->height; i++)
 		for(j = 0; j < board->width; j++)
 	    {
@@ -130,7 +131,7 @@ static void spread_forest(board_t *board, int x, int y, int *count, int size, in
 {
 	if(IS_OUT_OF_BOUNDS(board,x,y) || board->cells[y][x].type == CT_TREE)
 		return;
-	
+
 	if(RANDOM_FLOAT() > (float)*count/size
 	   && (get_neighbors_count(x,y, board, CT_TREE, NULL) != 1 || RANDOM_FLOAT() > 0.5))
 	{
@@ -140,7 +141,7 @@ static void spread_forest(board_t *board, int x, int y, int *count, int size, in
 			board->cells[y][x].data.tree.specie = trees[meta];
 		else
 			board->cells[y][x].data.tree.specie = trees[random() % TS_TOTAL];
-		
+
 		*count = *count+1;
 		spread_forest(board, x+1, y, count, size, meta);
 		spread_forest(board, x-1, y, count, size, meta);
@@ -155,4 +156,3 @@ static void spawn_spot(spread_func spread,board_t *board, float density, float s
 	int count = 0;
     spread(board, random()%board->width, random()%board->height, &count, size, meta);
 }
-

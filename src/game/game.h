@@ -44,7 +44,10 @@ typedef struct player_t {
 } player_t;
 
 typedef struct game_t {
+	/* current and old point on one of the board in board[2] */
 	board_t *current, *old;
+	board_t board[2];
+
 	player_t players[MAX_PLAYERS];
 	int player_count;
 	long sim_speed, sim_timer;

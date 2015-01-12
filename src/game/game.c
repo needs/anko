@@ -25,10 +25,13 @@ int new_game(game_t *game, int width, int height, gen_params_t *params, long sim
 	assert(params != NULL);
 
 	memset(game, 0, sizeof(*game));
-	if ((game->current = generate(width, height, params)) == NULL)
-		goto err_current;
-	if ((game->old = alloc_board(width, height)) == NULL)
-		goto err_old;
+
+	if (!generate(&game->board[0], width, height, params))
+		goto err_board1;
+	if (!alloc_board(&game->board[1], width, height))
+		goto err_board2;
+	game->current = &game->board[0];
+	game->old = &game->board[1];
 
 	game->sim_speed = sim_speed;
 	game->sim_timer = sim_speed;
@@ -37,9 +40,9 @@ int new_game(game_t *game, int width, int height, gen_params_t *params, long sim
 
 	return 1;
 
-err_old:
-	free_board(game->current);
-err_current:
+err_board2:
+	free_board(&game->board[0]);
+err_board1:
 	return 0;
 }
 
@@ -295,15 +298,16 @@ static void swap(void **p1, void **p2)
 
 int regenerate_map(game_t *game)
 {
-	board_t* new;
-	assert(game);
-	if((new = generate(game->current->width, game->current->height, &game->gen_params)))
-	{
-		free_board(game->current);
-		game->current = new;
-		return 1;
-	}
-	return 0;
+	board_t new;
+
+	assert(game != NULL);
+
+	if (!generate(&new, game->current->width, game->current->height, &game->gen_params))
+		return 0;
+
+	free_board(game->current);
+	*game->current = new;
+	return 1;
 }
 
 int teleport_player(game_t *game, int pid, int x, int y)

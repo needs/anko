@@ -54,7 +54,7 @@ typedef struct board_t
 } board_t;
 
 
-board_t* alloc_board(int width, int height);
+int alloc_board(board_t *board, int width, int height);
 void free_board(board_t *board);
 int get_neighbors_count(int x, int y, board_t* board, cell_type_t type, int(*predicate)(void*));
 
