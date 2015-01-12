@@ -81,7 +81,7 @@ int add_player(game_t *game, int team);
 /* Remove a player of the board */
 void rem_player(game_t *game, int pid);
 
-int regenerate_map(game_t *game);
+void regenerate_map(game_t *game);
 int teleport_player(game_t *game, int pid, int x, int y);
 
 #endif /* _GAME_H_ */

@@ -10,6 +10,7 @@ typedef struct gen_params
 	float water_shatter_factor;
 } gen_params_t;
 
-int generate(board_t *board, int width, int height, gen_params_t *params);
+/* The board must be initialized */
+void generate(board_t *board, gen_params_t *params);
 
 #endif /* _GENERATOR_H_ */

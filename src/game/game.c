@@ -26,10 +26,11 @@ int new_game(game_t *game, int width, int height, gen_params_t *params, long sim
 
 	memset(game, 0, sizeof(*game));
 
-	if (!generate(&game->board[0], width, height, params))
+	if (!alloc_board(&game->board[0], width, height))
 		goto err_board1;
 	if (!alloc_board(&game->board[1], width, height))
 		goto err_board2;
+	generate(&game->board[0], params);
 	game->current = &game->board[0];
 	game->old = &game->board[1];
 
@@ -296,18 +297,10 @@ static void swap(void **p1, void **p2)
 	*p2 = tmp;
 }
 
-int regenerate_map(game_t *game)
+void regenerate_map(game_t *game)
 {
-	board_t new;
-
 	assert(game != NULL);
-
-	if (!generate(&new, game->current->width, game->current->height, &game->gen_params))
-		return 0;
-
-	free_board(game->current);
-	*game->current = new;
-	return 1;
+	generate(game->current, &game->gen_params);
 }
 
 int teleport_player(game_t *game, int pid, int x, int y)

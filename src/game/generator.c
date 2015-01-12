@@ -19,21 +19,17 @@ static void spread_lake(board_t *board, int x, int y, int *count, int size, int 
 static void spread_forest(board_t *board, int x, int y, int *count, int size, int meta);
 static void gen_stats(board_t *board);
 
-int generate(board_t *board, int width, int height, gen_params_t *params)
+void generate(board_t *board, gen_params_t *params)
 {
 	int pos[2];
 	int i, j;
 
 	assert(board != NULL);
-	assert(width > 0);
-	assert(height > 0);
+	assert(board->width > 0);
+	assert(board->height > 0);
 	assert(params->tree_density <= 1);
    	assert(params->water_density <= 1);
 	assert(params->water_shatter_factor > 0 && params->water_shatter_factor <= 1);
-
-	/* TODO: The board should be created before */
-	if (!alloc_board(board, width, height))
-		return 0;
 
 	for (i = 0; i < board->height; i++) {
 		for (j = 0; j < board->width; j++) {
@@ -61,7 +57,6 @@ int generate(board_t *board, int width, int height, gen_params_t *params)
 	board->cells[pos[0]][pos[1]].data.tree.specie = TS_APPLE;
 
 	gen_stats(board);
-	return 1;
 }
 
 static void gen_stats(board_t *board)
