@@ -24,7 +24,7 @@ static int for_every_addr(char *node, char *service, int flags,
 	if ((ret = getaddrinfo(node, service, &hint, &res)) != 0) {
 		fprintf(stderr, "getaddrinfo(%s, %s): %s\n",
 			node, service, gai_strerror(ret));
-		return -1;
+		return -2;
 	}
 
 	for (iter = res; iter != NULL; iter = iter->ai_next)
