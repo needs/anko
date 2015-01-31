@@ -9,8 +9,8 @@
 #include <netinet/in.h>
 
 #include <shared/network.h>
+#include <shared/packet.h>
 
-#define BUFSIZE 128
 #define MAX_PLAYERS 16
 
 struct slot {
@@ -68,22 +68,53 @@ static struct slot *get_addr_slot(struct sockaddr_storage *addr)
 	return unused_slot;
 }
 
+static char got_packet;
+
+static int push_network(int fd)
+{
+	ssize_t ret;
+	static char buf[PACKET_SIZE];
+	struct packet packet;
+
+	if (!got_packet)
+		return 1;
+
+	packet.ack = 30001;
+	pack_packet(buf, &packet);
+
+	ret = sendto(fd, buf, PACKET_SIZE, 0,
+	             (const struct sockaddr*)&slots[0].addr, sizeof(slots[0].addr));
+	if (ret == -1) {
+		fprintf(stderr, "sendto(): %s\n", strerror(errno));
+		return 0;
+	}
+
+	got_packet = 0;
+
+	return 1;
+}
+
 static int poll_network(int fd)
 {
-	static char buf[BUFSIZE];
+	static char buf[PACKET_SIZE];
 	struct sockaddr_storage addr;
 	socklen_t addrlen = sizeof(addr);
 	ssize_t ret;
 	struct slot *slot;
+	struct packet packet;
 
-	ret = recvfrom(fd, buf, BUFSIZE, MSG_TRUNC, (struct sockaddr*)&addr, &addrlen);
+	ret = recvfrom(fd, buf, PACKET_SIZE, 0, (struct sockaddr*)&addr, &addrlen);
 	if (ret == -1) {
 		fprintf(stderr, "recvfrom(): %s\n", strerror(errno));
 		return 0;
 	}
 
-	if (ret > BUFSIZE) {
-		fprintf(stderr, "recvfrom(): Message truncated, more than %li bytes received.\n",
+	if ((unsigned)ret > PACKET_SIZE) {
+		fprintf(stderr, "recvfrom(): Packet rejected: too large (%li bytes).\n",
+			(long)ret);
+		return 0;
+	} else if ((unsigned)ret < PACKET_SIZE) {
+		fprintf(stderr, "recvfrom(): Packet rejected: too small (%li bytes).\n",
 			(long)ret);
 		return 0;
 	}
@@ -100,7 +131,10 @@ static int poll_network(int fd)
 		puts("Already connected");
 	}
 
-	printf("Received packet of size %li\n", (long)ret);
+	unpack_packet(buf, &packet);
+	printf("Received packet with content: \"%s\"\n", packet.buf);
+	got_packet = 1;
+
 	return 1;
 }
 
@@ -125,6 +159,8 @@ int main(int argc, char **argv)
 
 	while (1) {
 		poll_network(fd);
+		push_network(fd);
+		sleep(1);
 	}
 
 	close(fd);

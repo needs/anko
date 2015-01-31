@@ -7,18 +7,58 @@
 #include <sys/types.h>
 
 #include <shared/network.h>
+#include <shared/packet.h>
 
-#define BUFSIZE 128
+static const char STRING_TO_SEND[] = "Hello world!";
+static unsigned char got_ack;
 
-static int push_network(int fd, char *buf, size_t len)
+static int push_network(int fd)
 {
 	ssize_t ret;
+	static char buf[PACKET_SIZE];
+	struct packet packet;
 
-	ret = send(fd, buf, len, 0);
+	if (got_ack)
+		return 1;
+
+	packet.ack = 30001;
+	memcpy(packet.buf, STRING_TO_SEND, sizeof(STRING_TO_SEND));
+	pack_packet(buf, &packet);
+
+	ret = send(fd, buf, PACKET_SIZE, 0);
 	if (ret == -1) {
 		fprintf(stderr, "send(%s): %s\n", buf, strerror(errno));
 		return 0;
 	}
+
+	return 1;
+}
+
+static int poll_network(int fd)
+{
+	ssize_t ret;
+	static char buf[PACKET_SIZE];
+	struct packet packet;
+
+	ret = recvfrom(fd, buf, PACKET_SIZE, 0, NULL, NULL);
+	if (ret == -1) {
+		fprintf(stderr, "recvfrom(): %s\n", strerror(errno));
+		return 0;
+	}
+
+	if ((unsigned)ret > PACKET_SIZE) {
+		fprintf(stderr, "recvfrom(): Packet rejected: too large (%li bytes).\n",
+			(long)ret);
+		return 0;
+	} else if ((unsigned)ret < PACKET_SIZE) {
+		fprintf(stderr, "recvfrom(): Packet rejected: too small (%li bytes).\n",
+			(long)ret);
+		return 0;
+	}
+
+	unpack_packet(buf, &packet);
+	printf("Received packet with ACK %lu\n", (unsigned long)packet.ack);
+	got_ack = 1;
 
 	return 1;
 }
@@ -45,9 +85,9 @@ int main(int argc, char **argv)
 	 *   6) render(world)
 	 */
 	while (1) {
-		char buf[BUFSIZE];
-		fgets(buf, BUFSIZE, stdin);
-		push_network(fd, buf, strlen(buf));
+		push_network(fd);
+		poll_network(fd);
+		sleep(1);
 	}
 
 	close(fd);

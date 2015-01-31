@@ -2,6 +2,7 @@
 #define SHARED_NETWORK_H
 
 #include <string.h>
+#include <arpa/inet.h>
 
 /*
  * Inline the packing/unpacking functions because they are easily optimizable for
@@ -10,7 +11,7 @@
 
 static inline void pack_uint8(char **buf, uint8_t val)
 {
-	*buf = val;
+	**buf = val;
 	*buf = *buf + sizeof(val);
 }
 
@@ -37,7 +38,7 @@ static inline void pack_string(char **buf, char *str, size_t len)
 static inline uint8_t unpack_uint8(char **buf)
 {
 	uint8_t val;
-	val = *buf;
+	val = **buf;
 	*buf = *buf + sizeof(val);
 	return val;
 }
