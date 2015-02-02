@@ -10,6 +10,8 @@
 
 #include <shared/network.h>
 #include <shared/packet.h>
+#include <shared/player_array.h>
+#include <game/player.h>
 
 #define MAX_PLAYERS 16
 
@@ -68,56 +70,77 @@ static struct slot *get_addr_slot(struct sockaddr_storage *addr)
 	return unused_slot;
 }
 
-static char got_packet;
+static size_t build_packet(char *buf, struct player_array *array)
+{
+	struct packet packet = PACKET_ZERO;
 
-static int push_network(int fd)
+	packet.ack = array->current->seq;
+	printf("Send packet with ack = %lu\n", (unsigned long)packet.ack);
+	return pack_packet(buf, &packet) - buf;
+}
+
+static int push_network(int fd, struct player_array *array)
 {
 	ssize_t ret;
-	static char buf[PACKET_SIZE];
-	struct packet packet;
+	size_t len;
+	static char buf[MAX_PACKET_SIZE];
 
-	if (!got_packet)
+	if (array->current->confirmed)
 		return 1;
 
-	packet.ack = 30001;
-	pack_packet(buf, &packet);
-
-	ret = sendto(fd, buf, PACKET_SIZE, 0,
+	len = build_packet(buf, array);
+	ret = sendto(fd, buf, len, 0,
 	             (const struct sockaddr*)&slots[0].addr, sizeof(slots[0].addr));
 	if (ret == -1) {
 		fprintf(stderr, "sendto(): %s\n", strerror(errno));
 		return 0;
 	}
-
-	got_packet = 0;
+	array->current->confirmed = 1;
 
 	return 1;
 }
 
-static int poll_network(int fd)
+static void handle_packet(struct packet *packet, struct player_array *array)
 {
-	static char buf[PACKET_SIZE];
+	struct player_array_entry *from, *to;
+
+	printf("Receive packet with seq_from = %lu, seq_to = %lu, ack = %lu\n",
+	       (unsigned long)packet->seq_from, (unsigned long)packet->seq_to, (unsigned long)packet->ack);
+
+	from = player_array_get_entry_by_seq(array, packet->seq_from);
+	if (!from)
+		return;
+	to = player_array_get_entry_by_seq(array, packet->seq_to);
+	if (to)
+		return;
+
+	if (!player_array_forward(array))
+		return;
+	to = array->current;
+	to->seq = packet->seq_to;
+	apply_player_diff(&packet->diff, &to->player);
+
+	to->confirmed = 0;
+	from->confirmed = 1;
+}
+
+static int poll_network(int fd, struct player_array *array)
+{
+	static char buf[MAX_PACKET_SIZE];
 	struct sockaddr_storage addr;
 	socklen_t addrlen = sizeof(addr);
 	ssize_t ret;
 	struct slot *slot;
 	struct packet packet;
 
-	ret = recvfrom(fd, buf, PACKET_SIZE, 0, (struct sockaddr*)&addr, &addrlen);
+	ret = recvfrom(fd, buf, MAX_PACKET_SIZE, 0, (struct sockaddr*)&addr, &addrlen);
 	if (ret == -1) {
 		fprintf(stderr, "recvfrom(): %s\n", strerror(errno));
 		return 0;
 	}
 
-	if ((unsigned)ret > PACKET_SIZE) {
-		fprintf(stderr, "recvfrom(): Packet rejected: too large (%li bytes).\n",
-			(long)ret);
-		return 0;
-	} else if ((unsigned)ret < PACKET_SIZE) {
-		fprintf(stderr, "recvfrom(): Packet rejected: too small (%li bytes).\n",
-			(long)ret);
-		return 0;
-	}
+	if (!check_packet_size(ret))
+		return 1;
 
 	slot = get_addr_slot(&addr);
 	if (!slot) {
@@ -132,8 +155,7 @@ static int poll_network(int fd)
 	}
 
 	unpack_packet(buf, &packet);
-	printf("Received packet with content: \"%s\"\n", packet.buf);
-	got_packet = 1;
+	handle_packet(&packet, array);
 
 	return 1;
 }
@@ -141,12 +163,15 @@ static int poll_network(int fd)
 int main(int argc, char **argv)
 {
 	int fd;
+	struct player_array array;
 
 	if (argc < 2) {
 		fprintf(stderr, "usage: %s <host> [<port>]\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
+	if (!player_array_init(&array, PLAYER_ARRAY_DEFAULT_LEN))
+		return EXIT_FAILURE;
 	if ((fd = bind_to(argv[1], argv[2])) == -1)
 		return EXIT_FAILURE;
 
@@ -158,12 +183,13 @@ int main(int argc, char **argv)
 	 */
 
 	while (1) {
-		poll_network(fd);
-		push_network(fd);
+		poll_network(fd, &array);
+		push_network(fd, &array);
 		sleep(1);
 	}
 
 	close(fd);
+	player_array_free(&array);
 
 	return EXIT_SUCCESS;
 }
