@@ -39,6 +39,7 @@ static int push_network(int fd, struct player_array *array)
 		fprintf(stderr, "send(len = %lu): %s\n", (unsigned long)len, strerror(errno));
 		return 0;
 	}
+	array->last->confirmed = 1;
 
 	return 1;
 }
