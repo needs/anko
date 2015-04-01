@@ -48,11 +48,13 @@ static void handle_packet(struct packet *packet, struct player_array *array)
 {
 	struct player_array_entry *entry;
 
-	printf("Receive packet with ack = %lu\n", (unsigned long)packet->ack);
+	printf("Received packet with ack = %lu\n", (unsigned long)packet->ack);
 
 	entry = player_array_get_entry_by_seq(array, packet->ack);
-	if (!entry)
+	if (!entry) {
+		printf("Acknowledged snapshot unknown\n");
 		return;
+	}
 
 	array->last = entry;
 	array->last->confirmed = 0;
