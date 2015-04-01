@@ -30,6 +30,7 @@ static int push_network(int fd, struct player_array *array)
 	static char buf[MAX_PACKET_SIZE];
 	size_t len;
 
+	/* If the most recent packet is confirmed, we have nothing to send. */
 	if (array->last->confirmed)
 		return 1;
 
@@ -72,6 +73,7 @@ static int poll_network(int fd, struct player_array *array)
 		return 0;
 	}
 
+	/* Packets with wrong size are not an error, just ignore them */
 	if (!check_packet_size(ret))
 		return 1;
 
