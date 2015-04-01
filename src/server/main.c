@@ -197,6 +197,7 @@ int main(int argc, char **argv)
 	while (1) {
 		poll_network(fd, &array);
 		push_network(fd, &array);
+		printf("Player name: %s\n", array.current->player.name);
 		sleep(1);
 	}
 

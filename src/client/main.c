@@ -93,7 +93,22 @@ static int change_our_player_name(struct player_array *array, char *name)
 
 	array->current->player = *old;
 	strcpy(array->current->player.name, name);
+
+	printf("Name changed to %s\n", name);
+
 	return 1;
+}
+
+static char *random_name(void)
+{
+	static char name[10];
+	unsigned i;
+
+	for (i = 0; i < sizeof(name) - 1; i++)
+		name[i] = 'a' + (random() % 26);
+	name[i] = '\0';
+
+	return name;
 }
 
 int main(int argc, char **argv)
@@ -126,6 +141,7 @@ int main(int argc, char **argv)
 		push_network(fd, &array);
 		poll_network(fd, &array);
 		sleep(1);
+		change_our_player_name(&array, random_name());
 	}
 
 	close(fd);
