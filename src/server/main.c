@@ -108,14 +108,26 @@ static void handle_packet(struct packet *packet, struct player_array *array)
 	       (unsigned long)packet->seq_from, (unsigned long)packet->seq_to, (unsigned long)packet->ack);
 
 	from = player_array_get_entry_by_seq(array, packet->seq_from);
-	if (!from)
+	if (!from) {
+		printf("Source snapshot not already received by the client, diff can't be applied\n");
 		return;
-	to = player_array_get_entry_by_seq(array, packet->seq_to);
-	if (to)
-		return;
+	}
 
-	if (!player_array_forward(array))
+	to = player_array_get_entry_by_seq(array, packet->seq_to);
+	if (to) {
+		printf("Destination snapshot already received, ignoring diff\n");
 		return;
+	}
+
+	/*
+	 * In the futur, in may be possible to free some old snapshot, likely
+	 * the one who have less chance to be used again.  For now, just fail.
+	 */
+	if (!player_array_forward(array)) {
+		printf("Snapshot list is too long, packet ignored\n");
+		return;
+	}
+
 	to = array->current;
 	to->seq = packet->seq_to;
 	apply_player_diff(&packet->diff, &to->player);
