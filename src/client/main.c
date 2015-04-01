@@ -10,37 +10,40 @@
 #include <shared/packet.h>
 #include <shared/player_array.h>
 
-static size_t build_packet(char *buf, struct player_array *array)
+static size_t build_packet(char *buf, struct player_array_entry *from, struct player_array_entry *to)
 {
 	struct packet packet;
 
-	packet.seq_from = array->last->seq;
-	packet.seq_to = array->current->seq;
+	packet.seq_from = from->seq;
+	packet.seq_to = to->seq;
 	packet.ack = 0;
 	printf("Send packet with seq_from = %lu, seq_to = %lu, ack = %lu\n",
 	       (unsigned long)packet.seq_from, (unsigned long)packet.seq_to, (unsigned long)packet.ack);
 
-	diff_player(&array->last->player, &array->current->player, &packet.diff);
+	diff_player(&from->player, &to->player, &packet.diff);
 	return pack_packet(buf, &packet) - buf;
 }
 
 static int push_network(int fd, struct player_array *array)
 {
+	struct player_array_entry *from, *to;
 	ssize_t ret;
 	static char buf[MAX_PACKET_SIZE];
 	size_t len;
 
-	/* If the most recent packet is confirmed, we have nothing to send. */
-	if (array->last->confirmed)
+	from = player_array_get_acknowledged_entry(array);
+	to = player_array_get_most_recent_entry(array);
+
+	/* If the most recent packet is acknowledged, we have nothing to send. */
+	if (to->acknowledged)
 		return 1;
 
-	len = build_packet(buf, array);
+	len = build_packet(buf, from, to);
 	ret = send(fd, buf, len, 0);
 	if (ret == -1) {
 		fprintf(stderr, "send(len = %lu): %s\n", (unsigned long)len, strerror(errno));
 		return 0;
 	}
-	array->last->confirmed = 1;
 
 	return 1;
 }
@@ -56,9 +59,7 @@ static void handle_packet(struct packet *packet, struct player_array *array)
 		printf("Acknowledged snapshot unknown\n");
 		return;
 	}
-
-	array->last = entry;
-	array->last->confirmed = 0;
+	player_array_acknowledge_entry(array, entry);
 }
 
 static int poll_network(int fd, struct player_array *array)
@@ -85,14 +86,16 @@ static int poll_network(int fd, struct player_array *array)
 
 static int change_our_player_name(struct player_array *array, char *name)
 {
-	struct player *old;
+	struct player_array_entry *entry, *last;
 
-	old = &array->current->player;
-	if (!player_array_forward(array))
-		return 0;
+	last = player_array_get_most_recent_entry(array);
+	entry = player_array_get_unused_entry(array);
 
-	array->current->player = *old;
-	strcpy(array->current->player.name, name);
+	entry->player = last->player;
+	strcpy(entry->player.name, name);
+	entry->seq = last->seq + 1;
+
+	player_array_add(array, entry);
 
 	printf("Name changed to %s\n", name);
 

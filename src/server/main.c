@@ -70,11 +70,13 @@ static struct slot *get_addr_slot(struct sockaddr_storage *addr)
 	return unused_slot;
 }
 
-static size_t build_packet(char *buf, struct player_array *array)
+static size_t build_packet(char *buf, struct player_array_entry *entry)
 {
 	struct packet packet = PACKET_ZERO;
 
-	packet.ack = array->current->seq;
+	assert(entry != NULL);
+
+	packet.ack = entry->seq;
 	printf("Send packet with ack = %lu\n", (unsigned long)packet.ack);
 	return pack_packet(buf, &packet) - buf;
 }
@@ -84,18 +86,19 @@ static int push_network(int fd, struct player_array *array)
 	ssize_t ret;
 	size_t len;
 	static char buf[MAX_PACKET_SIZE];
+	struct player_array_entry *entry;
 
-	if (array->current->confirmed)
+	entry = player_array_get_most_recent_entry(array);
+	if (entry->acknowledged)
 		return 1;
 
-	len = build_packet(buf, array);
+	len = build_packet(buf, entry);
 	ret = sendto(fd, buf, len, 0,
 	             (const struct sockaddr*)&slots[0].addr, sizeof(slots[0].addr));
 	if (ret == -1) {
 		fprintf(stderr, "sendto(): %s\n", strerror(errno));
 		return 0;
 	}
-	array->current->confirmed = 1;
 
 	return 1;
 }
@@ -119,21 +122,18 @@ static void handle_packet(struct packet *packet, struct player_array *array)
 		return;
 	}
 
-	/*
-	 * In the futur, in may be possible to free some old snapshot, likely
-	 * the one who have less chance to be used again.  For now, just fail.
-	 */
-	if (!player_array_forward(array)) {
+	to = player_array_get_unused_entry(array);
+	if (!to) {
 		printf("Snapshot list is too long, packet ignored\n");
 		return;
 	}
 
-	to = array->current;
 	to->seq = packet->seq_to;
+	to->player = from->player;
 	apply_player_diff(&packet->diff, &to->player);
 
-	to->confirmed = 0;
-	from->confirmed = 1;
+	player_array_add(array, to);
+	player_array_acknowledge_entry(array, from);
 }
 
 static int poll_network(int fd, struct player_array *array)
@@ -151,6 +151,7 @@ static int poll_network(int fd, struct player_array *array)
 		return 0;
 	}
 
+	/* Packets with wrong size are not an error, just ignore them */
 	if (!check_packet_size(ret))
 		return 1;
 
@@ -197,7 +198,7 @@ int main(int argc, char **argv)
 	while (1) {
 		poll_network(fd, &array);
 		push_network(fd, &array);
-		printf("Player name: %s\n", array.current->player.name);
+		printf("Player name: %s\n", player_array_get_most_recent_entry(&array)->player.name);
 		sleep(1);
 	}
 
