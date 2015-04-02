@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
 #include <shared/network.h>
 #include <shared/packet.h>
@@ -160,7 +161,19 @@ static int poll_network(int fd, struct player_array *array)
 		fprintf(stderr, "New connection rejected: server is full\n");
 		return 0;
 	} else if (!slot->is_used) {
+		int ret;
+		char host[NI_MAXHOST], serv[NI_MAXSERV];
+
 		puts("New connection");
+
+		/* For debugging purpose, print the IP addresse (temporary) */
+		ret = getnameinfo((struct sockaddr*)&addr, addrlen,
+		                  host, sizeof(host), serv, sizeof(serv), NI_DGRAM);
+		if (ret)
+			fprintf(stderr, "Cannot retrieve hostname and port: %s\n", gai_strerror(ret));
+		else
+			printf("\tIP: %s\n\tPort: %s\n", host, serv);
+
 		slot->addr = addr;
 		slot->is_used = 1;
 	} else {
