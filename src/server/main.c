@@ -40,7 +40,8 @@ static int sockaddr_storage_is_same(
 
 		if (in1->sin_port != in2->sin_port)
 			return 0;
-		if (memcmp(&in1->sin_addr.s_addr, &in2->sin_addr.s_addr, sizeof(*in1)))
+		if (memcmp(&in1->sin_addr.s_addr, &in2->sin_addr.s_addr,
+		           sizeof(in1->sin_addr.s_addr)))
 			return 0;
 	} else {
 		const struct sockaddr_in6 *in1 = (struct sockaddr_in6*)addr1;
@@ -48,7 +49,8 @@ static int sockaddr_storage_is_same(
 
 		if (in1->sin6_port != in2->sin6_port)
 			return 0;
-		if (memcmp(&in1->sin6_addr.s6_addr, &in2->sin6_addr.s6_addr, sizeof(*in1)))
+		if (memcmp(&in1->sin6_addr.s6_addr, &in2->sin6_addr.s6_addr,
+		           sizeof(in2->sin6_addr.s6_addr)))
 			return 0;
 	}
 
