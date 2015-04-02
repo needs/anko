@@ -1,0 +1,211 @@
+ANKO network protocol
+=====================
+
+Introduction
+------------
+
+The whole protocol has been designed to reduce latency over bandwidth.
+It is build over UDP.  The protocol is inspired form the one designed
+by John Carmack for Quake 3.
+
+Two nodes are involved: the sender and the receiver.
+
+
+Terminology
+-----------
+
+  - snapshot: Data (to be sended) identified by a sequence number
+  - synched snapshot: Snapshot known by both the sender and the receiver
+  - diff: A difference between two snapshot
+
+
+Properties
+----------
+
+The protocol is designed to have the following listed properties.
+  - Build over UDP
+  - Reduce latency over bandwidth
+  - When there is nothing to send, nothing is sent
+  - Simple logic for both the sender and the receiver
+  - A node can be both receiver and sender [1]
+
+[1]: It is true for every protocol, but we make it very easy and
+straightforward.
+
+
+Design
+------
+
+The sender send differential between two snapshot, and the receiver
+send acknowledgement to let the sender wich snapshot has been well
+received.
+
+	+----------+                        +----------+
+	|          |  ------- diff ------>  |          |
+	|  Sender  |                        | Receiver |
+	|          |  <------ ack  -------  |          |
+	+----------+                        +----------+
+
+We can immediately expose packet layout.
+
+
+Packet layout
+-------------
+
+Field greater than a byte must be in network byte order.  No gap
+between fields.  The protocol do not specify the format of the diff,
+it up the the application to come with his own.
+
+In the following, `from`, `to` and `ack` field must have the same
+size as they are sequence number.  This size is not fixed for now [1].
+
+[1]: I think even uint8_t might be enough, I need to think more about
+it.  It will be nice since the protocol would become byte-order
+independant, making things even simpler.
+
+Sender's packet layout
+~~~~~~~~~~~~~~~~~~~~~~
+
+        +---+---+---+---+=== ... ===+
+        | from  |  to   |   diff    |
+        +---+---+---+---+=== ... ===+
+
+Receiver's packet layout
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+        +---+---+
+        |  ack  |
+        +---+---+
+
+
+Processing packets
+------------------
+
+This section describe how the sender and the receiver deals with
+packet and update their internal state.
+
+The whole logic rely on the fact that at any time, both the sender and
+the receiver have at least one snapshot that they know the other
+have.  They know that one snapshot is synchronized.
+
+Initialization
+~~~~~~~~~~~~~~
+
+At the begining of the connnection, the sender and the receiver create
+a dummy snapshot.  This is a snapshot with every fields set to zero.
+This snapshot is considered synchronized since they both know the
+content of it : zero.  The sequence number of the dummy snapshot is
+zero.
+
+         Sender                             Receiver
+        +-------+                           +-------+
+        | dummy |  <------ synched ------>  | dummy |
+        +-------+                           +-------+
+
+Establishing the connection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is not particular way to start the connection.  The sender just
+start to send diff to the receiver.
+
+Shutdown a connection
+~~~~~~~~~~~~~~~~~~~~~
+
+There is not particular way to shutdown a connection.  The sender will
+just stop to send diff.  The protocol provide no facilities to notice
+the receiver about the end of the connection.  The notification is not
+of the ressort of the protocol : the notification must be inside the
+snapshot.
+
+Main logic
+~~~~~~~~~~
+
+The sender is the one who produce new snapshot, with an increasing
+sequence number for each new snapshot.  Here is a picture of what it
+look's like:
+
+         Sender                             Receiver
+        +-------+                           +-------+
+        |  15   |  <------ synched ------>  |  15   |
+        +-------+                           +-------+
+        |  16   |                           |   ?   |
+        +-------+                           +-------+
+        |  17   |
+        +-------+
+        |  18   |
+        +-------+
+        |  19   |
+        +-------+
+        |   .   |
+	    .
+	    .
+
+The diagram also show the synched snapshot.  The sender then send a
+diff between the synched snapshot (15 in our example) and the more
+recent one (19 in our example).  It does send diff unless their are no
+unsynched snapshot.
+
+The receiver just wait for diff to come.  Once it does, it add it to
+his list.  The receiver then send an acknowledgement for the most
+recent non-synched snapshot.  At each snapshot received, it send the
+corresponding acknowledgement, _once_, for any snapshot after the
+synched one (included).
+
+The following diagram illustrate the state after the sender sent a
+diff between 15 and 19, that the receiver well received.
+
+         Sender                             Receiver
+        +-------+                           +-------+
+        |  15   |  <------ synched ------>  |  15   |
+        +-------+                           +-------+
+        |  16   |                ---------  |  19   |
+        +-------+               /           +-------+
+        |  17   |              /
+        +-------+             /  ack 19
+        |  18   |            /
+        +-------+           /
+        |  19   |  <--------
+        +-------+
+        |   .   |
+	    .
+	    .
+
+Once the sender receive the acknowledgement, it considere the
+acknowledged snapshot as synched.  This not yet the case of the
+receiver.
+
+         Sender                             Receiver
+        +-------+                           +-------+
+        |  19   |  <------ synched ------>  |  15   |
+        +-------+                           +-------+
+        |   .   |                           |  19   |
+            .                               +-------+
+	    .
+
+Later, the sender will send another diff, from the newly synched
+snapshot (19 in our example) to a new snapshot (20 in the following
+example)
+
+         Sender                             Receiver
+        +-------+                           +-------+
+        |  19   |  <------ synched ------>  |  15   |
+        +-------+                           +-------+
+        |  20   |  >---------------   ---<  |  19   |
+        +-------+           diff   \ /      +-------+
+	|   .   |                   +---->  |  20   |
+	    .                               +-------+
+	    .
+
+Since the sender used the snapshot acknowledged by the receiver, the
+receiver can now considered it synched.  Finally the loop can start
+again, with the receiver sending an acknowledgement...
+
+         Sender                             Receiver
+        +-------+                           +-------+
+        |  19   |  <------ synched ------>  |  19   |
+        +-------+                           +-------+
+        |  20   |                           |  20   |
+        +-------+                           +-------+
+	|   .   |
+	    .
+	    .
