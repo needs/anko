@@ -12,66 +12,12 @@
 #include <shared/network.h>
 #include <shared/packet.h>
 #include <shared/player_array.h>
+#include <shared/netclient.h>
 #include <game/player.h>
 
 #define MAX_PLAYERS 16
 
-struct slot {
-	unsigned char is_used;
-	struct sockaddr_storage addr;
-};
-
-static struct slot slots[16];
-
-static int sockaddr_storage_is_same(
-	const struct sockaddr_storage *addr1, const struct sockaddr_storage *addr2)
-{
-	assert(addr1 != NULL);
-	assert(addr2 != NULL);
-	assert(addr1->ss_family == AF_INET || addr1->ss_family == AF_INET6);
-	assert(addr2->ss_family == AF_INET || addr2->ss_family == AF_INET6);
-
-	if (addr1->ss_family != addr2->ss_family)
-		return 0;
-
-	if (addr1->ss_family == AF_INET) {
-		const struct sockaddr_in *in1 = (struct sockaddr_in*)addr1;
-		const struct sockaddr_in *in2 = (struct sockaddr_in*)addr2;
-
-		if (in1->sin_port != in2->sin_port)
-			return 0;
-		if (memcmp(&in1->sin_addr.s_addr, &in2->sin_addr.s_addr,
-		           sizeof(in1->sin_addr.s_addr)))
-			return 0;
-	} else {
-		const struct sockaddr_in6 *in1 = (struct sockaddr_in6*)addr1;
-		const struct sockaddr_in6 *in2 = (struct sockaddr_in6*)addr2;
-
-		if (in1->sin6_port != in2->sin6_port)
-			return 0;
-		if (memcmp(&in1->sin6_addr.s6_addr, &in2->sin6_addr.s6_addr,
-		           sizeof(in2->sin6_addr.s6_addr)))
-			return 0;
-	}
-
-	return 1;
-}
-
-static struct slot *get_addr_slot(struct sockaddr_storage *addr)
-{
-	struct slot *unused_slot = NULL;
-	unsigned i;
-
-	for (i = 0; i < MAX_PLAYERS; i++) {
-		if (!slots[i].is_used) {
-			if (!unused_slot)
-				unused_slot = &slots[i];
-		} else if (sockaddr_storage_is_same(&slots[i].addr, addr)) {
-			return &slots[i];
-		}
-	}
-	return unused_slot;
-}
+struct netclient_list netclients_list;
 
 static size_t build_packet(char *buf, struct player_array_entry *entry)
 {
@@ -90,14 +36,19 @@ static int push_network(int fd, struct player_array *array)
 	size_t len;
 	static char buf[MAX_PACKET_SIZE];
 	struct player_array_entry *entry;
+	struct netclient *client;
 
 	entry = player_array_get_most_recent_entry(array);
 	if (entry->acknowledged)
 		return 1;
 
 	len = build_packet(buf, entry);
+
+	/* For now, only push to the first client (unsafe and dirty) */
+	client = &netclients_list.clients[0];
+
 	ret = sendto(fd, buf, len, 0,
-	             (const struct sockaddr*)&slots[0].addr, sizeof(slots[0].addr));
+	             (const struct sockaddr*)&client->addr, sizeof(client->addr));
 	if (ret == -1) {
 		fprintf(stderr, "sendto(): %s\n", strerror(errno));
 		return 0;
@@ -139,13 +90,27 @@ static void handle_packet(struct packet *packet, struct player_array *array)
 	player_array_acknowledge_entry(array, from);
 }
 
+/* For debugging purpose */
+static void print_netclient(struct netclient *client)
+{
+	int ret;
+	char host[NI_MAXHOST], serv[NI_MAXSERV];
+
+	ret = getnameinfo((struct sockaddr*)&client->addr, sizeof(client->addr),
+	                  host, sizeof(host), serv, sizeof(serv), NI_DGRAM);
+	if (ret)
+		fprintf(stderr, "Cannot retrieve hostname and port: %s\n", gai_strerror(ret));
+	else
+		printf("\tIP: %s\n\tPort: %s\n", host, serv);
+}
+
 static int poll_network(int fd, struct player_array *array)
 {
 	static char buf[MAX_PACKET_SIZE];
 	struct sockaddr_storage addr;
 	socklen_t addrlen = sizeof(addr);
 	ssize_t ret;
-	struct slot *slot;
+	struct netclient *client;
 	struct packet packet;
 
 	ret = recvfrom(fd, buf, MAX_PACKET_SIZE, 0, (struct sockaddr*)&addr, &addrlen);
@@ -158,28 +123,19 @@ static int poll_network(int fd, struct player_array *array)
 	if (!check_packet_size(ret))
 		return 1;
 
-	slot = get_addr_slot(&addr);
-	if (!slot) {
-		fprintf(stderr, "New connection rejected: server is full\n");
-		return 0;
-	} else if (!slot->is_used) {
-		int ret;
-		char host[NI_MAXHOST], serv[NI_MAXSERV];
-
+	client = get_netclient(&netclients_list, &addr);
+	if (client) {
+		puts("Already connected");
+	} else {
 		puts("New connection");
 
-		/* For debugging purpose, print the IP addresse (temporary) */
-		ret = getnameinfo((struct sockaddr*)&addr, addrlen,
-		                  host, sizeof(host), serv, sizeof(serv), NI_DGRAM);
-		if (ret)
-			fprintf(stderr, "Cannot retrieve hostname and port: %s\n", gai_strerror(ret));
-		else
-			printf("\tIP: %s\n\tPort: %s\n", host, serv);
+		client = add_netclient(&netclients_list, &addr);
+		if (!client) {
+			fprintf(stderr, "New connection rejected: server is full\n");
+			return 0;
+		}
 
-		slot->addr = addr;
-		slot->is_used = 1;
-	} else {
-		puts("Already connected");
+		print_netclient(client);
 	}
 
 	unpack_packet(buf, &packet);
@@ -202,6 +158,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	if ((fd = bind_to(argv[1], argv[2])) == -1)
 		return EXIT_FAILURE;
+	if (!init_netclient_list(&netclients_list, MAX_PLAYERS))
+		return EXIT_FAILURE;
 
 	/*
 	 * The main loop for the server should be:
@@ -217,6 +175,7 @@ int main(int argc, char **argv)
 		sleep(1);
 	}
 
+	free_netclient_list(&netclients_list);
 	close(fd);
 	player_array_free(&array);
 
