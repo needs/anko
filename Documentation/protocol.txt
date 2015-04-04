@@ -5,7 +5,7 @@ Introduction
 ------------
 
 The whole protocol has been designed to reduce latency over bandwidth.
-It is build over UDP.  The protocol is inspired form the one designed
+It is build over UDP.  The protocol is inspired from the one designed
 by John Carmack for Quake 3.
 
 Two nodes are involved: the sender and the receiver.
@@ -36,8 +36,8 @@ straightforward.
 Design
 ------
 
-The sender send differential between two snapshot, and the receiver
-send acknowledgement to let the sender wich snapshot has been well
+The sender send differential between two snapshots, and the receiver
+send acknowledgement to let the sender know wich snapshot has been well
 received.
 
 	+----------+                        +----------+
@@ -46,18 +46,17 @@ received.
 	|          |  <------ ack  -------  |          |
 	+----------+                        +----------+
 
-We can immediately expose packet layout.
-
 
 Packet layout
 -------------
 
 Field greater than a byte must be in network byte order.  No gap
 between fields.  The protocol do not specify the format of the diff,
-it up the the application to come with his own.
+it is up the the application to come with his own format.
 
 In the following, `from`, `to` and `ack` field must have the same
-size as they are sequence number.  This size is not fixed for now [1].
+size as they are all sequence number.  This size is not fixed for now
+[1], it might be just a byte (uint8_t) or two bytes (uint16_t).
 
 [1]: I think even uint8_t might be enough, I need to think more about
 it.  It will be nice since the protocol would become byte-order
@@ -77,16 +76,26 @@ Receiver's packet layout
         |  ack  |
         +---+---+
 
+Sender + receiver packet layout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When nodes are both sender and receiver, the packet layout has a
+unique layout.
+
+        +---+---+---+---+---+---+=== ... ===+
+        | from  |  to   |  ack  |   diff    |
+        +---+---+---+---+---+---+=== ... ===+
+
 
 Processing packets
 ------------------
 
 This section describe how the sender and the receiver deals with
-packet and update their internal state.
+incoming packets and update their internal state.
 
 The whole logic rely on the fact that at any time, both the sender and
 the receiver have at least one snapshot that they know the other
-have.  They know that one snapshot is synchronized.
+have.  This snapshot is called the "synched snapshot".
 
 Initialization
 ~~~~~~~~~~~~~~
@@ -115,12 +124,12 @@ There is not particular way to shutdown a connection.  The sender will
 just stop to send diff.  The protocol provide no facilities to notice
 the receiver about the end of the connection.  The notification is not
 of the ressort of the protocol : the notification must be inside the
-snapshot.
+snapshot, managed by the application.
 
 Main logic
 ~~~~~~~~~~
 
-The sender is the one who produce new snapshot, with an increasing
+The sender is the one who produce new snapshots, with an increasing
 sequence number for each new snapshot.  Here is a picture of what it
 look's like:
 
@@ -141,18 +150,20 @@ look's like:
 	    .
 
 The diagram also show the synched snapshot.  The sender then send a
-diff between the synched snapshot (15 in our example) and the more
-recent one (19 in our example).  It does send diff unless their are no
-unsynched snapshot.
+diff between the synched snapshot (15 in our example) and the most
+recent one (19 in our example).  It does send diff continuously unless
+their is no non-synched snapshot.
 
-The receiver just wait for diff to come.  Once it does, it add it to
-his list.  The receiver then send an acknowledgement for the most
-recent non-synched snapshot.  At each snapshot received, it send the
-corresponding acknowledgement, _once_, for any snapshot after the
-synched one (included).
+The receiver just wait for diff to come.  Once a diff comes, the
+receiver add it add it to his own list
+
+The receiver then send an acknowledgement for the most
+recent non-synched snapshot.  Their is no need on the receiver side to
+send continuously acknowledgement.  The receiver can only send on
+acknowledgement each time he receive a diff.
 
 The following diagram illustrate the state after the sender sent a
-diff between 15 and 19, that the receiver well received.
+diff between 15 and 19.
 
          Sender                             Receiver
         +-------+                           +-------+
